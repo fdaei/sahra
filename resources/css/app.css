@@ -1,0 +1,172 @@
+@import './fonts.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   | Direction handling.
+   |
+   | `dir` is set server-side on <html> (resources/views/app.blade.php) so the
+   | first paint is already correct. We avoid physical margin utilities in
+   | components; the tailwindcss-logical plugin provides logical margin and
+   | padding utilities that flip
+   | automatically, so one stylesheet serves both directions.
+   */
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  /* Respect the OS preference for both CSS and GSAP (see lib/motion.ts). */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* When JS detects reduced motion it adds this class; marquees stop dead. */
+  .reduced-motion .marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  body {
+    @apply bg-paper text-body-lg text-neutral-800;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Figma display type is Poppins SemiBold / Doran Bold. */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-neutral-1000;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+
+  :where(html[dir='rtl']) h1,
+  :where(html[dir='rtl']) h2,
+  :where(html[dir='rtl']) h3 {
+    /* Doran/Vazirmatn read heavier; drop a step to match optical weight. */
+    font-weight: 700;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible, brand-coloured focus for keyboard users on every interactive el. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-gold ring-offset-2 ring-offset-paper;
+    border-radius: 4px;
+  }
+
+  /* Media never overflows its column — a common source of horizontal scroll. */
+  img,
+  svg,
+  video,
+  canvas {
+    @apply block max-w-full;
+    height: auto;
+  }
+
+  /* Numerals stay Latin in FA/AR headings where the design shows them so
+     (e.g. "+70k", "2024"). Applied opt-in via .latin-nums. */
+  .latin-nums {
+    font-feature-settings: 'lnum' 1;
+    font-variant-numeric: lining-nums;
+    direction: ltr;
+    unicode-bidi: embed;
+  }
+}
+
+@layer components {
+  /*
+   | Figma container: 1248px content inside a 1440px frame => 96px gutters.
+   | Mobile: 362px content inside 402px => 20px gutters.
+   */
+  .container-sahra {
+    @apply mx-auto w-full max-w-container px-5 md:px-10 lg:px-16 xl:px-24;
+  }
+
+  /* Section rhythm. Figma spacing tokens: 96 desktop, 56 mobile. */
+  .section {
+    @apply py-14 md:py-18 lg:py-24;
+  }
+
+  /* Eyebrow — Figma "small title" 1419:9231: gold dot + gold label. */
+  .eyebrow {
+    @apply mb-4 inline-flex items-center gap-2 text-label-lg text-gold;
+  }
+
+  .eyebrow::before {
+    content: '';
+    @apply inline-block size-3 rotate-45 rounded-xs bg-gold;
+  }
+
+  /* Edge fade for marquees — Figma "shade" 1419:9215. */
+  .marquee-mask {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      #000 10%,
+      #000 90%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      #000 10%,
+      #000 90%,
+      transparent 100%
+    );
+  }
+
+  /* Elements animated by GSAP start hidden — but only when motion is allowed,
+     otherwise reduced-motion users would see nothing at all. */
+  @media (prefers-reduced-motion: no-preference) {
+    .will-reveal {
+      opacity: 0;
+      transform: translateY(32px);
+    }
+  }
+}
+
+@layer utilities {
+  /* Mobile browser chrome-aware viewport height. */
+  .min-h-screen-safe {
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* Notch / home-indicator padding on iOS. */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  /* Minimum 44×44 touch target (WCAG 2.5.5). */
+  .touch-target {
+    @apply relative;
+  }
+
+  .touch-target::after {
+    content: '';
+    @apply absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

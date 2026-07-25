@@ -1,0 +1,19 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\PostCategoryResource\Pages;
+
+use App\Filament\Resources\PostCategoryResource;
+use Filament\Actions;
+use Filament\Resources\Pages\ListRecords;
+
+final class ListPostCategories extends ListRecords
+{
+    protected static string $resource = PostCategoryResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [Actions\CreateAction::make()];
+    }
+}
