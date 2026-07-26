@@ -7,6 +7,7 @@ namespace App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Enums\SectionType;
 use App\Filament\Support\TranslatableForm;
 use App\Models\PageSection;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
@@ -115,13 +116,33 @@ final class SectionsRelationManager extends RelationManager
                     ->maxLength(300),
             ]),
 
+            Section::make('Text colours')
+                ->description('Optional. Empty values keep the website’s default design colour.')
+                ->columns([
+                    'default' => 1,
+                    'sm' => 2,
+                    'xl' => 5,
+                ])
+                ->collapsed()
+                ->schema([
+                    ColorPicker::make('eyebrow_color')
+                        ->label('Eyebrow'),
+                    ColorPicker::make('title_color')
+                        ->label('Title'),
+                    ColorPicker::make('subtitle_color')
+                        ->label('Subtitle'),
+                    ColorPicker::make('description_color')
+                        ->label('Description'),
+                    ColorPicker::make('content_color')
+                        ->label('Content'),
+                ]),
+
             FileUpload::make('image_path')
                 ->label('Section image')
                 ->image()
                 ->imageEditor()
                 ->directory('sections')
                 ->disk('public')
-                ->maxSize(6144)
                 ->columnSpanFull(),
 
             /*
@@ -197,7 +218,7 @@ final class SectionsRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make()
-                    ->mutateRecordDataUsing(fn (array $data, PageSection $record): array => $this->hydrate($data, $record))
+                    ->mutateRecordDataUsing(fn (array $data, PageSection $record): array => $this->hydrateFormData($data, $record))
                     ->using(fn (PageSection $record, array $data): Model => $this->persist($data, $record)),
 
                 Tables\Actions\DeleteAction::make(),
@@ -268,7 +289,7 @@ final class SectionsRelationManager extends RelationManager
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
-    private function hydrate(array $data, PageSection $record): array
+    private function hydrateFormData(array $data, PageSection $record): array
     {
         $record->loadMissing(['translations', 'items.translations']);
 

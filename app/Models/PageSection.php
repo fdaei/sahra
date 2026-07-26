@@ -32,6 +32,11 @@ final class PageSection extends Model
         'sort_order',
         'is_visible',
         'image_path',
+        'eyebrow_color',
+        'title_color',
+        'subtitle_color',
+        'description_color',
+        'content_color',
     ];
 
     /** @var array<int, string> */

@@ -88,6 +88,7 @@ final class MenuItem extends Model
             return route(
                 $this->route_name,
                 array_merge(['locale' => $locale], $this->route_params ?? []),
+                absolute: false,
             );
         }
 

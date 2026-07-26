@@ -52,7 +52,6 @@ final class ClientResource extends Resource
                         ->directory('clients')
                         ->disk('public')
                         ->acceptedFileTypes(['image/svg+xml', 'image/png', 'image/webp'])
-                        ->maxSize(1024)
                         ->required()
                         ->columnSpanFull(),
 

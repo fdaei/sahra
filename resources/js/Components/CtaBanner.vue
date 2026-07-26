@@ -10,6 +10,7 @@ defineProps<{
     title: string
     description: string
     subtitle: string
+    colors: Record<'eyebrow' | 'title' | 'subtitle' | 'description' | 'content', string | null>
     primaryCta: { label: string; url: string } | null
   }
 }>()
@@ -20,9 +21,9 @@ defineProps<{
     <div class="container-sahra">
       <div class="relative overflow-hidden rounded-lg bg-ink px-8 py-14 text-center md:px-16">
         <div class="relative z-10">
-          <div class="eyebrow justify-center text-gold-500">{{ section.eyebrow }}</div>
-          <h2 class="text-display-sm text-paper">{{ section.title }}</h2>
-          <p class="mx-auto mt-4 max-w-md text-body-lg text-neutral-300">{{ section.description }}</p>
+          <div class="eyebrow justify-center text-gold-500" :style="{ color: section.colors.eyebrow || undefined }">{{ section.eyebrow }}</div>
+          <h2 class="text-display-sm text-paper" :style="{ color: section.colors.title || undefined }">{{ section.title }}</h2>
+          <p class="mx-auto mt-4 max-w-md text-body-lg text-neutral-300" :style="{ color: section.colors.description || undefined }">{{ section.description }}</p>
 
           <a
             v-if="section.primaryCta"
@@ -32,7 +33,7 @@ defineProps<{
             {{ section.primaryCta.label }}
           </a>
 
-          <p v-if="section.subtitle" class="mt-8 text-label-md text-neutral-400">{{ section.subtitle }}</p>
+          <p v-if="section.subtitle" class="mt-8 text-label-md text-neutral-400" :style="{ color: section.colors.subtitle || undefined }">{{ section.subtitle }}</p>
         </div>
 
         <div

@@ -147,8 +147,7 @@ final class PostResource extends Resource
                             ->image()
                             ->imageEditor()
                             ->directory('posts')
-                            ->disk('public')
-                            ->maxSize(4096),
+                            ->disk('public'),
                     ]),
                 ]),
             ]),

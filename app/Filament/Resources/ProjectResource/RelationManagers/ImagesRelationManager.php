@@ -33,7 +33,6 @@ final class ImagesRelationManager extends RelationManager
                 ->imageEditor()
                 ->directory('projects/showcase')
                 ->disk('public')
-                ->maxSize(4096)
                 ->required()
                 ->columnSpanFull(),
 

@@ -160,7 +160,6 @@ final class ProjectResource extends Resource
                                 ->imageEditor()
                                 ->directory('projects')
                                 ->disk('public')
-                                ->maxSize(4096)
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
 
                             FileUpload::make('banner_path')
@@ -168,22 +167,19 @@ final class ProjectResource extends Resource
                                 ->image()
                                 ->imageEditor()
                                 ->directory('projects')
-                                ->disk('public')
-                                ->maxSize(4096),
+                                ->disk('public'),
 
                             FileUpload::make('before_image_path')
                                 ->label('Before')
                                 ->image()
                                 ->directory('projects')
-                                ->disk('public')
-                                ->maxSize(4096),
+                                ->disk('public'),
 
                             FileUpload::make('after_image_path')
                                 ->label('After')
                                 ->image()
                                 ->directory('projects')
-                                ->disk('public')
-                                ->maxSize(4096),
+                                ->disk('public'),
                         ]),
                 ]),
             ]),

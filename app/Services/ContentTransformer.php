@@ -42,7 +42,7 @@ final class ContentTransformer
             'title' => (string) $project->getTranslation('title'),
             'excerpt' => (string) $project->getTranslation('excerpt'),
             'industry' => (string) ($project->industry?->getTranslation('name') ?? ''),
-            'url' => $project->url(),
+            'url' => $project->url(absolute: false),
             'image' => MediaTransformer::make(
                 $project->cover_path,
                 $project->getTranslation('cover_alt'),
@@ -107,7 +107,7 @@ final class ContentTransformer
             'next' => $next === null ? null : [
                 'slug' => $next->slugForLocale(app()->getLocale()),
                 'title' => (string) $next->getTranslation('title'),
-                'url' => $next->url(),
+                'url' => $next->url(absolute: false),
             ],
         ]);
     }
@@ -143,7 +143,7 @@ final class ContentTransformer
             'slug' => $post->slugForLocale(app()->getLocale()),
             'title' => (string) $post->getTranslation('title'),
             'excerpt' => (string) $post->getTranslation('excerpt'),
-            'url' => $post->url(),
+            'url' => $post->url(absolute: false),
             'publishedAt' => $post->published_at?->toIso8601String() ?? '',
             'readingTime' => $post->reading_minutes,
             'category' => $post->category === null ? null : [
@@ -261,6 +261,13 @@ final class ContentTransformer
             'subtitle' => (string) $section->getTranslation('subtitle'),
             'description' => (string) $section->getTranslation('description'),
             'content' => (string) $section->getTranslation('content'),
+            'colors' => [
+                'eyebrow' => $section->eyebrow_color,
+                'title' => $section->title_color,
+                'subtitle' => $section->subtitle_color,
+                'description' => $section->description_color,
+                'content' => $section->content_color,
+            ],
             'primaryCta' => self::cta(
                 $section->getTranslation('primary_cta_label'),
                 $section->getTranslation('primary_cta_url'),

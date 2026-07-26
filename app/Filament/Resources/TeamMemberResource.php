@@ -58,7 +58,6 @@ final class TeamMemberResource extends Resource
                         ->imageEditor()
                         ->directory('team')
                         ->disk('public')
-                        ->maxSize(4096)
                         ->columnSpanFull(),
 
                     TextInput::make('sort_order')->numeric()->default(0),

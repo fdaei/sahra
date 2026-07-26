@@ -64,6 +64,10 @@ final class ProjectController extends Controller
 
             'activeIndustry' => $industryFilter ?: null,
 
+            'sections' => $page === null
+                ? []
+                : ContentTransformer::sectionMap($page->sections),
+
             'seo' => SeoBuilder::forPage($page, $request->url()),
         ]);
     }

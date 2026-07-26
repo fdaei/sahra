@@ -105,8 +105,7 @@ final class ServiceResource extends Resource
                             ->image()
                             ->imageEditor()
                             ->directory('services')
-                            ->disk('public')
-                            ->maxSize(4096),
+                            ->disk('public'),
                     ]),
                 ]),
             ]),

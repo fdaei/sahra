@@ -41,6 +41,10 @@ final class ServiceController extends Controller
                 ->map(fn (Service $s): array => ContentTransformer::service($s))
                 ->all(),
 
+            'sections' => $page === null
+                ? []
+                : ContentTransformer::sectionMap($page->sections),
+
             'seo' => SeoBuilder::forPage($page, $request->url()),
         ]);
     }

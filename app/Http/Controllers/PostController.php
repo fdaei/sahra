@@ -100,6 +100,10 @@ final class PostController extends Controller
                 'q' => $search ?: null,
             ],
 
+            'sections' => $page === null
+                ? []
+                : ContentTransformer::sectionMap($page->sections),
+
             'seo' => SeoBuilder::forPage($page, $request->url()),
         ]);
     }

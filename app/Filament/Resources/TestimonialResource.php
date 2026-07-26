@@ -64,7 +64,6 @@ final class TestimonialResource extends Resource
                         ->avatar()
                         ->directory('testimonials')
                         ->disk('public')
-                        ->maxSize(2048)
                         ->columnSpanFull(),
 
                     TextInput::make('sort_order')->numeric()->default(0),

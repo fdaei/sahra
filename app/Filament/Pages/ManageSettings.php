@@ -138,7 +138,6 @@ final class ManageSettings extends Page implements HasForms
                             ->image()
                             ->directory('seo')
                             ->disk('public')
-                            ->maxSize(4096)
                             ->helperText('Shown when a page has no image. 1200×630 recommended.'),
                     ]),
             ]);

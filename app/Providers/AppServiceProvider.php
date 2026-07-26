@@ -19,6 +19,9 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Remove Livewire's default 12 MB temporary-upload ceiling.
+        config()->set('livewire.temporary_file_upload.rules', ['required', 'file']);
+
         // Vite prefetches lazily-loaded chunks once the page is idle.
         Vite::prefetch(concurrency: 3);
 

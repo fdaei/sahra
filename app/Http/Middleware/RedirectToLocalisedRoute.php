@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Redirects non-prefixed URLs to their locale-prefixed equivalent.
@@ -17,6 +18,9 @@ use Symfony\Component\HttpFoundation\Response;
  *
  * Applied only to the bare-path catch-all group in routes/web.php so it never
  * interferes with already-prefixed traffic, the Filament panel, or storage.
+ * Reaching this middleware at all means every real route in the {locale}
+ * group already failed to match, so an already-prefixed path here
+ * (/en/nonexistent) is a genuine 404, not something to redirect.
  */
 final class RedirectToLocalisedRoute
 {
@@ -26,9 +30,8 @@ final class RedirectToLocalisedRoute
 
         $first = $request->segment(1);
 
-        // Already localised — nothing to do.
         if (is_string($first) && in_array($first, $supported, true)) {
-            return $next($request);
+            throw new NotFoundHttpException;
         }
 
         $locale = $this->preferred($request, $supported);

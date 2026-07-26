@@ -27,7 +27,6 @@ import CtaBanner from '@/Components/CtaBanner.vue'
 import type {
   ClientItem,
   FaqItem,
-  KpiItem,
   PostSummary,
   ProjectSummary,
   ServiceItem,
@@ -41,6 +40,7 @@ interface SectionContent {
   subtitle: string
   description: string
   content: string
+  colors: Record<'eyebrow' | 'title' | 'subtitle' | 'description' | 'content', string | null>
   primaryCta: { label: string; url: string } | null
   secondaryCta: { label: string; url: string } | null
   image: { src: string; alt: string; width: number; height: number } | null
@@ -87,7 +87,7 @@ const faqSection = computed(() => props.sections.faq)
       <!-- hero badge — bg gold-100, p-2, gap-2, rounded-full — Figma 1419:9195 -->
       <div class="flex items-center gap-2 rounded-round bg-gold-100 p-2">
         <span class="inline-block size-2 rotate-45 bg-gold-700" aria-hidden="true" />
-        <span class="text-label-md text-neutral-800">{{ hero.eyebrow }}</span>
+        <span class="text-label-md text-neutral-800" :style="{ color: hero.colors.eyebrow || undefined }">{{ hero.eyebrow }}</span>
       </div>
 
       <!-- hero texts (title+subtitle): gap-12 (space48) — Figma 1419:9199 -->
@@ -101,11 +101,13 @@ const faqSection = computed(() => props.sections.faq)
           matching the CTA context — kept in translations as part of `title`
           via a second line for editability.
         -->
-        <h1 class="text-[56px] font-medium leading-[80px] tracking-[-2.8px] text-neutral-900">
+        <h1 class="text-[56px] font-medium leading-[80px] tracking-[-2.8px] text-neutral-900" :style="{ color: hero.colors.title || undefined }">
           {{ hero.title }}
           <span
             class="bg-clip-text font-['Idealist',_serif] text-[56px] leading-[80px] text-transparent md:text-[96px]"
-            style="background-image: linear-gradient(89.78deg, #ffffff 26.9%, #bd933b 27%, #bd933b 64.6%, #ffffff 122%)"
+            :style="hero.colors.content
+              ? { color: hero.colors.content, backgroundImage: 'none' }
+              : { backgroundImage: 'linear-gradient(89.78deg, #ffffff 26.9%, #bd933b 27%, #bd933b 64.6%, #ffffff 122%)' }"
           >
             {{ hero.content }}
           </span>
@@ -113,7 +115,7 @@ const faqSection = computed(() => props.sections.faq)
           for brands ready to grow
         </h1>
 
-        <p class="w-full max-w-[612px] text-title-sm text-neutral-700">
+        <p class="w-full max-w-[612px] text-title-sm text-neutral-700" :style="{ color: hero.colors.subtitle || undefined }">
           {{ hero.subtitle }}
         </p>
       </div>
@@ -179,9 +181,9 @@ const faqSection = computed(() => props.sections.faq)
   <!-- Services cloud — Figma 1419:9279 -->
   <section v-if="sections.services_cloud" class="section">
     <div class="container-sahra">
-      <div class="eyebrow">{{ sections.services_cloud.eyebrow }}</div>
-      <h2 class="max-w-xl text-display-sm">{{ sections.services_cloud.title }}</h2>
-      <p class="mt-4 max-w-lg text-body-lg text-neutral-600">{{ sections.services_cloud.description }}</p>
+      <div class="eyebrow" :style="{ color: sections.services_cloud.colors.eyebrow || undefined }">{{ sections.services_cloud.eyebrow }}</div>
+      <h2 class="max-w-xl text-display-sm" :style="{ color: sections.services_cloud.colors.title || undefined }">{{ sections.services_cloud.title }}</h2>
+      <p class="mt-4 max-w-lg text-body-lg text-neutral-600" :style="{ color: sections.services_cloud.colors.description || undefined }">{{ sections.services_cloud.description }}</p>
 
       <div class="mt-14 flex flex-wrap justify-center gap-4">
         <span
@@ -226,11 +228,11 @@ const faqSection = computed(() => props.sections.faq)
   <!-- Why us — Figma 1419:9230 -->
   <section v-if="whyUs" class="section">
     <div class="container-sahra">
-      <div class="eyebrow">{{ whyUs.eyebrow }}</div>
+      <div class="eyebrow" :style="{ color: whyUs.colors.eyebrow || undefined }">{{ whyUs.eyebrow }}</div>
       <div class="mt-8 grid gap-8 lg:grid-cols-2">
         <div>
-          <h2 class="text-display-sm">{{ whyUs.title }}</h2>
-          <p class="mt-6 text-body-lg text-neutral-600">{{ whyUs.subtitle }}</p>
+          <h2 class="text-display-sm" :style="{ color: whyUs.colors.title || undefined }">{{ whyUs.title }}</h2>
+          <p class="mt-6 text-body-lg text-neutral-600" :style="{ color: whyUs.colors.subtitle || undefined }">{{ whyUs.subtitle }}</p>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div
@@ -249,8 +251,8 @@ const faqSection = computed(() => props.sections.faq)
   <!-- Reviews — Figma 1419:9243 -->
   <section v-if="reviews" class="section overflow-hidden">
     <div class="container-sahra">
-      <div class="eyebrow">{{ reviews.eyebrow }}</div>
-      <h2 class="max-w-xl text-display-sm">{{ reviews.title }}</h2>
+      <div class="eyebrow" :style="{ color: reviews.colors.eyebrow || undefined }">{{ reviews.eyebrow }}</div>
+      <h2 class="max-w-xl text-display-sm" :style="{ color: reviews.colors.title || undefined }">{{ reviews.title }}</h2>
     </div>
 
     <div class="mt-11 flex gap-6 overflow-x-auto px-6 pb-4 md:px-24">
@@ -276,8 +278,8 @@ const faqSection = computed(() => props.sections.faq)
     <div class="container-sahra">
       <div class="flex items-end justify-between">
         <div>
-          <div class="eyebrow">{{ insights.eyebrow }}</div>
-          <h2 class="max-w-xl text-display-sm">{{ insights.title }}</h2>
+          <div class="eyebrow" :style="{ color: insights.colors.eyebrow || undefined }">{{ insights.eyebrow }}</div>
+          <h2 class="max-w-xl text-display-sm" :style="{ color: insights.colors.title || undefined }">{{ insights.title }}</h2>
         </div>
       </div>
 
@@ -308,8 +310,8 @@ const faqSection = computed(() => props.sections.faq)
   <section v-if="faqSection" class="section">
     <div class="container-sahra grid gap-12 lg:grid-cols-2">
       <div>
-        <div class="eyebrow">{{ faqSection.eyebrow }}</div>
-        <h2 class="text-display-sm">{{ faqSection.title }}</h2>
+        <div class="eyebrow" :style="{ color: faqSection.colors.eyebrow || undefined }">{{ faqSection.eyebrow }}</div>
+        <h2 class="text-display-sm" :style="{ color: faqSection.colors.title || undefined }">{{ faqSection.title }}</h2>
       </div>
 
       <div class="flex flex-col divide-y divide-neutral-100">

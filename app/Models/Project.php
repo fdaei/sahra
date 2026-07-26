@@ -130,14 +130,14 @@ final class Project extends Model implements HasLocalisedSlugs
             ?? $this->getTranslation('slug', config('locales.fallback')));
     }
 
-    public function url(?string $locale = null): string
+    public function url(?string $locale = null, bool $absolute = true): string
     {
         $locale ??= app()->getLocale();
 
         return route('work.show', [
             'locale' => $locale,
             'project' => $this->slugForLocale($locale),
-        ]);
+        ], absolute: $absolute);
     }
 
     /* --------------------------------------------------------------- scopes */
