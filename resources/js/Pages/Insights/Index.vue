@@ -1,12 +1,28 @@
 <script setup lang="ts">
 /**
- * Blog listing — Figma node 1353:7935 (desktop) / 1530:10875 (mobile).
+ * Blog listing — Figma 569:1175 (desktop, LTR) / 1353:7935 (RTL) /
+ * 1530:10875 (mobile).
  *
- * The featured card (1419:9265) is only present on an unfiltered first page
- * per PostController@index — rendering is a straight `v-if="featured"`.
+ * Frame geometry:
+ *   heading row        title block left, filter list 569:1184 right
+ *   featured  609:1017 row, padding 16, gap 32, fill #FBF9F5, radius 16
+ *     image   571:1116 612×459, radius 16, 1px black/100, shadow 4/4/12
+ *     body    609:1016 column gap 48 → badge, then column gap 72
+ *       copy  587:1220 column gap 24 → title 32/500 black-900,
+ *                                      excerpt 16/400 black-800
+ *       meta  587:1227 row space-between → date + read time, "Read Article" cta
+ *   rows    1228:4571 row, gap 24 — the design runs one 2-up row, then 3-up
+ *   card    1228:4645 column gap 16
+ *     img            fill × 400, radius 16, 1px black/100, shadow 4/4/12
+ *     info           row gap 16: calendar icon + date, gold 4px dot + read time
+ *     title          28/500 black-900
+ *
+ * The featured card is only present on an unfiltered first page — see
+ * PostController@index.
  */
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { Link, router, usePage } from '@inertiajs/vue3'
+import { computed } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
+import { ArrowUpRight, CalendarDays } from 'lucide-vue-next'
 import CtaBanner from '@/Components/CtaBanner.vue'
 import FilterChips from '@/Components/FilterChips.vue'
 import SeoHead from '@/Components/SeoHead.vue'
@@ -47,44 +63,31 @@ const page = usePage<SharedProps>()
 const { t } = useTranslations()
 
 const basePath = computed(() => `/${page.props.locale.current}/insights`)
-const search = ref(props.filters.q ?? '')
 
-let debounceHandle: ReturnType<typeof setTimeout> | undefined
+/**
+ * The frame lays the first two cards out 2-up (612 wide) and everything
+ * after them 3-up (400 wide), so the split is part of the design, not an
+ * arbitrary breakpoint.
+ */
+const leadRow = computed(() => props.posts.data.slice(0, 2))
+const restRows = computed(() => props.posts.data.slice(2))
 
-watch(search, (value) => {
-  clearTimeout(debounceHandle)
-
-  debounceHandle = setTimeout(() => {
-    const params = new URLSearchParams()
-    if (props.filters.category) params.set('category', props.filters.category)
-    if (value) params.set('q', value)
-
-    router.get(basePath.value + (params.toString() ? `?${params.toString()}` : ''), {}, {
-      preserveState: true,
-      preserveScroll: true,
-      replace: true,
-    })
-  }, 350)
-})
-
-onBeforeUnmount(() => clearTimeout(debounceHandle))
 </script>
 
 <template>
   <SeoHead :meta="seo" />
 
-  <!-- Insights heading — Figma "Main title & tag" 1363:7520 -->
-  <section class="section pb-0">
-    <div class="container-sahra max-w-2xl">
-      <div class="eyebrow">{{ heading.eyebrow }}</div>
-      <h1 class="text-display-md">{{ heading.title }}</h1>
-      <p class="mt-6 text-body-lg text-neutral-600">{{ heading.description }}</p>
-    </div>
-  </section>
+  <div class="container-sahra flex flex-col gap-16 pb-24 pt-[136px] md:gap-24 md:pt-[192px]">
+    <!-- Heading + filters -->
+    <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+      <div class="flex max-w-[612px] flex-col gap-6">
+        <p class="eyebrow">{{ heading.eyebrow }}</p>
+        <h1 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+          {{ heading.title }}
+        </h1>
+        <p class="text-body-lg text-neutral-700">{{ heading.description }}</p>
+      </div>
 
-  <!-- Search + filters -->
-  <section class="section pb-0 pt-8">
-    <div class="container-sahra flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
       <FilterChips
         v-if="categories.length > 0"
         :items="categories"
@@ -92,97 +95,171 @@ onBeforeUnmount(() => clearTimeout(debounceHandle))
         param-name="category"
         :base-path="basePath"
         :extra-params="{ q: filters.q }"
+        direction="column"
+      />
+    </div>
+
+    <!-- Featured — Figma 609:1017 -->
+    <Link
+      v-if="featured"
+      :href="featured.url"
+      class="group flex flex-col gap-8 rounded-lg bg-[#FBF9F5] p-4 lg:flex-row lg:items-center"
+    >
+      <img
+        v-if="featured.image"
+        :src="featured.image.src"
+        :srcset="featured.image.srcset"
+        :alt="featured.image.alt"
+        width="612"
+        height="459"
+        class="aspect-[612/459] w-full shrink-0 rounded-lg border border-neutral-100 object-cover shadow-card lg:w-[612px]"
       />
 
-      <label class="relative w-full max-w-xs">
-        <span class="sr-only">{{ t('common.search') }}</span>
-        <input
-          v-model="search"
-          type="search"
-          :placeholder="t('common.search')"
-          class="w-full rounded-round border border-neutral-200 px-5 py-3 text-body-md focus:border-ink"
-        />
-      </label>
-    </div>
-  </section>
-
-  <!-- Featured card — "Big insight" 1419:9265 -->
-  <section v-if="featured" class="section pb-0">
-    <div class="container-sahra">
-      <Link
-        :href="featured.url"
-        class="group grid gap-8 overflow-hidden rounded-lg border border-neutral-100 lg:grid-cols-2"
-      >
-        <div class="aspect-video w-full overflow-hidden lg:aspect-auto">
-          <img
-            v-if="featured.image"
-            :src="featured.image.src"
-            :srcset="featured.image.srcset"
-            :alt="featured.image.alt"
-            class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.06]"
-          />
-          <div v-else class="h-full w-full bg-neutral-100" />
-        </div>
-        <div class="flex flex-col justify-center p-8">
-          <p v-if="featured.category" class="text-label-md text-gold">{{ featured.category.name }}</p>
-          <h2 class="mt-2 text-title-lg text-neutral-900">{{ featured.title }}</h2>
-          <p class="mt-3 text-body-md text-neutral-600">{{ featured.excerpt }}</p>
-        </div>
-      </Link>
-    </div>
-  </section>
-
-  <!-- Post grid — "small insight" 1419:9267 -->
-  <section class="section">
-    <div class="container-sahra">
-      <p v-if="posts.data.length === 0" class="text-center text-body-lg text-neutral-500">
-        {{ filters.category || filters.q ? t('common.empty_results') : t('common.empty_posts') }}
-      </p>
-
-      <div v-else class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <Link
-          v-for="post in posts.data"
-          :key="post.slug"
-          :href="post.url"
-          class="group block overflow-hidden rounded-lg border border-neutral-100"
+      <div class="flex flex-1 flex-col gap-12">
+        <span
+          v-if="featured.category"
+          class="w-fit rounded-round bg-gold-600 px-2 py-1 text-body-md text-paper"
         >
-          <div class="aspect-video w-full overflow-hidden">
+          {{ featured.category.name }}
+        </span>
+
+        <div class="flex flex-col gap-[72px]">
+          <div class="flex flex-col gap-6">
+            <h2 class="text-[28px] font-medium text-neutral-900 md:text-[32px]">
+              {{ featured.title }}
+            </h2>
+            <p class="text-body-lg text-neutral-800">{{ featured.excerpt }}</p>
+          </div>
+
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+              <time
+                :datetime="featured.publishedAtIso"
+                class="flex items-center gap-2 text-body-md text-neutral-500"
+              >
+                <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                {{ featured.publishedAt }}
+              </time>
+              <span class="flex items-center gap-2 text-body-md text-neutral-500">
+                <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
+                {{ t('blog.reading_time', { minutes: featured.readingTime }) }}
+              </span>
+            </div>
+
+            <span class="flex items-center gap-2 text-body-lg font-medium text-neutral-900">
+              {{ t('common.read_article') }}
+              <ArrowUpRight
+                class="size-6 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 rtl:-scale-x-100"
+                :stroke-width="1.5"
+                aria-hidden="true"
+              />
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+
+    <p
+      v-if="posts.data.length === 0 && !featured"
+      class="py-16 text-center text-body-lg text-neutral-500"
+    >
+      {{ t('common.empty_posts') }}
+    </p>
+
+    <!-- Card rows — 1228:4571 (2-up) then 3-up -->
+    <template v-else>
+      <ul v-if="leadRow.length > 0" class="grid gap-6 sm:grid-cols-2">
+        <li v-for="post in leadRow" :key="post.slug">
+          <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
             <img
               v-if="post.image"
               :src="post.image.src"
               :srcset="post.image.srcset"
               :alt="post.image.alt"
-              class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.06]"
+              width="612"
+              height="400"
+              class="h-[400px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
             />
-            <div v-else class="h-full w-full bg-neutral-100" />
-          </div>
-          <div class="p-6">
-            <p v-if="post.category" class="text-label-md text-gold">{{ post.category.name }}</p>
-            <h3 class="mt-2 text-title-md text-neutral-900">{{ post.title }}</h3>
-            <p class="mt-2 text-body-md text-neutral-600">{{ post.excerpt }}</p>
-          </div>
-        </Link>
-      </div>
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center gap-4">
+                <time
+                  :datetime="post.publishedAtIso"
+                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                >
+                  <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                  {{ post.publishedAt }}
+                </time>
+                <span class="flex items-center gap-2 text-body-md text-neutral-500">
+                  <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
+                  {{ t('blog.reading_time', { minutes: post.readingTime }) }}
+                </span>
+              </div>
+              <h3 class="text-[24px] font-medium text-neutral-900 md:text-[28px]">
+                {{ post.title }}
+              </h3>
+            </div>
+          </Link>
+        </li>
+      </ul>
 
-      <!-- Pagination -->
-      <div v-if="posts.prevPageUrl || posts.nextPageUrl" class="mt-11 flex items-center justify-center gap-4">
-        <Link
-          v-if="posts.prevPageUrl"
-          :href="posts.prevPageUrl"
-          class="rounded-sm border border-neutral-200 px-6 py-3 text-label-lg text-neutral-800 hover:border-ink"
-        >
-          {{ t('common.previous') }}
-        </Link>
-        <Link
-          v-if="posts.nextPageUrl"
-          :href="posts.nextPageUrl"
-          class="rounded-sm bg-ink px-6 py-3 text-label-lg text-paper transition-opacity hover:opacity-90"
-        >
-          {{ t('common.load_more') }}
-        </Link>
-      </div>
-    </div>
-  </section>
+      <ul v-if="restRows.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <li v-for="post in restRows" :key="post.slug">
+          <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
+            <img
+              v-if="post.image"
+              :src="post.image.src"
+              :srcset="post.image.srcset"
+              :alt="post.image.alt"
+              width="400"
+              height="260"
+              class="h-[260px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
+            />
+            <div class="flex flex-col gap-4">
+              <div class="flex items-center gap-4">
+                <time
+                  :datetime="post.publishedAtIso"
+                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                >
+                  <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                  {{ post.publishedAt }}
+                </time>
+                <span class="flex items-center gap-2 text-body-md text-neutral-500">
+                  <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
+                  {{ t('blog.reading_time', { minutes: post.readingTime }) }}
+                </span>
+              </div>
+              <h3 class="text-title-lg text-neutral-900">{{ post.title }}</h3>
+            </div>
+          </Link>
+        </li>
+      </ul>
+    </template>
+
+    <!-- Pagination -->
+    <nav
+      v-if="posts.lastPage > 1"
+      class="flex items-center justify-center gap-4"
+      :aria-label="t('common.pagination')"
+    >
+      <Link
+        v-if="posts.prevPageUrl"
+        :href="posts.prevPageUrl"
+        class="rounded-sm border border-neutral-200 px-6 py-3 text-label-lg text-neutral-800 transition-colors hover:border-ink"
+      >
+        {{ t('common.previous') }}
+      </Link>
+      <span class="latin-nums text-body-md text-neutral-500">
+        {{ posts.currentPage }} / {{ posts.lastPage }}
+      </span>
+      <Link
+        v-if="posts.nextPageUrl"
+        :href="posts.nextPageUrl"
+        class="rounded-sm border border-neutral-200 px-6 py-3 text-label-lg text-neutral-800 transition-colors hover:border-ink"
+      >
+        {{ t('common.next') }}
+      </Link>
+    </nav>
+  </div>
 
   <!-- Final CTA — Figma 1419:9333 (shared component) -->
   <CtaBanner v-if="sections.final_cta" :section="sections.final_cta" />

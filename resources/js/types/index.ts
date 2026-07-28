@@ -104,13 +104,14 @@ export interface ProjectSummary {
   excerpt: string
   industry: string
   url: string
+  /** Listing cards reveal these on hover — Figma "project detail" 553:921. */
+  services: string[]
   image: MediaImage | null
 }
 
 export interface ProjectDetail extends ProjectSummary {
   year: string | null
   instagram: string | null
-  services: string[]
   challenge: string
   challengePoints: string[]
   goals: CardItem[]
@@ -147,7 +148,10 @@ export interface PostSummary {
   title: string
   excerpt: string
   url: string
+  /** Already formatted for the active locale — see ContentTransformer. */
   publishedAt: string
+  /** ISO 8601, for <time datetime>. */
+  publishedAtIso: string
   readingTime: number
   category: { slug: string; name: string } | null
   image: MediaImage | null

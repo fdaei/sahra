@@ -24,8 +24,13 @@ const announcement = computed(() => flash.value.success ?? flash.value.error ?? 
 <template>
   <AppHeader />
 
-  <!-- Header is fixed; offset main by its height so content is not hidden. -->
-  <main id="main" class="min-h-screen-safe pt-24 lg:pt-26">
+  <!--
+    The header is a fixed, translucent overlay in every Figma frame — the hero
+    image on Home runs to y=0 behind it (1419:9193 is 1440×904 at 0,0). So
+    `main` carries no header offset; each page's first section reproduces the
+    top inset its frame specifies (Home 176, listing pages 192).
+  -->
+  <main id="main" class="min-h-screen-safe">
     <Transition
       mode="out-in"
       enter-active-class="transition-[opacity,transform] duration-300 ease-brand"

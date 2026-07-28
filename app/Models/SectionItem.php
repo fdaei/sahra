@@ -30,8 +30,13 @@ final class SectionItem extends Model
     /** @var array<int, string> */
     protected array $translatable = [
         'value',
+        'label',
+        'suffix',
         'title',
         'description',
+        'badge',
+        'features',
+        'footer',
         'image_alt',
     ];
 

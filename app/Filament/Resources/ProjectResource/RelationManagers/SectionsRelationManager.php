@@ -170,6 +170,16 @@ final class SectionsRelationManager extends RelationManager
                             ->maxLength(50)
                             ->helperText('Short display value: "+70k", "+189%", "01".'),
 
+                        TextInput::make("translations.{$locale}.label")
+                            ->label('Value label')
+                            ->maxLength(100)
+                            ->helperText('Packages: e.g. "Starts From".'),
+
+                        TextInput::make("translations.{$locale}.suffix")
+                            ->label('Value suffix')
+                            ->maxLength(100)
+                            ->helperText('Packages: e.g. "OMR / 1 Month".'),
+
                         TextInput::make("translations.{$locale}.title")
                             ->label('Title')
                             ->maxLength(200),
@@ -177,6 +187,30 @@ final class SectionsRelationManager extends RelationManager
                         Textarea::make("translations.{$locale}.description")
                             ->label('Description')
                             ->rows(2),
+
+                        TextInput::make("translations.{$locale}.badge")
+                            ->label('Badge')
+                            ->maxLength(100)
+                            ->helperText('Optional package badge, e.g. "Most Popular".'),
+
+                        Textarea::make("translations.{$locale}.features")
+                            ->label('Features')
+                            ->rows(5)
+                            ->formatStateUsing(fn ($state): string => is_array($state)
+                                ? implode("\n", $state)
+                                : (string) $state)
+                            ->dehydrateStateUsing(fn (?string $state): array => collect(
+                                preg_split('/\r\n|\r|\n/', (string) $state),
+                            )->map(fn (string $feature): string => trim($feature))
+                                ->filter()
+                                ->values()
+                                ->all())
+                            ->helperText('One package feature per line.'),
+
+                        TextInput::make("translations.{$locale}.footer")
+                            ->label('Footer note')
+                            ->maxLength(200)
+                            ->helperText('Packages: e.g. "Best for growing brands".'),
                     ]),
 
                     TextInput::make('icon')

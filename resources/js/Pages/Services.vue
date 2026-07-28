@@ -35,7 +35,7 @@ defineProps<{
   <SeoHead :meta="seo" />
 
   <!-- Services heading — Figma "Main title & tag" 1363:7520 -->
-  <section class="section pb-0">
+  <section class="section section-first pb-0">
     <div class="container-sahra max-w-2xl text-center mx-auto">
       <div class="eyebrow justify-center">{{ heading.eyebrow }}</div>
       <h1 class="text-display-md">{{ heading.title }}</h1>

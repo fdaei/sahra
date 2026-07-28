@@ -26,7 +26,6 @@ const open = defineModel<boolean>('open', { default: false })
 const page = usePage<SharedProps>()
 const { t } = useTranslations()
 
-const panel = ref<HTMLElement | null>(null)
 const closeButton = ref<HTMLButtonElement | null>(null)
 
 const scrollLocked = useScrollLock(
@@ -82,7 +81,6 @@ watch(
     >
       <div
         v-if="open"
-        ref="panel"
         role="dialog"
         aria-modal="true"
         :aria-label="t('common.primary_navigation')"

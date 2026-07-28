@@ -43,7 +43,7 @@ const homeUrl = computed(() => `/${page.props.locale.current}`)
     }"
   />
 
-  <section class="section">
+  <section class="section section-first">
     <div class="container-sahra flex flex-col items-center text-center">
       <!-- Decorative status glyph. The real 404 artwork is an exported asset;
            for other codes we render the numeral in the same treatment. -->

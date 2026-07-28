@@ -1,20 +1,33 @@
 <script setup lang="ts">
 /**
- * Filter chip row — Figma "Filters" 1363:7500. Used on Work/Index (industry)
- * and Insights/Index (category): an "All" chip plus one per item, driving a
- * GET query param. Preserves any other query params via `extraParams` and
- * always drops `page` so a filter change resets pagination.
+ * Filter list — Figma "Filters" component set 542:858.
+ *
+ * The design is a plain text list, not a chip row: an "All" entry plus one
+ * per item, driving a GET query param.
+ *   selected  Poppins Regular 18 / black-1000   (542:857)
+ *   default   Poppins Regular 16 / black-500    (542:859)
+ *
+ * `direction` picks the arrangement the frame uses:
+ *   'column'  Work index 542:871 — vertical stack, gap 16, beside the heading
+ *   'row'     wraps horizontally where the frame lays the same list out inline
+ *
+ * Preserves any other query params via `extraParams` and always drops `page`
+ * so a filter change resets pagination.
  */
 import { Link } from '@inertiajs/vue3'
 import { useTranslations } from '@/Composables/useTranslations'
 
-const props = defineProps<{
-  items: { slug: string; name: string }[]
-  active: string | null
-  paramName: string
-  basePath: string
-  extraParams?: Record<string, string | null>
-}>()
+const props = withDefaults(
+  defineProps<{
+    items: { slug: string; name: string }[]
+    active: string | null
+    paramName: string
+    basePath: string
+    extraParams?: Record<string, string | null>
+    direction?: 'row' | 'column'
+  }>(),
+  { direction: 'column' },
+)
 
 const { t } = useTranslations()
 
@@ -30,16 +43,25 @@ function hrefFor(slug: string | null): string {
   const query = params.toString()
   return query ? `${props.basePath}?${query}` : props.basePath
 }
+
+function classesFor(slug: string | null): string {
+  return props.active === slug
+    ? 'text-[18px] text-neutral-1000'
+    : 'text-[16px] text-neutral-500 hover:text-neutral-800'
+}
 </script>
 
 <template>
-  <div class="flex flex-wrap gap-3" role="group">
+  <div
+    role="group"
+    class="flex gap-4"
+    :class="direction === 'column' ? 'flex-col' : 'flex-wrap items-center gap-x-8'"
+  >
     <Link
       :href="hrefFor(null)"
-      class="rounded-round border px-6 py-3 text-label-lg transition-colors"
-      :class="active === null
-        ? 'border-ink bg-ink text-paper'
-        : 'border-neutral-200 text-neutral-800 hover:border-ink'"
+      :class="classesFor(null)"
+      class="w-fit rounded-xs transition-colors"
+      :aria-current="active === null ? 'true' : undefined"
     >
       {{ t('common.all') }}
     </Link>
@@ -48,10 +70,9 @@ function hrefFor(slug: string | null): string {
       v-for="item in items"
       :key="item.slug"
       :href="hrefFor(item.slug)"
-      class="rounded-round border px-6 py-3 text-label-lg transition-colors"
-      :class="active === item.slug
-        ? 'border-ink bg-ink text-paper'
-        : 'border-neutral-200 text-neutral-800 hover:border-ink'"
+      :class="classesFor(item.slug)"
+      class="w-fit rounded-xs transition-colors"
+      :aria-current="active === item.slug ? 'true' : undefined"
     >
       {{ item.name }}
     </Link>

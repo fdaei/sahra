@@ -17,6 +17,7 @@ return [
     'back'                => 'بازگشت',
     'next'                => 'بعدی',
     'previous'            => 'قبلی',
+    'pagination'          => 'صفحه‌بندی',
     'all'                 => 'همه',
     'search'              => 'جستجو',
     'loading'             => 'در حال بارگذاری…',

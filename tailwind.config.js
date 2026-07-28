@@ -116,8 +116,11 @@ export default {
       },
 
       maxWidth: {
-        // Figma desktop container: 1248 inside a 1440 frame
+        // Figma desktop content track: 1248 …
         container: '1248px',
+        // … inside a 1440 frame. `.container-sahra` caps on the frame and
+        // subtracts the 96 gutter as padding, which yields the 1248 track.
+        frame: '1440px',
       },
 
       boxShadow: {

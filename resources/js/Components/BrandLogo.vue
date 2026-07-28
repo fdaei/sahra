@@ -6,12 +6,10 @@
  * a gold mark (158:157) and the "SAHRA / See the HORIZON" wordmark (158:168),
  * inside the Header component (1419:9339).
  *
- * Asset status: exported directly from Figma via download_assets (flattened,
- * single-file SVG per variant — not the 21 individual vector fragments).
- * These are Figma's temporary CDN URLs (~7 day expiry, see
- * docs/ASSET-MANIFEST.md §1) — swap for the locally-saved files at
- * resources/images/branding/ once exported through the Figma UI or the
- * asset-export script for a permanent copy.
+ * Assets are stored locally so the production header does not depend on
+ * Figma's short-lived MCP URLs. The full lockup is cropped losslessly from
+ * the 1440×104 Header export at its native 140×56 size; the mark is Figma's
+ * direct SVG export.
  */
 withDefaults(
   defineProps<{
@@ -26,15 +24,15 @@ withDefaults(
   },
 )
 
-// Figma export URLs (download_assets, 2026-07-23). Temporary — see note above.
 const sources = {
-  full: 'https://www.figma.com/api/mcp/asset/c30a0d3b-9ff2-4e47-afdb-12bbedd96924',
-  mark: 'https://www.figma.com/api/mcp/asset/fb56072f-9d01-45bc-b535-8238cc549766',
+  // Vector export of Figma 158:156 — the mark is 13 paths, never rasterise it.
+  full: '/icons/sahra/logo-full.svg',
+  mark: '/icons/sahra/logo-mark.svg',
 } as const
 
-/** Intrinsic ratio measured from the Figma header instance (140×56). */
+/** Intrinsic ratio of the exported artwork (logo-full.svg is 212×91). */
 const ratios = {
-  full: 140 / 56,
+  full: 212 / 91,
   mark: 1,
 } as const
 </script>

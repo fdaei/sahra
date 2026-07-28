@@ -72,6 +72,7 @@ final class PageSeeder extends Seeder
                 'secondary_cta_url' => '/contact',
                 'image_alt' => 'Golden desert dunes meeting the horizon at sunrise',
                 'content' => 'marketing systems',
+                'description' => 'for brands ready to grow',
             ],
             'fa' => [
                 'eyebrow' => 'آژانس بازاریابی دیجیتال در مسقط',
@@ -83,6 +84,7 @@ final class PageSeeder extends Seeder
                 'secondary_cta_url' => '/contact',
                 'image_alt' => 'تپه‌های طلایی کویر در افق هنگام طلوع',
                 'content' => 'سیستم‌های بازاریابی',
+                'description' => 'برای برندهای آماده رشد',
             ],
             'ar' => [
                 'eyebrow' => 'وكالة تسويق رقمي في مسقط',
@@ -94,6 +96,7 @@ final class PageSeeder extends Seeder
                 'secondary_cta_url' => '/contact',
                 'image_alt' => 'كثبان رملية ذهبية عند الأفق وقت الشروق',
                 'content' => 'أنظمة التسويق',
+                'description' => 'للعلامات المستعدة للنمو',
             ],
         ]);
 
@@ -104,37 +107,89 @@ final class PageSeeder extends Seeder
             'ar' => ['title' => 'نتائج تتراكم'],
         ]);
 
+        // Card copy is the literal text of 1419:9319 / 9320 / 9321 — value
+        // (Poppins Medium 32), gold label (Medium 18), grey note (Regular 14).
         $this->items($kpi, [
             [
-                'en' => ['value' => '+70k', 'title' => 'Followers Gained from a Single Reel'],
-                'fa' => ['value' => '+۷۰ هزار', 'title' => 'دنبال‌کننده از یک ریلز'],
-                'ar' => ['value' => '+70k', 'title' => 'متابع من مقطع واحد'],
+                'en' => [
+                    'value' => '+70K',
+                    'title' => 'Audience Growth',
+                    'description' => 'Followers gained from one reel',
+                ],
+                'fa' => [
+                    'value' => '+۷۰ هزار',
+                    'title' => 'رشد مخاطب',
+                    'description' => 'دنبال‌کننده به‌دست‌آمده از یک ریلز',
+                ],
+                'ar' => [
+                    'value' => '+70K',
+                    'title' => 'نمو الجمهور',
+                    'description' => 'متابعون من مقطع واحد',
+                ],
             ],
             [
-                'en' => ['value' => '+40', 'title' => 'Brands Supported'],
-                'fa' => ['value' => '+۴۰', 'title' => 'برند پشتیبانی‌شده'],
-                'ar' => ['value' => '+40', 'title' => 'علامة تجارية مدعومة'],
+                'en' => [
+                    'value' => '+40%',
+                    'title' => 'Engagement Lift',
+                    'description' => 'Average growth after strategy refresh',
+                ],
+                'fa' => [
+                    'value' => '+۴۰٪',
+                    'title' => 'افزایش تعامل',
+                    'description' => 'میانگین رشد پس از بازنگری استراتژی',
+                ],
+                'ar' => [
+                    'value' => '+40%',
+                    'title' => 'ارتفاع التفاعل',
+                    'description' => 'متوسط النمو بعد تحديث الاستراتيجية',
+                ],
             ],
             [
-                'en' => ['value' => '+250', 'title' => 'Projects Delivered'],
-                'fa' => ['value' => '+۲۵۰', 'title' => 'پروژه تحویل‌شده'],
-                'ar' => ['value' => '+250', 'title' => 'مشروع منجز'],
+                'en' => [
+                    'value' => '+90%',
+                    'title' => 'Client Retention',
+                    'description' => 'Across monthly marketing plans',
+                ],
+                'fa' => [
+                    'value' => '+۹۰٪',
+                    'title' => 'حفظ مشتری',
+                    'description' => 'در طرح‌های ماهانه بازاریابی',
+                ],
+                'ar' => [
+                    'value' => '+90%',
+                    'title' => 'الاحتفاظ بالعملاء',
+                    'description' => 'ضمن خطط التسويق الشهرية',
+                ],
             ],
         ]);
 
-        // Trust proof — 1419:9205
+        // Trust proof — 1419:9205. Figma sets the heading as three runs:
+        // "Trusted by " (22 / black-600) + "+50" (28 / black-900) + " brands".
+        // Stored as three fields so the emphasis survives translation.
         $this->section($page, SectionType::TrustProof, 2, [
-            'en' => ['title' => 'Trusted by brands across Oman and beyond'],
-            'fa' => ['title' => 'مورد اعتماد برندها در عمان و فراتر از آن'],
-            'ar' => ['title' => 'موضع ثقة علامات تجارية في عُمان وخارجها'],
+            'en' => [
+                'title' => 'Trusted by',
+                'content' => '+50',
+                'subtitle' => 'brands',
+            ],
+            'fa' => [
+                'title' => 'مورد اعتماد',
+                'content' => '+۵۰',
+                'subtitle' => 'برند',
+            ],
+            'ar' => [
+                'title' => 'موضع ثقة',
+                'content' => '+50',
+                'subtitle' => 'علامة تجارية',
+            ],
         ]);
 
         // Services cloud — 1419:9279
         $this->section($page, SectionType::ServicesCloud, 3, [
             'en' => [
-                'eyebrow' => 'Our services',
-                'title' => 'Four systems, one direction',
-                'description' => 'Everything we do is built to give your brand clarity, structure, and long-term direction.',
+                'eyebrow' => 'Our Services',
+                'title' => 'A Connected System for Brand Growth',
+                'description' => 'From strategy and identity to content and campaigns, Sahra brings every part of your marketing into one clear direction',
             ],
             'fa' => [
                 'eyebrow' => 'خدمات ما',
@@ -151,16 +206,22 @@ final class PageSeeder extends Seeder
         // Lead magnet — 1419:9322
         $this->section($page, SectionType::LeadMagnet, 4, [
             'en' => [
-                'title' => 'Download our free marketing checklist for businesses in Oman.',
+                'title' => 'Is your content really directed or just consistent?',
+                'description' => 'Get the Content Direction Checklist and evaluate your brand system.',
                 'primary_cta_label' => 'Get checklist',
+                'primary_cta_url' => '/contact',
             ],
             'fa' => [
-                'title' => 'چک‌لیست رایگان بازاریابی ما را برای کسب‌وکارها در عمان دریافت کنید.',
+                'title' => 'آیا محتوای شما واقعاً جهت‌مند است یا فقط منظم؟',
+                'description' => 'چک‌لیست جهت‌گیری محتوا را دریافت و سیستم برند خود را ارزیابی کنید.',
                 'primary_cta_label' => 'دریافت چک‌لیست',
+                'primary_cta_url' => '/contact',
             ],
             'ar' => [
-                'title' => 'حمّل قائمة التسويق المجانية للشركات في عُمان.',
+                'title' => 'هل محتواك موجّه فعلاً أم أنه منتظم فقط؟',
+                'description' => 'احصل على قائمة توجيه المحتوى وقيّم نظام علامتك التجارية.',
                 'primary_cta_label' => 'احصل على القائمة',
+                'primary_cta_url' => '/contact',
             ],
         ]);
 
@@ -169,18 +230,21 @@ final class PageSeeder extends Seeder
             'en' => [
                 'eyebrow' => 'Our Projects',
                 'title' => 'Where Strategy Becomes Visible',
+                'subtitle' => 'A collection of brand, content, and marketing design projects created to help businesses communicate with clarity and grow with direction',
                 'primary_cta_label' => 'View all work',
                 'primary_cta_url' => '/work',
             ],
             'fa' => [
                 'eyebrow' => 'پروژه‌های ما',
                 'title' => 'جایی که استراتژی دیده می‌شود',
+                'subtitle' => 'مجموعه‌ای از پروژه‌های برند، محتوا و طراحی بازاریابی برای کمک به کسب‌وکارها تا شفاف‌تر ارتباط برقرار کنند و هدفمند رشد کنند.',
                 'primary_cta_label' => 'مشاهده همه نمونه‌کارها',
                 'primary_cta_url' => '/work',
             ],
             'ar' => [
                 'eyebrow' => 'مشاريعنا',
                 'title' => 'حيث تصبح الاستراتيجية مرئية',
+                'subtitle' => 'مجموعة من مشاريع العلامة والمحتوى والتصميم التسويقي لمساعدة الشركات على التواصل بوضوح والنمو باتجاه هادف.',
                 'primary_cta_label' => 'شاهد كل الأعمال',
                 'primary_cta_url' => '/work',
             ],
@@ -188,57 +252,176 @@ final class PageSeeder extends Seeder
 
         // Process — 1419:9302
         $process = $this->section($page, SectionType::Process, 6, [
-            'en' => ['eyebrow' => 'How we work', 'title' => 'A process built on clarity'],
-            'fa' => ['eyebrow' => 'روش کار ما', 'title' => 'فرایندی بر پایه شفافیت'],
-            'ar' => ['eyebrow' => 'كيف نعمل', 'title' => 'عملية مبنية على الوضوح'],
+            'en' => [
+                'eyebrow' => 'Our Process',
+                'title' => 'A Clear Path to Brand Growth',
+                'subtitle' => 'Our process keeps every project clear, structured, and aligned with your brand’s real needs.',
+            ],
+            'fa' => [
+                'eyebrow' => 'فرایند ما',
+                'title' => 'مسیری روشن برای رشد برند',
+                'subtitle' => 'فرایند ما هر پروژه را شفاف، ساختاریافته و هم‌راستا با نیازهای واقعی برند شما نگه می‌دارد.',
+            ],
+            'ar' => [
+                'eyebrow' => 'عمليتنا',
+                'title' => 'مسار واضح لنمو العلامة',
+                'subtitle' => 'تحافظ عمليتنا على وضوح كل مشروع وتنظيمه وتوافقه مع الاحتياجات الحقيقية لعلامتك.',
+            ],
         ]);
 
         $this->items($process, [
             [
-                'en' => ['value' => '01', 'title' => 'Discovery', 'description' => 'Understanding your business, audience, and goals.'],
-                'fa' => ['value' => '۰۱', 'title' => 'کشف', 'description' => 'درک کسب‌وکار، مخاطب و اهداف شما.'],
-                'ar' => ['value' => '01', 'title' => 'الاكتشاف', 'description' => 'فهم عملك وجمهورك وأهدافك.'],
+                '_icon' => 'discovery',
+                'en' => ['value' => '01', 'title' => 'Discovery & Brand Review', 'description' => 'Deep analysis of your brand, audience, and market position'],
+                'fa' => ['value' => '۰۱', 'title' => 'کشف و بررسی برند', 'description' => 'تحلیل عمیق برند، مخاطب و جایگاه شما در بازار'],
+                'ar' => ['value' => '01', 'title' => 'اكتشاف ومراجعة العلامة', 'description' => 'تحليل عميق لعلامتك وجمهورك وموقعك في السوق'],
             ],
             [
-                'en' => ['value' => '02', 'title' => 'Direction', 'description' => 'Defining the strategic foundation before any design begins.'],
-                'fa' => ['value' => '۰۲', 'title' => 'جهت‌گیری', 'description' => 'تعیین بنیان استراتژیک پیش از شروع طراحی.'],
-                'ar' => ['value' => '02', 'title' => 'الاتجاه', 'description' => 'تحديد الأساس الاستراتيجي قبل بدء التصميم.'],
+                '_icon' => 'strategy',
+                'en' => ['value' => '02', 'title' => 'Strategy & Content Plan', 'description' => 'Custom content plans focused on consistency and growth'],
+                'fa' => ['value' => '۰۲', 'title' => 'استراتژی و برنامه محتوا', 'description' => 'برنامه‌های محتوایی اختصاصی با تمرکز بر ثبات و رشد'],
+                'ar' => ['value' => '02', 'title' => 'الاستراتيجية وخطة المحتوى', 'description' => 'خطط محتوى مخصصة تركز على الاتساق والنمو'],
             ],
             [
-                'en' => ['value' => '03', 'title' => 'System', 'description' => 'Building reusable visual and content rules.'],
-                'fa' => ['value' => '۰۳', 'title' => 'سیستم', 'description' => 'ساخت قواعد بصری و محتوایی قابل استفاده مجدد.'],
-                'ar' => ['value' => '03', 'title' => 'النظام', 'description' => 'بناء قواعد بصرية ومحتوى قابلة لإعادة الاستخدام.'],
+                '_icon' => 'production',
+                'en' => ['value' => '03', 'title' => 'Design & Production', 'description' => 'High-quality visuals aligned with your brand'],
+                'fa' => ['value' => '۰۳', 'title' => 'طراحی و تولید', 'description' => 'تصاویر باکیفیت و هم‌راستا با برند شما'],
+                'ar' => ['value' => '03', 'title' => 'التصميم والإنتاج', 'description' => 'مرئيات عالية الجودة ومتوافقة مع علامتك'],
             ],
             [
-                'en' => ['value' => '04', 'title' => 'Production', 'description' => 'Creating content that fits the system, not the trend.'],
-                'fa' => ['value' => '۰۴', 'title' => 'تولید', 'description' => 'ساخت محتوایی که با سیستم هماهنگ است، نه با ترند.'],
-                'ar' => ['value' => '04', 'title' => 'الإنتاج', 'description' => 'إنشاء محتوى يناسب النظام لا الموضة.'],
+                '_icon' => 'approval',
+                'en' => ['value' => '04', 'title' => 'Review & Approval', 'description' => 'Review and refine all content before it goes live'],
+                'fa' => ['value' => '۰۴', 'title' => 'بازبینی و تأیید', 'description' => 'بازبینی و اصلاح تمام محتوا پیش از انتشار'],
+                'ar' => ['value' => '04', 'title' => 'المراجعة والموافقة', 'description' => 'مراجعة وتحسين كل المحتوى قبل نشره'],
             ],
             [
-                'en' => ['value' => '05', 'title' => 'Publishing', 'description' => 'A consistent rhythm across every platform.'],
-                'fa' => ['value' => '۰۵', 'title' => 'انتشار', 'description' => 'ریتمی یکنواخت در همه پلتفرم‌ها.'],
-                'ar' => ['value' => '05', 'title' => 'النشر', 'description' => 'إيقاع ثابت عبر كل المنصات.'],
+                '_icon' => 'publishing',
+                'en' => ['value' => '05', 'title' => 'Publishing & Management', 'description' => 'Professional scheduling and active platform management'],
+                'fa' => ['value' => '۰۵', 'title' => 'انتشار و مدیریت', 'description' => 'زمان‌بندی حرفه‌ای و مدیریت فعال پلتفرم‌ها'],
+                'ar' => ['value' => '05', 'title' => 'النشر والإدارة', 'description' => 'جدولة احترافية وإدارة فعالة للمنصات'],
             ],
             [
-                'en' => ['value' => '06', 'title' => 'Growth', 'description' => 'Measuring, refining, and compounding results.'],
-                'fa' => ['value' => '۰۶', 'title' => 'رشد', 'description' => 'سنجش، اصلاح و انباشت نتایج.'],
-                'ar' => ['value' => '06', 'title' => 'النمو', 'description' => 'القياس والتحسين ومراكمة النتائج.'],
+                '_icon' => 'optimization',
+                'en' => ['value' => '06', 'title' => 'Reporting & Optimization', 'description' => 'Performance tracking and data-driven optimization'],
+                'fa' => ['value' => '۰۶', 'title' => 'گزارش‌دهی و بهینه‌سازی', 'description' => 'پایش عملکرد و بهینه‌سازی داده‌محور'],
+                'ar' => ['value' => '06', 'title' => 'التقارير والتحسين', 'description' => 'تتبع الأداء والتحسين القائم على البيانات'],
             ],
         ]);
 
-        // Packages — 1419:9323. Empty in the design (audit gap G4): seeded
-        // hidden so an editor can populate it without a code change.
-        $this->section($page, SectionType::Packages, 7, [
-            'en' => ['title' => 'Packages'],
-            'fa' => ['title' => 'بسته‌ها'],
-            'ar' => ['title' => 'الباقات'],
-        ], visible: false);
+        // Packages — 1419:9323
+        $packages = $this->section($page, SectionType::Packages, 7, [
+            'en' => [
+                'eyebrow' => 'Our Packages',
+                'title' => 'Packages Built for Brand Growth',
+                'subtitle' => 'Three focused packages designed for different business needs, growth stages, and levels of support.',
+                'content' => 'Need help choosing the right package?',
+                'description' => 'Let’s talk about your goals and find the best solution for your brand.',
+                'primary_cta_label' => 'Contact Us',
+                'primary_cta_url' => '/contact',
+            ],
+            'fa' => [
+                'eyebrow' => 'پکیج‌های ما',
+                'title' => 'پکیج‌هایی برای رشد برند',
+                'subtitle' => 'سه پکیج هدفمند برای نیازها، مراحل رشد و سطوح پشتیبانی متفاوت.',
+                'content' => 'برای انتخاب پکیج مناسب کمک می‌خواهید؟',
+                'description' => 'درباره اهدافتان صحبت کنیم و بهترین راهکار را برای برند شما پیدا کنیم.',
+                'primary_cta_label' => 'تماس با ما',
+                'primary_cta_url' => '/contact',
+            ],
+            'ar' => [
+                'eyebrow' => 'باقاتنا',
+                'title' => 'باقات مصممة لنمو العلامة',
+                'subtitle' => 'ثلاث باقات مركزة لاحتياجات ومراحل نمو ومستويات دعم مختلفة.',
+                'content' => 'هل تحتاج مساعدة في اختيار الباقة المناسبة؟',
+                'description' => 'لنتحدث عن أهدافك ونجد أفضل حل لعلامتك.',
+                'primary_cta_label' => 'تواصل معنا',
+                'primary_cta_url' => '/contact',
+            ],
+        ]);
+
+        $this->items($packages, [
+            [
+                'en' => [
+                    'title' => 'Sahra Essential', 'label' => 'Starts From', 'value' => '199',
+                    'suffix' => 'OMR / 1 Month', 'description' => 'A clear foundation for your brand presence',
+                    'features' => ['Content Planning', 'Visual Direction', 'Social Media Support', 'Monthly Execution'],
+                    'footer' => 'Best for small businesses',
+                ],
+                'fa' => [
+                    'title' => 'صحرا اسنشال', 'label' => 'شروع از', 'value' => '۱۹۹',
+                    'suffix' => 'ریال عمان / ۱ ماه', 'description' => 'پایه‌ای شفاف برای حضور برند شما',
+                    'features' => ['برنامه‌ریزی محتوا', 'جهت‌گیری بصری', 'پشتیبانی شبکه‌های اجتماعی', 'اجرای ماهانه'],
+                    'footer' => 'مناسب کسب‌وکارهای کوچک',
+                ],
+                'ar' => [
+                    'title' => 'صحراء الأساسية', 'label' => 'تبدأ من', 'value' => '199',
+                    'suffix' => 'ر.ع / شهر واحد', 'description' => 'أساس واضح لحضور علامتك',
+                    'features' => ['تخطيط المحتوى', 'التوجيه البصري', 'دعم وسائل التواصل', 'التنفيذ الشهري'],
+                    'footer' => 'الأفضل للشركات الصغيرة',
+                ],
+            ],
+            [
+                'en' => [
+                    'title' => 'Sahra Growth', 'label' => 'Starts From', 'value' => '499',
+                    'suffix' => 'OMR / 1 Month', 'description' => 'A structured approach to build and grow your presence',
+                    'badge' => 'Most Popular',
+                    'features' => ['Content Strategy', 'Brand-Aligned Content', 'Campaign Support', 'Performance Optimization'],
+                    'footer' => 'Best for growing brands',
+                ],
+                'fa' => [
+                    'title' => 'صحرا گروث', 'label' => 'شروع از', 'value' => '۴۹۹',
+                    'suffix' => 'ریال عمان / ۱ ماه', 'description' => 'رویکردی ساختاریافته برای ساخت و رشد حضور برند',
+                    'badge' => 'محبوب‌ترین',
+                    'features' => ['استراتژی محتوا', 'محتوای هم‌راستا با برند', 'پشتیبانی کمپین', 'بهینه‌سازی عملکرد'],
+                    'footer' => 'مناسب برندهای در حال رشد',
+                ],
+                'ar' => [
+                    'title' => 'صحراء للنمو', 'label' => 'تبدأ من', 'value' => '499',
+                    'suffix' => 'ر.ع / شهر واحد', 'description' => 'نهج منظم لبناء حضورك وتنميته',
+                    'badge' => 'الأكثر شعبية',
+                    'features' => ['استراتيجية المحتوى', 'محتوى متوافق مع العلامة', 'دعم الحملات', 'تحسين الأداء'],
+                    'footer' => 'الأفضل للعلامات النامية',
+                ],
+            ],
+            [
+                'en' => [
+                    'title' => 'Sahra Horizon', 'label' => 'Starts From', 'value' => '749',
+                    'suffix' => 'OMR / 1 Month', 'description' => 'A complete partnership for brand growth',
+                    'features' => ['Full Marketing Strategy', 'Brand Development', 'Campaign Planning', 'Continuous Optimization'],
+                    'footer' => 'Best for scaling brands',
+                ],
+                'fa' => [
+                    'title' => 'صحرا هورایزن', 'label' => 'شروع از', 'value' => '۷۴۹',
+                    'suffix' => 'ریال عمان / ۱ ماه', 'description' => 'همکاری کامل برای رشد برند',
+                    'features' => ['استراتژی کامل بازاریابی', 'توسعه برند', 'برنامه‌ریزی کمپین', 'بهینه‌سازی مستمر'],
+                    'footer' => 'مناسب برندهای مقیاس‌پذیر',
+                ],
+                'ar' => [
+                    'title' => 'صحراء الأفق', 'label' => 'تبدأ من', 'value' => '749',
+                    'suffix' => 'ر.ع / شهر واحد', 'description' => 'شراكة متكاملة لنمو العلامة',
+                    'features' => ['استراتيجية تسويق كاملة', 'تطوير العلامة', 'تخطيط الحملات', 'تحسين مستمر'],
+                    'footer' => 'الأفضل للعلامات المتوسعة',
+                ],
+            ],
+        ]);
 
         // Why us — 1419:9230
         $why = $this->section($page, SectionType::WhyUs, 8, [
-            'en' => ['eyebrow' => 'Why Sahra', 'title' => 'Why brands choose to work with us'],
-            'fa' => ['eyebrow' => 'چرا صحرا', 'title' => 'چرا برندها ما را انتخاب می‌کنند'],
-            'ar' => ['eyebrow' => 'لماذا صحراء', 'title' => 'لماذا تختار العلامات التجارية العمل معنا'],
+            'en' => [
+                'eyebrow' => 'Why us',
+                'title' => 'Why brands choose Sahra',
+                'subtitle' => 'Because every creative decision is built around brand clarity, consistency, and growth.',
+            ],
+            'fa' => [
+                'eyebrow' => 'چرا ما',
+                'title' => 'چرا برندها صحرا را انتخاب می‌کنند',
+                'subtitle' => 'زیرا هر تصمیم خلاقانه بر پایه شفافیت برند، انسجام و رشد شکل می‌گیرد.',
+            ],
+            'ar' => [
+                'eyebrow' => 'لماذا نحن',
+                'title' => 'لماذا تختار العلامات التجارية صحراء',
+                'subtitle' => 'لأن كل قرار إبداعي يُبنى حول وضوح العلامة واتساقها ونموها.',
+            ],
         ]);
 
         $this->items($why, [
@@ -539,32 +722,233 @@ final class PageSeeder extends Seeder
         $this->page('privacy-policy', [
             'en' => [
                 'title' => 'Privacy Policy',
-                'content' => '<p>Sahra collects and uses information you share with us — such as your name, brand, phone number, and message — solely to understand your business needs and respond to your enquiry. We do not sell or share your personal information with third parties for marketing purposes.</p><p>Information submitted through our contact forms is stored securely and used only by our team to follow up on your request. You may ask us at any time to review, update, or delete the information we hold about you by reaching out through our contact details.</p><p>We may use cookies and similar technologies to understand how visitors use our website and to improve our services. You can control cookie preferences through your browser settings.</p><p>This policy may be updated from time to time to reflect changes in our practices. Continued use of our website after changes indicates your acceptance of the updated policy.</p>',
+                'subtitle' => 'At Sahra Marketing, we respect your privacy and are committed to protecting the personal information you share with us through our website',
+                'content' => $this->privacyBody('en'),
             ],
             'fa' => [
                 'title' => 'حریم خصوصی',
-                'content' => '<p>صحرا اطلاعاتی را که با ما به اشتراک می‌گذارید — مانند نام، برند، شماره تماس و پیام شما — تنها برای درک نیازهای کسب‌وکارتان و پاسخ به درخواستتان جمع‌آوری و استفاده می‌کند. ما اطلاعات شخصی شما را برای مقاصد بازاریابی به اشخاص ثالث نمی‌فروشیم و به اشتراک نمی‌گذاریم.</p><p>اطلاعات ارسالی از طریق فرم‌های تماس به‌صورت امن ذخیره می‌شود و تنها توسط تیم ما برای پیگیری درخواست شما استفاده می‌گردد. شما می‌توانید در هر زمان از طریق اطلاعات تماس ما، بازبینی، به‌روزرسانی یا حذف اطلاعات خود را درخواست کنید.</p><p>ممکن است از کوکی‌ها و فناوری‌های مشابه برای درک نحوه استفاده بازدیدکنندگان از وب‌سایت و بهبود خدمات استفاده کنیم. تنظیمات کوکی را می‌توانید از طریق مرورگر خود کنترل کنید.</p><p>این سیاست ممکن است هر از گاهی به‌روزرسانی شود. ادامه استفاده از وب‌سایت پس از تغییرات به معنای پذیرش سیاست به‌روزشده است.</p>',
+                'subtitle' => 'در صحرا مارکتینگ به حریم خصوصی شما احترام می‌گذاریم و متعهد به حفاظت از اطلاعات شخصی‌ای هستیم که از طریق وب‌سایت با ما به اشتراک می‌گذارید.',
+                'content' => $this->privacyBody('fa'),
             ],
             'ar' => [
                 'title' => 'سياسة الخصوصية',
-                'content' => '<p>تجمع صحراء المعلومات التي تشاركها معنا — مثل اسمك وعلامتك ورقم هاتفك ورسالتك — لغرض فهم احتياجات عملك والرد على استفسارك فقط. نحن لا نبيع معلوماتك الشخصية أو نشاركها مع أطراف ثالثة لأغراض تسويقية.</p><p>تُحفظ المعلومات المرسلة عبر نماذج الاتصال بشكل آمن ويستخدمها فريقنا فقط لمتابعة طلبك. يمكنك في أي وقت أن تطلب مراجعة أو تحديث أو حذف المعلومات التي نحتفظ بها عنك عبر بيانات الاتصال الخاصة بنا.</p><p>قد نستخدم ملفات تعريف الارتباط وتقنيات مشابهة لفهم كيفية استخدام الزوار لموقعنا وتحسين خدماتنا. يمكنك التحكم في تفضيلات الكوكيز من إعدادات متصفحك.</p><p>قد تُحدَّث هذه السياسة من حين لآخر. استمرارك في استخدام الموقع بعد التغييرات يعني قبولك للسياسة المحدثة.</p>',
+                'subtitle' => 'في صحراء ماركتينغ نحترم خصوصيتك ونلتزم بحماية المعلومات الشخصية التي تشاركها معنا عبر موقعنا.',
+                'content' => $this->privacyBody('ar'),
             ],
         ]);
 
         $this->page('terms', [
             'en' => [
                 'title' => 'Terms & Conditions',
-                'content' => '<p>By using the Sahra website and submitting any form, you agree to these terms. All content on this site, including branding, visuals, and copy, is the property of Sahra and may not be reproduced without permission.</p><p>Services described on this site are subject to a separate agreement between Sahra and the client, outlining scope, timeline, and deliverables. Results referenced in our case studies reflect past project outcomes and are not a guarantee of future performance.</p><p>Sahra reserves the right to update these terms at any time. Continued use of our services after changes constitutes acceptance of the updated terms.</p>',
+                'subtitle' => 'At Sahra Marketing, we provide clear guidelines for using our website and services to ensure a reliable and respectful experience for all users.',
+                'content' => $this->termsBody('en'),
             ],
             'fa' => [
                 'title' => 'شرایط و قوانین',
-                'content' => '<p>با استفاده از وب‌سایت صحرا و ارسال هر فرم، شما این شرایط را می‌پذیرید. تمام محتوای این سایت، شامل برندینگ، تصاویر و متن، متعلق به صحرا است و بدون اجازه قابل بازتولید نیست.</p><p>خدمات توصیف‌شده در این سایت تابع قرارداد جداگانه‌ای میان صحرا و مشتری است که دامنه، زمان‌بندی و تحویل‌شدنی‌ها را مشخص می‌کند. نتایج ذکرشده در نمونه‌کارها بازتاب دستاوردهای گذشته است و تضمینی برای عملکرد آینده نیست.</p><p>صحرا حق به‌روزرسانی این شرایط را در هر زمان محفوظ می‌دارد. ادامه استفاده از خدمات پس از تغییرات به معنای پذیرش شرایط به‌روزشده است.</p>',
+                'subtitle' => 'در صحرا مارکتینگ دستورالعمل‌های شفافی برای استفاده از وب‌سایت و خدمات ارائه می‌کنیم تا تجربه‌ای قابل‌اعتماد و محترمانه برای همه کاربران فراهم شود.',
+                'content' => $this->termsBody('fa'),
             ],
             'ar' => [
                 'title' => 'الشروط والأحكام',
-                'content' => '<p>باستخدامك موقع صحراء وإرسال أي نموذج، فإنك توافق على هذه الشروط. جميع المحتويات على هذا الموقع، بما فيها الهوية والمرئيات والنصوص، ملك لصحراء ولا يجوز إعادة إنتاجها دون إذن.</p><p>الخدمات الموصوفة على هذا الموقع تخضع لاتفاقية منفصلة بين صحراء والعميل تحدد النطاق والجدول الزمني والمخرجات. النتائج المذكورة في دراسات الحالة تعكس نتائج مشاريع سابقة ولا تشكل ضماناً للأداء المستقبلي.</p><p>تحتفظ صحراء بحق تحديث هذه الشروط في أي وقت. استمرارك في استخدام خدماتنا بعد التغييرات يعني قبولك للشروط المحدثة.</p>',
+                'subtitle' => 'في صحراء ماركتينغ نقدم إرشادات واضحة لاستخدام موقعنا وخدماتنا لضمان تجربة موثوقة ومحترمة لجميع المستخدمين.',
+                'content' => $this->termsBody('ar'),
             ],
         ]);
+    }
+
+
+    /**
+     * Privacy Policy body — the literal section text of Figma 1031:2101.
+     * Kept as a helper so the three locales stay structurally identical.
+     */
+    private function privacyBody(string $locale): string
+    {
+        $sections = [
+            'en' => [
+                ['Information We Collect', [
+                    'When you contact us, submit a form, download a file, or request information about our services, we may collect basic information such as your name, email address, phone number, company name, and any message or project details you choose to share with us.',
+                    'We may also collect limited technical information, such as website usage data, browser type, device information, and general analytics data to help us improve our website experience.',
+                ]],
+                ['How We Use Your Information', [
+                    'We use the information you provide to:',
+                    ['Respond to your inquiries', 'Understand your business needs', 'Share information about our services', 'Prepare proposals or follow-up communications', 'Improve our website and user experience', 'Measure the performance of our marketing activities'],
+                    'We do not sell your personal information.',
+                ]],
+                ['Cookies &amp; Analytics', [
+                    'Our website may use cookies and analytics tools to understand how visitors use the site and to improve performance, content, and marketing efforts. You can control or disable cookies through your browser settings.',
+                ]],
+                ['Sharing Your Information', [
+                    'We may share your information only when necessary with trusted service providers who help us operate our website, manage communications, analyze website performance, or deliver our services.',
+                    'We may also disclose information if required by law or to protect our legal rights.',
+                ]],
+                ['Data Security', [
+                    'We take reasonable steps to protect your personal information from unauthorized access, loss, misuse, or disclosure. However, no online platform can guarantee complete security.',
+                ]],
+                ['Data Retention', [
+                    'We keep your information only for as long as necessary to respond to your request, manage our business relationship, provide services, or meet legal and operational requirements.',
+                ]],
+                ['Your Rights', [
+                    'You may contact us to request access to your personal information, ask for corrections, or request that your information be deleted from our records, where applicable.',
+                ]],
+                ['Contact Us', [
+                    'If you have any questions about this Privacy Policy or how we handle your information, please contact us at:',
+                    ['__address__', 'Sahra Marketing', 'Muscat, Oman', 'Email: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'fa' => [
+                ['اطلاعاتی که جمع‌آوری می‌کنیم', [
+                    'وقتی با ما تماس می‌گیرید، فرمی ارسال می‌کنید، فایلی دانلود می‌کنید یا درباره خدمات ما اطلاعات می‌خواهید، ممکن است اطلاعات پایه‌ای مانند نام، نشانی ایمیل، شماره تماس، نام شرکت و هر پیام یا جزئیات پروژه‌ای که انتخاب می‌کنید با ما به اشتراک بگذارید را جمع‌آوری کنیم.',
+                    'همچنین ممکن است اطلاعات فنی محدودی مانند داده‌های استفاده از وب‌سایت، نوع مرورگر، اطلاعات دستگاه و داده‌های تحلیلی عمومی را برای بهبود تجربه وب‌سایت جمع‌آوری کنیم.',
+                ]],
+                ['چگونه از اطلاعات شما استفاده می‌کنیم', [
+                    'از اطلاعاتی که ارائه می‌دهید برای این موارد استفاده می‌کنیم:',
+                    ['پاسخ به پرسش‌های شما', 'درک نیازهای کسب‌وکارتان', 'ارائه اطلاعات درباره خدمات ما', 'تهیه پیشنهاد یا پیگیری‌های بعدی', 'بهبود وب‌سایت و تجربه کاربری', 'سنجش عملکرد فعالیت‌های بازاریابی ما'],
+                    'ما اطلاعات شخصی شما را نمی‌فروشیم.',
+                ]],
+                ['کوکی‌ها و تحلیل‌ها', [
+                    'وب‌سایت ما ممکن است از کوکی‌ها و ابزارهای تحلیلی برای درک نحوه استفاده بازدیدکنندگان از سایت و بهبود عملکرد، محتوا و تلاش‌های بازاریابی استفاده کند. می‌توانید کوکی‌ها را از تنظیمات مرورگر خود کنترل یا غیرفعال کنید.',
+                ]],
+                ['اشتراک‌گذاری اطلاعات شما', [
+                    'اطلاعات شما را تنها در صورت لزوم با ارائه‌دهندگان خدمات مورد اعتمادی که در راه‌اندازی وب‌سایت، مدیریت ارتباطات، تحلیل عملکرد یا ارائه خدمات به ما کمک می‌کنند به اشتراک می‌گذاریم.',
+                    'همچنین ممکن است در صورت الزام قانونی یا برای حفاظت از حقوق قانونی خود اطلاعات را افشا کنیم.',
+                ]],
+                ['امنیت داده‌ها', [
+                    'ما اقدامات معقولی برای محافظت از اطلاعات شخصی شما در برابر دسترسی غیرمجاز، از دست رفتن، سوءاستفاده یا افشا انجام می‌دهیم. با این حال هیچ پلتفرم آنلاینی نمی‌تواند امنیت کامل را تضمین کند.',
+                ]],
+                ['نگهداری داده‌ها', [
+                    'اطلاعات شما را تنها تا زمانی که برای پاسخ به درخواستتان، مدیریت رابطه کاری، ارائه خدمات یا رعایت الزامات قانونی و عملیاتی لازم است نگهداری می‌کنیم.',
+                ]],
+                ['حقوق شما', [
+                    'می‌توانید برای درخواست دسترسی به اطلاعات شخصی، اصلاح آن یا حذف اطلاعاتتان از سوابق ما — در مواردی که قابل اعمال باشد — با ما تماس بگیرید.',
+                ]],
+                ['تماس با ما', [
+                    'اگر درباره این سیاست حریم خصوصی یا نحوه مدیریت اطلاعاتتان پرسشی دارید، با ما تماس بگیرید:',
+                    ['__address__', 'صحرا مارکتینگ', 'مسقط، عمان', 'ایمیل: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'ar' => [
+                ['المعلومات التي نجمعها', [
+                    'عند التواصل معنا أو إرسال نموذج أو تنزيل ملف أو طلب معلومات عن خدماتنا، قد نجمع معلومات أساسية مثل اسمك وبريدك الإلكتروني ورقم هاتفك واسم شركتك وأي رسالة أو تفاصيل مشروع تختار مشاركتها معنا.',
+                    'وقد نجمع أيضاً معلومات تقنية محدودة، مثل بيانات استخدام الموقع ونوع المتصفح ومعلومات الجهاز وبيانات التحليلات العامة لمساعدتنا في تحسين تجربة الموقع.',
+                ]],
+                ['كيف نستخدم معلوماتك', [
+                    'نستخدم المعلومات التي تقدمها من أجل:',
+                    ['الرد على استفساراتك', 'فهم احتياجات عملك', 'مشاركة معلومات عن خدماتنا', 'إعداد العروض أو المتابعات', 'تحسين موقعنا وتجربة المستخدم', 'قياس أداء أنشطتنا التسويقية'],
+                    'نحن لا نبيع معلوماتك الشخصية.',
+                ]],
+                ['ملفات الارتباط والتحليلات', [
+                    'قد يستخدم موقعنا ملفات الارتباط وأدوات التحليل لفهم كيفية استخدام الزوار للموقع ولتحسين الأداء والمحتوى وجهود التسويق. يمكنك التحكم في ملفات الارتباط أو تعطيلها من إعدادات متصفحك.',
+                ]],
+                ['مشاركة معلوماتك', [
+                    'قد نشارك معلوماتك عند الضرورة فقط مع مزودي خدمات موثوقين يساعدوننا في تشغيل موقعنا أو إدارة الاتصالات أو تحليل أداء الموقع أو تقديم خدماتنا.',
+                    'وقد نفصح عن المعلومات إذا اقتضى القانون ذلك أو لحماية حقوقنا القانونية.',
+                ]],
+                ['أمن البيانات', [
+                    'نتخذ خطوات معقولة لحماية معلوماتك الشخصية من الوصول غير المصرح به أو الفقدان أو سوء الاستخدام أو الإفصاح. ومع ذلك، لا يمكن لأي منصة إلكترونية ضمان الأمان الكامل.',
+                ]],
+                ['الاحتفاظ بالبيانات', [
+                    'نحتفظ بمعلوماتك فقط للمدة اللازمة للرد على طلبك وإدارة علاقتنا التجارية وتقديم الخدمات أو تلبية المتطلبات القانونية والتشغيلية.',
+                ]],
+                ['حقوقك', [
+                    'يمكنك التواصل معنا لطلب الوصول إلى معلوماتك الشخصية أو طلب تصحيحها أو حذفها من سجلاتنا، حيثما ينطبق ذلك.',
+                ]],
+                ['اتصل بنا', [
+                    'إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه أو كيفية تعاملنا مع معلوماتك، يرجى التواصل معنا على:',
+                    ['__address__', 'صحراء ماركتينغ', 'مسقط، عُمان', 'البريد الإلكتروني: Sahramarketing@gmail.com'],
+                ]],
+            ],
+        ];
+
+        return $this->renderSections($sections[$locale]);
+    }
+
+    /**
+     * Terms & Conditions body — the literal section text of Figma 1072:2618.
+     */
+    private function termsBody(string $locale): string
+    {
+        $sections = [
+            'en' => [
+                ['Use of Website', ['By accessing this website, you agree to use it only for lawful purposes and in a way that does not harm the experience, content, or functionality of the platform.']],
+                ['Services', ['Sahra provides branding, marketing design, content production, and social media support services. All services are delivered based on agreed project scope and timelines defined during collaboration.']],
+                ['Intellectual Property', ['All content, designs, visuals, and materials created by Sahra remain the intellectual property of Sahra unless otherwise agreed in writing. Unauthorized use or reproduction is not allowed.']],
+                ['Client Responsibilities', ['Clients are responsible for providing accurate information, timely feedback, and required materials needed for project execution. Delays in communication may affect delivery timelines.']],
+                ['Payments', ['All project costs, pricing structures, and payment terms are agreed upon before starting any work. Work may be paused in case of delayed payments.']],
+                ['Limitation of Liability', ['Sahra is not responsible for any indirect, incidental, or consequential damages arising from the use of this website or services.']],
+                ['Changes to Terms', ['Sahra reserves the right to update these Terms &amp; Conditions at any time. Continued use of the website means acceptance of any updated terms.']],
+                ['Contact Us', [
+                    'For any questions regarding these terms, you can contact us at:',
+                    ['__address__', 'Sahra Marketing', 'Muscat, Oman', 'Email: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'fa' => [
+                ['استفاده از وب‌سایت', ['با دسترسی به این وب‌سایت می‌پذیرید که تنها برای مقاصد قانونی و به‌گونه‌ای از آن استفاده کنید که به تجربه، محتوا یا عملکرد پلتفرم آسیب نرساند.']],
+                ['خدمات', ['صحرا خدمات برندینگ، طراحی بازاریابی، تولید محتوا و پشتیبانی شبکه‌های اجتماعی ارائه می‌کند. همه خدمات بر اساس دامنه و زمان‌بندی توافق‌شده در جریان همکاری تحویل می‌شوند.']],
+                ['مالکیت فکری', ['تمام محتوا، طرح‌ها، تصاویر و موادی که صحرا خلق می‌کند، مگر در صورت توافق کتبی دیگر، متعلق به صحرا باقی می‌ماند. استفاده یا بازتولید غیرمجاز مجاز نیست.']],
+                ['مسئولیت‌های مشتری', ['مشتریان مسئول ارائه اطلاعات دقیق، بازخورد به‌موقع و موادی هستند که برای اجرای پروژه لازم است. تأخیر در ارتباط ممکن است بر زمان‌بندی تحویل اثر بگذارد.']],
+                ['پرداخت‌ها', ['تمام هزینه‌های پروژه، ساختار قیمت‌گذاری و شرایط پرداخت پیش از آغاز کار توافق می‌شود. در صورت تأخیر در پرداخت، کار ممکن است متوقف شود.']],
+                ['محدودیت مسئولیت', ['صحرا مسئول هیچ خسارت غیرمستقیم، تبعی یا اتفاقی ناشی از استفاده از این وب‌سایت یا خدمات نیست.']],
+                ['تغییر شرایط', ['صحرا حق به‌روزرسانی این شرایط و قوانین را در هر زمان محفوظ می‌دارد. ادامه استفاده از وب‌سایت به معنای پذیرش شرایط به‌روزشده است.']],
+                ['تماس با ما', [
+                    'برای هر پرسشی درباره این شرایط می‌توانید با ما تماس بگیرید:',
+                    ['__address__', 'صحرا مارکتینگ', 'مسقط، عمان', 'ایمیل: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'ar' => [
+                ['استخدام الموقع', ['بدخولك هذا الموقع، فإنك توافق على استخدامه للأغراض المشروعة فقط وبطريقة لا تضر بتجربة المنصة أو محتواها أو أدائها.']],
+                ['الخدمات', ['تقدم صحراء خدمات الهوية التجارية وتصميم التسويق وإنتاج المحتوى ودعم وسائل التواصل. تُقدَّم جميع الخدمات وفق نطاق المشروع والجداول الزمنية المتفق عليها أثناء التعاون.']],
+                ['الملكية الفكرية', ['يبقى كل محتوى وتصميم ومواد تنشئها صحراء ملكية فكرية لصحراء ما لم يُتفق على خلاف ذلك كتابةً. الاستخدام أو النسخ غير المصرح به غير مسموح.']],
+                ['مسؤوليات العميل', ['العملاء مسؤولون عن تقديم معلومات دقيقة وملاحظات في وقتها والمواد المطلوبة لتنفيذ المشروع. قد تؤثر التأخيرات في التواصل على مواعيد التسليم.']],
+                ['المدفوعات', ['يُتفق على جميع تكاليف المشروع وهياكل التسعير وشروط الدفع قبل بدء أي عمل. وقد يتوقف العمل في حال تأخر المدفوعات.']],
+                ['حدود المسؤولية', ['صحراء غير مسؤولة عن أي أضرار غير مباشرة أو عرضية أو تبعية تنشأ عن استخدام هذا الموقع أو الخدمات.']],
+                ['تغييرات الشروط', ['تحتفظ صحراء بحق تحديث هذه الشروط والأحكام في أي وقت. استمرار استخدام الموقع يعني قبول أي شروط محدثة.']],
+                ['اتصل بنا', [
+                    'لأي أسئلة بخصوص هذه الشروط، يمكنك التواصل معنا على:',
+                    ['__address__', 'صحراء ماركتينغ', 'مسقط، عُمان', 'البريد الإلكتروني: Sahramarketing@gmail.com'],
+                ]],
+            ],
+        ];
+
+        return $this->renderSections($sections[$locale]);
+    }
+
+    /**
+     * Turn the [heading, blocks] tuples above into the stored HTML. A nested
+     * array is a bullet list, unless its first entry is `__address__`, which
+     * marks the contact block the design renders as plain stacked lines.
+     *
+     * @param  array<int, array{0: string, 1: array<int, string|array<int, string>>}>  $sections
+     */
+    private function renderSections(array $sections): string
+    {
+        $html = '';
+
+        foreach ($sections as [$heading, $blocks]) {
+            $html .= '<h2>'.$heading.'</h2>';
+
+            foreach ($blocks as $block) {
+                if (! is_array($block)) {
+                    $html .= '<p>'.$block.'</p>';
+
+                    continue;
+                }
+
+                if (($block[0] ?? null) === '__address__') {
+                    $lines = array_slice($block, 1);
+                    $html .= '<p>'.implode('<br>', $lines).'</p>';
+
+                    continue;
+                }
+
+                $html .= '<ul>';
+                foreach ($block as $item) {
+                    $html .= '<li>'.$item.'</li>';
+                }
+                $html .= '</ul>';
+            }
+        }
+
+        return $html;
     }
 
     /* ------------------------------------------------------------ helpers */
@@ -609,17 +993,22 @@ final class PageSeeder extends Seeder
     }
 
     /**
-     * @param  array<int, array<string, array<string, mixed>>>  $items
+     * @param  array<int, array<string, mixed>>  $items
      */
     private function items(PageSection $section, array $items): void
     {
-        foreach ($items as $index => $translations) {
+        foreach ($items as $index => $itemData) {
+            $icon = $itemData['_icon'] ?? null;
+            unset($itemData['_icon']);
+
             $item = $section->items()->create([
                 'sort_order' => $index,
                 'is_visible' => true,
+                'icon' => $icon,
             ]);
 
-            $item->setTranslations($translations);
+            /** @var array<string, array<string, mixed>> $itemData */
+            $item->setTranslations($itemData);
         }
     }
 

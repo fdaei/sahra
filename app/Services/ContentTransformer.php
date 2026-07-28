@@ -43,6 +43,15 @@ final class ContentTransformer
             'excerpt' => (string) $project->getTranslation('excerpt'),
             'industry' => (string) ($project->industry?->getTranslation('name') ?? ''),
             'url' => $project->url(absolute: false),
+
+            // Revealed on card hover — Figma "project detail" variant
+            // 553:921 ("hover") adds this badge row over 553:936 ("default").
+            'services' => $project->relationLoaded('services')
+                ? $project->services
+                    ->map(fn (Service $s): string => (string) $s->getTranslation('title'))
+                    ->all()
+                : [],
+
             'image' => MediaTransformer::make(
                 $project->cover_path,
                 $project->getTranslation('cover_alt'),
@@ -144,7 +153,15 @@ final class ContentTransformer
             'title' => (string) $post->getTranslation('title'),
             'excerpt' => (string) $post->getTranslation('excerpt'),
             'url' => $post->url(absolute: false),
-            'publishedAt' => $post->published_at?->toIso8601String() ?? '',
+
+            // Display string in the locale's own format (config/locales.php:
+            // en "M d, Y" → "May 09, 2024", fa/ar "Y/m/d"); the ISO value is
+            // kept alongside it for <time datetime>.
+            'publishedAt' => $post->published_at?->translatedFormat(
+                (string) config('locales.supported.'.app()->getLocale().'.date_format', 'M d, Y'),
+            ) ?? '',
+            'publishedAtIso' => $post->published_at?->toIso8601String() ?? '',
+
             'readingTime' => $post->reading_minutes,
             'category' => $post->category === null ? null : [
                 'slug' => (string) $post->category->getTranslation('slug'),
@@ -309,9 +326,15 @@ final class ContentTransformer
     public static function sectionItem(SectionItem $item): array
     {
         return [
+            'id' => $item->getKey(),
             'value' => (string) $item->getTranslation('value'),
+            'label' => (string) $item->getTranslation('label'),
+            'suffix' => (string) $item->getTranslation('suffix'),
             'title' => (string) $item->getTranslation('title'),
             'description' => (string) $item->getTranslation('description'),
+            'badge' => (string) $item->getTranslation('badge'),
+            'features' => (array) ($item->getTranslation('features') ?? []),
+            'footer' => (string) $item->getTranslation('footer'),
             'icon' => $item->icon,
             'image' => MediaTransformer::make(
                 $item->image_path,

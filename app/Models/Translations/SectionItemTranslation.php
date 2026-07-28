@@ -15,9 +15,20 @@ final class SectionItemTranslation extends Model
     protected $fillable = [
         'locale',
         'value',
+        'label',
+        'suffix',
         'title',
         'description',
+        'badge',
+        'features',
+        'footer',
         'image_alt',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'features' => 'array',
+        ];
+    }
 }

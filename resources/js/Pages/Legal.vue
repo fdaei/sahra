@@ -30,7 +30,7 @@ const formattedDate = computed(() => {
 <template>
   <SeoHead :meta="seo" />
 
-  <section class="section">
+  <section class="section section-first">
     <div class="container-sahra max-w-3xl">
       <h1 class="text-display-md">{{ title }}</h1>
       <p v-if="formattedDate" class="mt-4 text-label-md text-neutral-500">{{ formattedDate }}</p>

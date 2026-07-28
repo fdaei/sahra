@@ -64,9 +64,11 @@ final class ProjectSeeder extends Seeder
                 'slug' => 'cheshmeh-beauty', 'industry' => 'beauty-wellness', 'year' => '2024',
                 'instagram' => 'cheshmeh.beauty', 'cover' => 'projects/cheshmeh.webp',
                 'banner' => 'projects/cheshmeh-banner.webp', 'featured' => true,
+                // Title and excerpt are the literal case-study text of Figma
+                // 639:1617 (I1016:1863;… "Cheshmeh" + its subtitle run).
                 'en' => [
-                    'title' => 'Cheshmeh Beauty Clinic', 'subtitle' => 'A calmer, more trusted identity',
-                    'excerpt' => 'A full digital identity refresh for a beauty and dental clinic.',
+                    'title' => 'Cheshmeh', 'subtitle' => 'A calmer, more trusted identity',
+                    'excerpt' => 'Cheshmeh needed a stronger digital identity. one that could communicate trust, simplicity, and brand value across every touchpoint.',
                     'challenge' => 'Cheshmeh had strong services, but its digital presence did not clearly reflect the trust, calmness, and clarity people expect from a beauty clinic.',
                     'challenge_points' => ['No clear content direction', 'Inconsistent visual identity', 'Unclear brand presence'],
                     'results_summary' => "The project helped Cheshmeh build a clearer and more consistent digital presence. Through a refined visual direction and strategic content approach, the brand created stronger audience trust and engagement.",

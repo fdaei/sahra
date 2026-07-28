@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Industry;
 use App\Models\Page;
 use App\Models\Project;
+use App\Models\Service;
 use App\Services\ContentTransformer;
 use App\Services\SeoBuilder;
 use Illuminate\Http\Request;
@@ -26,16 +26,19 @@ final class ProjectController extends Controller
             ->withContent()
             ->first();
 
-        $industryFilter = $request->string('industry')->toString();
+        // Figma 542:871 lists the four *services* — Branding, Marketing
+        // Design, Content Production, Social Media support — not industries.
+        // The industry stays on the card as its category badge.
+        $serviceFilter = $request->string('service')->toString();
 
         $query = Project::query()->forListing();
 
-        if ($industryFilter !== '') {
+        if ($serviceFilter !== '') {
             $locale = app()->getLocale();
 
             $query->whereHas(
-                'industry.translations',
-                fn ($q) => $q->where('locale', $locale)->where('slug', $industryFilter),
+                'services.translations',
+                fn ($q) => $q->where('locale', $locale)->where('slug', $serviceFilter),
             );
         }
 
@@ -51,18 +54,17 @@ final class ProjectController extends Controller
                 ->map(fn (Project $p): array => ContentTransformer::projectSummary($p))
                 ->all(),
 
-            // Filter chips — Figma "Filters" 1363:7500
-            'industries' => Industry::query()
-                ->ordered()
-                ->withTranslations()
+            // Filter list — Figma "Filters" 542:858
+            'filters' => Service::query()
+                ->forDisplay()
                 ->get()
-                ->map(fn (Industry $i): array => [
-                    'slug' => (string) $i->getTranslation('slug'),
-                    'name' => (string) $i->getTranslation('name'),
+                ->map(fn (Service $s): array => [
+                    'slug' => (string) $s->getTranslation('slug'),
+                    'name' => (string) $s->getTranslation('title'),
                 ])
                 ->all(),
 
-            'activeIndustry' => $industryFilter ?: null,
+            'activeFilter' => $serviceFilter ?: null,
 
             'sections' => $page === null
                 ? []
@@ -83,8 +85,18 @@ final class ProjectController extends Controller
             'sections.items.translations',
         ]);
 
+        // The case study closes on the shared final CTA card (Figma 1419:9333,
+        // present in 639:1617). It has no page of its own, so it reuses the
+        // one authored on the Work page.
+        $workPage = Page::query()->key('work')->published()->withContent()->first();
+
         return Inertia::render('Work/Show', [
             'project' => ContentTransformer::projectDetail($project),
+
+            'finalCta' => $workPage === null
+                ? null
+                : (ContentTransformer::sectionMap($workPage->sections)['final_cta'] ?? null),
+
             'seo' => SeoBuilder::forProject($project),
         ]);
     }

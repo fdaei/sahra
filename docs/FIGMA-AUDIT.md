@@ -38,19 +38,28 @@ Several page designs exist in more than one copy. Selection signals applied, in 
 (1) reachable from the anchor's component set, (2) variables bound, (3) completeness of the
 desktop/mobile pair, (4) newest node ID range, (5) naming consistency.
 
-| Page | Candidate nodes | Selected | Rationale |
-|---|---|---|---|
-| Home | `230:473`, `1365:9950`, `1419:9192` | **`1419:9192`** | Highest node range = newest. Fully variable-bound. Contains `packages` section + `KPI section` absent from `230:473`. Uses the same `Header`/`Footer` instances as the anchor's frame. |
-| Projects | `541:1558`, `1362:7198` | **`1362:7198`** | Variable-bound; uses `project post` component (the older one hand-composes each card). |
-| Single project | `639:1617`, `1323:7541` | **`1323:7541`** | Newest; uses `Goal card` / `Strategy card` components; has before/after + results grid. |
-| Services | `908:1520`, `1323:7189` | **`1323:7189`** | Newest; uses `service section` component — the same component the anchor instantiates. |
-| About | `908:1576`, `1315:5187` | **`908:1576`** | Both identical in structure; `908:1576` carries the bound `member card` instances with real photography. `1315:5187` is a positional duplicate with no unique content. |
-| Blog list | `569:1175`, `1353:7935` | **`1353:7935`** | Newest. |
-| Single blog | `604:1464`, `1352:7391`, `1352:6535`, `1352:6588` | **`1352:7391`** | `1352:6535` / `1352:6588` are 1024-tall fragments (section studies), not full pages. |
-| Contact | `447:790`, `1363:8934` | **`1363:8934`** | Newest. |
-| Terms | `1072:2618`, `1303:4392`, `1309:4891` | **`1309:4891`** | Tallest (3116) = most complete content. |
-| 404 | `1027:2061`, `1315:5087` | **`1027:2061`** | `1315:5087` is named `ar404` — the Arabic variant, kept as the RTL reference for the same route. |
-| Privacy Policy | `1031:2101` | **`1031:2101`** | Single copy. |
+> **Correction (2026-07-28).** The original pass selected duplicates by
+> "newest node ID", which turned out to be the wrong signal: for several pages
+> the higher-numbered frame is the **Arabic (RTL) translation** of the same
+> design, not a newer revision. Rendering each candidate and reading its header
+> shows it immediately — the RTL frames carry an Arabic nav
+> (الرئيسية / أعمالنا / خدماتنا) and a right-aligned logo. The table below is
+> the corrected mapping: LTR frame drives the `en` implementation, RTL frame is
+> the reference for `fa`/`ar`.
+
+| Page | Candidates | LTR (drives `en`) | RTL (drives `fa`/`ar`) | Notes |
+|---|---|---|---|---|
+| Home | `230:473`, `1419:9192`, `1365:9950` | **`1419:9192`** | `1365:9950` | Both LTR candidates are English; `1419:9192` is the newer one and adds `packages` + `KPI section`. |
+| Projects | `541:1558`, `1362:7198` | **`541:1558`** | `1362:7198` | Previously `1362:7198` — that frame is Arabic. |
+| Single project | `639:1617`, `1323:7541` | **`639:1617`** | `1323:7541` | Previously `1323:7541` — Arabic. |
+| Services | `908:1520`, `1323:7189` | **`1323:7189`** | — | Both LTR; `1323:7189` confirmed English and newer. |
+| About | `908:1576`, `1315:5187` | **`908:1576`** | `1315:5187` | Unchanged. |
+| Blog list | `569:1175`, `1353:7935` | **`569:1175`** | `1353:7935` | Previously `1353:7935` — Arabic. |
+| Single blog | `604:1464`, `1352:7391`, `1352:6535`, `1352:6588` | **`604:1464`** | `1352:7391` | Previously `1352:7391` — Arabic. `1352:6535`/`6588` are section studies. |
+| Contact | `447:790`, `1363:8934` | **`447:790`** | `1363:8934` | Previously `1363:8934` — Arabic. |
+| Terms | `1072:2618`, `1303:4392`, `1309:4891` | **`1072:2618`** | `1309:4891` | Previously `1309:4891` — Arabic; it is taller because Arabic copy wraps longer, not because it has more content. |
+| 404 | `1027:2061`, `1315:5087` | **`1027:2061`** | `1315:5087` | `1315:5087` is named `ar404`. |
+| Privacy Policy | `1031:2101` | **`1031:2101`** | — | Single copy. |
 
 ### Mobile frame set (page `1:2`)
 
@@ -204,19 +213,19 @@ Display sizes appear as raw values in the frames: 36 / 40 / 48, Poppins SemiBold
 
 ## 4. Route inventory
 
-| # | Page | Figma node (desktop) | Figma node (mobile) | Route (locale-prefixed) |
-|---|---|---|---|---|
-| 1 | Home | `1419:9192` | `1419:9191` | `/{locale}` |
-| 2 | Projects listing | `1362:7198` | `1498:10840` | `/{locale}/work` |
-| 3 | Single project | `1323:7541` | `1555:10866` | `/{locale}/work/{slug}` |
-| 4 | Services | `1323:7189` | `1626:12562` | `/{locale}/services` |
-| 5 | About | `908:1576` | `1557:12225` | `/{locale}/about` |
-| 6 | Blog listing | `1353:7935` | `1530:10875` | `/{locale}/insights` |
-| 7 | Single blog | `1352:7391` | `1543:11175` | `/{locale}/insights/{slug}` |
-| 8 | Contact | `1363:8934` | `1494:9544` | `/{locale}/contact` |
-| 9 | Privacy Policy | `1031:2101` | `1590:10953` | `/{locale}/privacy-policy` |
-| 10 | Terms & Conditions | `1309:4891` | `1590:11500` | `/{locale}/terms` |
-| 11 | 404 | `1027:2061` | `1567:13563` | fallback |
+| # | Page | Desktop LTR (`en`) | Desktop RTL (`fa`/`ar`) | Mobile | Route (locale-prefixed) |
+|---|---|---|---|---|---|
+| 1 | Home | `1419:9192` | `1365:9950` | `1419:9191` | `/{locale}` |
+| 2 | Projects listing | `541:1558` | `1362:7198` | `1498:10840` | `/{locale}/work` |
+| 3 | Single project | `639:1617` | `1323:7541` | `1555:10866` | `/{locale}/work/{slug}` |
+| 4 | Services | `1323:7189` | — | `1626:12562` | `/{locale}/services` |
+| 5 | About | `908:1576` | `1315:5187` | `1557:12225` | `/{locale}/about` |
+| 6 | Blog listing | `569:1175` | `1353:7935` | `1530:10875` | `/{locale}/insights` |
+| 7 | Single blog | `604:1464` | `1352:7391` | `1543:11175` | `/{locale}/insights/{slug}` |
+| 8 | Contact | `447:790` | `1363:8934` | `1494:9544` | `/{locale}/contact` |
+| 9 | Privacy Policy | `1031:2101` | — | `1590:10953` | `/{locale}/privacy-policy` |
+| 10 | Terms & Conditions | `1072:2618` | `1309:4891` | `1590:11500` | `/{locale}/terms` |
+| 11 | 404 | `1027:2061` | `1315:5087` | `1567:13563` | fallback |
 
 There is **no separate "service detail" page** in the file — services are presented as
 alternating sections on one page. No search page, no author archive, no category archive

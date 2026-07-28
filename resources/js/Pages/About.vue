@@ -43,7 +43,7 @@ const team = computed(() => props.sections.team)
   <SeoHead :meta="seo" />
 
   <!-- About hero — Figma 908:1576 (top) -->
-  <section v-if="hero" class="section">
+  <section v-if="hero" class="section section-first">
     <div class="container-sahra max-w-3xl">
       <div class="eyebrow" :style="{ color: hero.colors.eyebrow || undefined }">{{ hero.eyebrow }}</div>
       <h1 class="text-display-md" :style="{ color: hero.colors.title || undefined }">{{ hero.title }}</h1>

@@ -239,7 +239,11 @@ final class ProjectResource extends Resource
                     ->options(PublicationStatus::options()),
 
                 Tables\Filters\SelectFilter::make('industry')
-                    ->relationship('industry')
+                    ->relationship(
+                        'industry',
+                        'name',
+                        fn (Builder $query): Builder => $query->withTranslations()->ordered(),
+                    )
                     ->getOptionLabelFromRecordUsing(
                         fn (\App\Models\Industry $record): string => (string) $record->getTranslation('name'),
                     ),

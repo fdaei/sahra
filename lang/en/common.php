@@ -17,6 +17,7 @@ return [
     'back'                => 'Back',
     'next'                => 'Next',
     'previous'            => 'Previous',
+    'pagination'          => 'Pagination',
     'all'                 => 'All',
     'search'              => 'Search',
     'loading'             => 'Loading…',

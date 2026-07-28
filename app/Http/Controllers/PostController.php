@@ -116,8 +116,17 @@ final class PostController extends Controller
             'author',
         ]);
 
+        // The article runs the lead-magnet strip mid-body (Figma 604:1464).
+        // It has no page of its own, so it reuses the one authored on Home.
+        $home = Page::query()->key('home')->published()->withContent()->first();
+
         return Inertia::render('Insights/Show', [
             'post' => ContentTransformer::postDetail($post),
+
+            'leadMagnet' => $home === null
+                ? null
+                : (ContentTransformer::sectionMap($home->sections)['lead_magnet'] ?? null),
+
             'seo' => SeoBuilder::forPost($post),
         ]);
     }

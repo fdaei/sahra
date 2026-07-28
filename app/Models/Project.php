@@ -154,6 +154,8 @@ final class Project extends Model implements HasLocalisedSlugs
             ->with([
                 'translations' => fn ($q) => $q->whereIn('locale', $locales),
                 'industry.translations' => fn ($q) => $q->whereIn('locale', $locales),
+                // Card hover state lists the services — Figma 553:921.
+                'services.translations' => fn ($q) => $q->whereIn('locale', $locales),
             ])
             ->orderBy('sort_order')
             ->orderByDesc('published_at');

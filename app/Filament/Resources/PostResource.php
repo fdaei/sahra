@@ -207,7 +207,11 @@ final class PostResource extends Resource
                     ->options(PublicationStatus::options()),
 
                 Tables\Filters\SelectFilter::make('category')
-                    ->relationship('category')
+                    ->relationship(
+                        'category',
+                        'name',
+                        fn (Builder $query): Builder => $query->withTranslations()->ordered(),
+                    )
                     ->getOptionLabelFromRecordUsing(
                         fn (PostCategory $record): string => (string) $record->getTranslation('name'),
                     ),

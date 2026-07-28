@@ -95,8 +95,42 @@
    | Figma container: 1248px content inside a 1440px frame => 96px gutters.
    | Mobile: 362px content inside 402px => 20px gutters.
    */
+  /*
+   | Figma frame is 1440 wide with a 1248 content track — a 96 gutter each
+   | side. The max-width is the *frame*, not the track: the box is
+   | border-box, so `max-w-container` + `px-24` would otherwise leave only
+   | 1056 of content and pull every page in by 192px.
+   */
   .container-sahra {
-    @apply mx-auto w-full max-w-container px-5 md:px-10 lg:px-16 xl:px-24;
+    @apply mx-auto w-full max-w-frame px-5 md:px-10 lg:px-16 xl:px-24;
+  }
+
+  /*
+   | Narrow container. Several Figma sections (KPI 1419:9318, trust proof
+   | 1419:9205, lead magnet 1419:9322) are 1036 wide inside the 1440 frame —
+   | inset 202 each side rather than the 96 gutter of `.container-sahra`.
+   */
+  .container-narrow {
+    @apply mx-auto w-full px-5 md:px-10 lg:px-16 xl:px-24;
+    max-width: calc(1036px + 2 * 96px);
+  }
+
+  /*
+   | 1px gradient hairline used on the KPI cards (1419:9319) and elsewhere:
+   | Figma strokeAlign OUTSIDE, linear-gradient(136deg, gold 30% → 10% → 30%).
+   | padding-box/border-box layering keeps the fill flat and the edge gradient.
+   */
+  .edge-gold {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(
+          136deg,
+          rgba(189, 147, 59, 0.3) 0%,
+          rgba(189, 147, 59, 0.1) 50%,
+          rgba(189, 147, 59, 0.3) 100%
+        )
+        border-box;
   }
 
   /* Section rhythm. Figma spacing tokens: 96 desktop, 56 mobile. */
@@ -104,14 +138,36 @@
     @apply py-14 md:py-18 lg:py-24;
   }
 
-  /* Eyebrow — Figma "small title" 1419:9231: gold dot + gold label. */
+  /*
+   | Top inset for a page's first section. The header is a fixed translucent
+   | overlay (1440×104), so the first block has to clear it itself. Figma puts
+   | the first eyebrow of every inner page at y=192; mobile frames use 136.
+   */
+  .section-first {
+    @apply pt-[136px] md:pt-[192px];
+  }
+
+  /*
+   | Eyebrow — Figma "small title" component set 1319:7077 (e.g. 1419:9260):
+   | row, gap 4; an 11.31px gold disc with a symmetric gold glow, then the
+   | label in Idealist 24. Note this differs from the hero badge (1419:9196),
+   | where the same-sized swatch is an unrounded 45°-rotated square.
+   */
   .eyebrow {
-    @apply mb-4 inline-flex items-center gap-2 text-label-lg text-gold;
+    @apply inline-flex w-fit items-center gap-1 text-gold;
+    font-family: 'Idealist', serif;
+    font-size: 24px;
+    font-weight: 400;
   }
 
   .eyebrow::before {
     content: '';
-    @apply inline-block size-3 rotate-45 rounded-xs bg-gold;
+    @apply inline-block shrink-0 rounded-round bg-gold;
+    width: 11.31px;
+    height: 11.31px;
+    box-shadow:
+      2px 2px 12px 0 rgba(189, 147, 59, 0.5),
+      -2px -2px 12px 0 rgba(189, 147, 59, 0.5);
   }
 
   /* Edge fade for marquees — Figma "shade" 1419:9215. */

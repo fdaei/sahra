@@ -52,8 +52,8 @@ final class HomeController extends Controller
 
             // Projects showcase — Figma 1419:9216 (five rows + image)
             'projects' => Project::query()
+                ->orderByDesc('is_featured')
                 ->forListing()
-                ->featured()
                 ->limit(5)
                 ->get()
                 ->map(fn (Project $p): array => ContentTransformer::projectSummary($p))

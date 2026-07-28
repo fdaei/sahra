@@ -9,6 +9,7 @@ use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 
 /**
  * Blog articles. The full article body comes from the Figma single-blog
@@ -82,6 +83,7 @@ HTML;
                 'slug' => 'content-without-direction',
                 'category' => $socialCategory,
                 'featured' => true,
+                'cover' => 'posts/brand-direction.webp',
                 'en' => ['title' => 'What Happens When You Create Content Without Direction?', 'subtitle' => 'Without direction, your content loses focus and fails to drive real growth', 'excerpt' => 'Without direction, your content loses focus and fails to drive real growth.', 'content' => $enBody],
                 'fa' => ['title' => 'وقتی بدون جهت محتوا می‌سازید چه اتفاقی می‌افتد؟', 'subtitle' => 'بدون جهت، محتوای شما تمرکز خود را از دست می‌دهد', 'excerpt' => 'بدون جهت، محتوای شما تمرکز خود را از دست می‌دهد و رشد واقعی ایجاد نمی‌کند.', 'content' => $faBody],
                 'ar' => ['title' => 'ماذا يحدث عندما تنشئ محتوى بلا اتجاه؟', 'subtitle' => 'بلا اتجاه، يفقد محتواك تركيزه', 'excerpt' => 'بلا اتجاه، يفقد محتواك تركيزه ويفشل في دفع نمو حقيقي.', 'content' => $arBody],
@@ -90,6 +92,7 @@ HTML;
                 'slug' => 'social-media-growth-system',
                 'category' => $growthCategory,
                 'featured' => false,
+                'cover' => 'posts/social-growth.webp',
                 'en' => ['title' => 'How to Turn Social Media Into a Growth System', 'subtitle' => 'From scattered posts to a predictable engine', 'excerpt' => 'From scattered posts and inconsistent messaging to a structured growth system that turns your social media into a predictable engine for attracting the right audience.', 'content' => $enBody],
                 'fa' => ['title' => 'چگونه شبکه‌های اجتماعی را به یک سیستم رشد تبدیل کنیم', 'subtitle' => 'از پست‌های پراکنده تا موتوری قابل پیش‌بینی', 'excerpt' => 'از پست‌های پراکنده و پیام‌رسانی ناهماهنگ تا سیستمی ساختارمند که شبکه‌های اجتماعی شما را به موتوری قابل پیش‌بینی تبدیل می‌کند.', 'content' => $faBody],
                 'ar' => ['title' => 'كيف تحوّل وسائل التواصل إلى نظام نمو', 'subtitle' => 'من منشورات مبعثرة إلى محرك يمكن التنبؤ به', 'excerpt' => 'من منشورات مبعثرة ورسائل غير متسقة إلى نظام نمو منظم يحول وسائل التواصل لديك إلى محرك يمكن التنبؤ به.', 'content' => $arBody],
@@ -103,9 +106,13 @@ HTML;
                     'post_category_id' => $data['category']?->id,
                     'user_id' => $author?->id,
                     'status' => PublicationStatus::Published,
-                    'published_at' => now()->subDays(9 - $index),
+                    // Figma 604:1464 dates every article "May 09, 2024".
+                    'published_at' => Carbon::create(2024, 5, 9, 9, 0)->subDays($index),
                     'is_featured' => $data['featured'],
-                    'cover_path' => 'posts/'.$data['slug'].'.webp',
+                    // Rendered from the Figma insight cards (1419:9265 /
+                    // 1419:9271), so the filenames follow the artwork, not
+                    // the slug.
+                    'cover_path' => $data['cover'],
                     'reading_minutes' => 5,
                 ],
             );

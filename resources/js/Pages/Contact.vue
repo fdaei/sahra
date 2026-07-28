@@ -63,7 +63,7 @@ function submit(): void {
   <SeoHead :meta="seo" />
 
   <!-- Contact heading — Figma 1363:8934 -->
-  <section class="section">
+  <section class="section section-first">
     <div class="container-sahra grid gap-14 lg:grid-cols-2">
       <div>
         <div class="eyebrow">{{ heading.eyebrow }}</div>
