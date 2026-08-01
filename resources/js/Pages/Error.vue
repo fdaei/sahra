@@ -44,10 +44,25 @@ const homeUrl = computed(() => `/${page.props.locale.current}`)
   />
 
   <section class="section section-first">
+    <!--
+      Figma 1091:3440 — a 560x560 artwork stacked over the copy block at a
+      -64 gap, so the horizon overlaps the headline. Copy block is centred at
+      gap 32, its own title/message pair at gap 16.
+    -->
     <div class="container-sahra flex flex-col items-center text-center">
-      <!-- Decorative status glyph. The real 404 artwork is an exported asset;
-           for other codes we render the numeral in the same treatment. -->
+      <!-- 1027:2062. The artwork is the 404 horizon; other status codes have
+           no frame in the file, so they fall back to the numeral. -->
+      <img
+        v-if="status === 404"
+        src="/images/sahra/404-horizon.png"
+        alt=""
+        width="560"
+        height="560"
+        class="w-full max-w-[560px]"
+        aria-hidden="true"
+      />
       <p
+        v-else
         class="latin-nums bg-gradient-to-br from-gold-400 to-gold bg-clip-text
                font-semibold leading-none text-transparent
                [font-size:clamp(5rem,20vw,10rem)]"
@@ -56,18 +71,21 @@ const homeUrl = computed(() => `/${page.props.locale.current}`)
         {{ status }}
       </p>
 
-      <h1 class="mt-8 text-display-sm md:text-display-md">{{ title }}</h1>
+      <div class="flex max-w-[506px] flex-col items-center gap-8 md:-mt-16">
+        <div class="flex flex-col items-center gap-4">
+          <h1 class="text-heading-xl font-medium">{{ title }}</h1>
+          <p class="text-title-sm font-medium text-neutral-700">{{ message }}</p>
+        </div>
 
-      <p class="mt-4 max-w-md text-body-lg text-neutral-600">{{ message }}</p>
-
-      <Link
-        :href="homeUrl"
-        class="mt-10 inline-flex items-center gap-2 rounded-sm bg-ink px-8 py-4
-               text-label-lg text-paper transition-opacity hover:opacity-90"
-      >
-        {{ t('errors.back_home') }}
-        <ArrowRight class="size-4 rtl:-scale-x-100" aria-hidden="true" />
-      </Link>
+        <Link
+          :href="homeUrl"
+          class="inline-flex items-center gap-1 rounded-sm bg-ink px-8 py-4
+                 text-title-lg text-paper transition-opacity hover:opacity-90"
+        >
+          {{ t('errors.back_home') }}
+          <ArrowRight class="size-6 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
+        </Link>
+      </div>
     </div>
   </section>
 </template>

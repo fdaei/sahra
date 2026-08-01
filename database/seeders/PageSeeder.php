@@ -121,8 +121,10 @@ final class PageSeeder extends Seeder
                     'title' => 'رشد مخاطب',
                     'description' => 'دنبال‌کننده به‌دست‌آمده از یک ریلز',
                 ],
+                // Arabic-Indic digits (U+0660–U+0669), matching the fa row's use
+                // of the Persian set. See config/locales.php `digits`.
                 'ar' => [
-                    'value' => '+70K',
+                    'value' => '+٧٠ ألف',
                     'title' => 'نمو الجمهور',
                     'description' => 'متابعون من مقطع واحد',
                 ],
@@ -139,7 +141,7 @@ final class PageSeeder extends Seeder
                     'description' => 'میانگین رشد پس از بازنگری استراتژی',
                 ],
                 'ar' => [
-                    'value' => '+40%',
+                    'value' => '+٤٠٪',
                     'title' => 'ارتفاع التفاعل',
                     'description' => 'متوسط النمو بعد تحديث الاستراتيجية',
                 ],
@@ -156,7 +158,7 @@ final class PageSeeder extends Seeder
                     'description' => 'در طرح‌های ماهانه بازاریابی',
                 ],
                 'ar' => [
-                    'value' => '+90%',
+                    'value' => '+٩٠٪',
                     'title' => 'الاحتفاظ بالعملاء',
                     'description' => 'ضمن خطط التسويق الشهرية',
                 ],
@@ -179,7 +181,7 @@ final class PageSeeder extends Seeder
             ],
             'ar' => [
                 'title' => 'موضع ثقة',
-                'content' => '+50',
+                'content' => '+٥٠',
                 'subtitle' => 'علامة تجارية',
             ],
         ]);
@@ -274,37 +276,37 @@ final class PageSeeder extends Seeder
                 '_icon' => 'discovery',
                 'en' => ['value' => '01', 'title' => 'Discovery & Brand Review', 'description' => 'Deep analysis of your brand, audience, and market position'],
                 'fa' => ['value' => '۰۱', 'title' => 'کشف و بررسی برند', 'description' => 'تحلیل عمیق برند، مخاطب و جایگاه شما در بازار'],
-                'ar' => ['value' => '01', 'title' => 'اكتشاف ومراجعة العلامة', 'description' => 'تحليل عميق لعلامتك وجمهورك وموقعك في السوق'],
+                'ar' => ['value' => '٠١', 'title' => 'اكتشاف ومراجعة العلامة', 'description' => 'تحليل عميق لعلامتك وجمهورك وموقعك في السوق'],
             ],
             [
                 '_icon' => 'strategy',
                 'en' => ['value' => '02', 'title' => 'Strategy & Content Plan', 'description' => 'Custom content plans focused on consistency and growth'],
                 'fa' => ['value' => '۰۲', 'title' => 'استراتژی و برنامه محتوا', 'description' => 'برنامه‌های محتوایی اختصاصی با تمرکز بر ثبات و رشد'],
-                'ar' => ['value' => '02', 'title' => 'الاستراتيجية وخطة المحتوى', 'description' => 'خطط محتوى مخصصة تركز على الاتساق والنمو'],
+                'ar' => ['value' => '٠٢', 'title' => 'الاستراتيجية وخطة المحتوى', 'description' => 'خطط محتوى مخصصة تركز على الاتساق والنمو'],
             ],
             [
                 '_icon' => 'production',
                 'en' => ['value' => '03', 'title' => 'Design & Production', 'description' => 'High-quality visuals aligned with your brand'],
                 'fa' => ['value' => '۰۳', 'title' => 'طراحی و تولید', 'description' => 'تصاویر باکیفیت و هم‌راستا با برند شما'],
-                'ar' => ['value' => '03', 'title' => 'التصميم والإنتاج', 'description' => 'مرئيات عالية الجودة ومتوافقة مع علامتك'],
+                'ar' => ['value' => '٠٣', 'title' => 'التصميم والإنتاج', 'description' => 'مرئيات عالية الجودة ومتوافقة مع علامتك'],
             ],
             [
                 '_icon' => 'approval',
                 'en' => ['value' => '04', 'title' => 'Review & Approval', 'description' => 'Review and refine all content before it goes live'],
                 'fa' => ['value' => '۰۴', 'title' => 'بازبینی و تأیید', 'description' => 'بازبینی و اصلاح تمام محتوا پیش از انتشار'],
-                'ar' => ['value' => '04', 'title' => 'المراجعة والموافقة', 'description' => 'مراجعة وتحسين كل المحتوى قبل نشره'],
+                'ar' => ['value' => '٠٤', 'title' => 'المراجعة والموافقة', 'description' => 'مراجعة وتحسين كل المحتوى قبل نشره'],
             ],
             [
                 '_icon' => 'publishing',
                 'en' => ['value' => '05', 'title' => 'Publishing & Management', 'description' => 'Professional scheduling and active platform management'],
                 'fa' => ['value' => '۰۵', 'title' => 'انتشار و مدیریت', 'description' => 'زمان‌بندی حرفه‌ای و مدیریت فعال پلتفرم‌ها'],
-                'ar' => ['value' => '05', 'title' => 'النشر والإدارة', 'description' => 'جدولة احترافية وإدارة فعالة للمنصات'],
+                'ar' => ['value' => '٠٥', 'title' => 'النشر والإدارة', 'description' => 'جدولة احترافية وإدارة فعالة للمنصات'],
             ],
             [
                 '_icon' => 'optimization',
                 'en' => ['value' => '06', 'title' => 'Reporting & Optimization', 'description' => 'Performance tracking and data-driven optimization'],
                 'fa' => ['value' => '۰۶', 'title' => 'گزارش‌دهی و بهینه‌سازی', 'description' => 'پایش عملکرد و بهینه‌سازی داده‌محور'],
-                'ar' => ['value' => '06', 'title' => 'التقارير والتحسين', 'description' => 'تتبع الأداء والتحسين القائم على البيانات'],
+                'ar' => ['value' => '٠٦', 'title' => 'التقارير والتحسين', 'description' => 'تتبع الأداء والتحسين القائم على البيانات'],
             ],
         ]);
 
@@ -354,7 +356,7 @@ final class PageSeeder extends Seeder
                     'footer' => 'مناسب کسب‌وکارهای کوچک',
                 ],
                 'ar' => [
-                    'title' => 'صحراء الأساسية', 'label' => 'تبدأ من', 'value' => '199',
+                    'title' => 'صحراء الأساسية', 'label' => 'تبدأ من', 'value' => '١٩٩',
                     'suffix' => 'ر.ع / شهر واحد', 'description' => 'أساس واضح لحضور علامتك',
                     'features' => ['تخطيط المحتوى', 'التوجيه البصري', 'دعم وسائل التواصل', 'التنفيذ الشهري'],
                     'footer' => 'الأفضل للشركات الصغيرة',
@@ -376,7 +378,7 @@ final class PageSeeder extends Seeder
                     'footer' => 'مناسب برندهای در حال رشد',
                 ],
                 'ar' => [
-                    'title' => 'صحراء للنمو', 'label' => 'تبدأ من', 'value' => '499',
+                    'title' => 'صحراء للنمو', 'label' => 'تبدأ من', 'value' => '٤٩٩',
                     'suffix' => 'ر.ع / شهر واحد', 'description' => 'نهج منظم لبناء حضورك وتنميته',
                     'badge' => 'الأكثر شعبية',
                     'features' => ['استراتيجية المحتوى', 'محتوى متوافق مع العلامة', 'دعم الحملات', 'تحسين الأداء'],
@@ -397,7 +399,7 @@ final class PageSeeder extends Seeder
                     'footer' => 'مناسب برندهای مقیاس‌پذیر',
                 ],
                 'ar' => [
-                    'title' => 'صحراء الأفق', 'label' => 'تبدأ من', 'value' => '749',
+                    'title' => 'صحراء الأفق', 'label' => 'تبدأ من', 'value' => '٧٤٩',
                     'suffix' => 'ر.ع / شهر واحد', 'description' => 'شراكة متكاملة لنمو العلامة',
                     'features' => ['استراتيجية تسويق كاملة', 'تطوير العلامة', 'تخطيط الحملات', 'تحسين مستمر'],
                     'footer' => 'الأفضل للعلامات المتوسعة',
@@ -459,18 +461,21 @@ final class PageSeeder extends Seeder
             'en' => [
                 'eyebrow' => 'Insights',
                 'title' => 'Insights for Brands Ready to Grow',
+                'description' => 'Because every creative decision is built around brand clarity, consistency, and growth.',
                 'primary_cta_label' => 'Read all articles',
                 'primary_cta_url' => '/insights',
             ],
             'fa' => [
                 'eyebrow' => 'بینش',
                 'title' => 'بینش برای برندهایی که آماده رشدند',
+                'description' => 'چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.',
                 'primary_cta_label' => 'خواندن همه مقالات',
                 'primary_cta_url' => '/insights',
             ],
             'ar' => [
                 'eyebrow' => 'رؤى',
                 'title' => 'رؤى للعلامات التجارية المستعدة للنمو',
+                'description' => 'لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.',
                 'primary_cta_label' => 'اقرأ كل المقالات',
                 'primary_cta_url' => '/insights',
             ],
@@ -513,21 +518,27 @@ final class PageSeeder extends Seeder
         $page->sections()->delete();
 
         $this->section($page, SectionType::AboutHero, 0, [
+            // Title is two runs in the file (1288:4165) — the gold Idealist
+            // line and the dark Poppins line are separate fields so a locale
+            // can re-split the sentence where its grammar needs to.
             'en' => [
                 'eyebrow' => 'About us',
-                'title' => 'We are Sahra — a strategy led digital marketing agency rooted in Oman',
+                'title' => 'We are Sahra',
+                'content' => 'A digital marketing agency rooted in Oman',
                 'description' => 'We help brands build stronger digital presence through content, branding, social media, and creative direction.',
                 'image_alt' => 'Glass arch sculpture holding golden sand dunes and a sun disc',
             ],
             'fa' => [
                 'eyebrow' => 'درباره ما',
-                'title' => 'ما صحرا هستیم — آژانس بازاریابی دیجیتال استراتژی‌محور با ریشه در عمان',
+                'title' => 'ما صحرا هستیم',
+                'content' => 'آژانس بازاریابی دیجیتال با ریشه در عمان',
                 'description' => 'ما به برندها کمک می‌کنیم از طریق محتوا، برندینگ، شبکه‌های اجتماعی و جهت‌گیری خلاق حضور دیجیتال قوی‌تری بسازند.',
                 'image_alt' => 'مجسمه شیشه‌ای قوسی با تپه‌های شنی طلایی و قرص خورشید',
             ],
             'ar' => [
                 'eyebrow' => 'من نحن',
-                'title' => 'نحن صحراء — وكالة تسويق رقمي قائمة على الاستراتيجية من عُمان',
+                'title' => 'نحن صحراء',
+                'content' => 'وكالة تسويق رقمي متجذّرة في عُمان',
                 'description' => 'نساعد العلامات التجارية على بناء حضور رقمي أقوى عبر المحتوى والهوية ووسائل التواصل والتوجيه الإبداعي.',
                 'image_alt' => 'منحوتة زجاجية مقوسة تحتضن كثباناً رملية ذهبية وقرص شمس',
             ],

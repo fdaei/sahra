@@ -82,7 +82,22 @@ final class TranslatableForm
      */
     public static function persist(Model $model, array $translations): void
     {
-        if ($translations === [] || ! method_exists($model, 'setTranslations')) {
+        if (! method_exists($model, 'setTranslations')) {
+            return;
+        }
+
+        // Filament includes every locale tab in the submitted state, even when
+        // an optional tab was left untouched. Do not create translation rows
+        // containing only null/empty values: translation table columns are
+        // intentionally non-nullable.
+        $translations = array_filter(
+            $translations,
+            fn (array $attributes): bool => collect($attributes)->contains(
+                fn (mixed $value): bool => filled($value),
+            ),
+        );
+
+        if ($translations === []) {
             return;
         }
 

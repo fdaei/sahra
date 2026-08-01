@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use Filament\Forms\Components\Field;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\Column;
+use Filament\Tables\Filters\BaseFilter;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
@@ -19,6 +23,23 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Field::configureUsing(
+            fn (Field $field): Field => $field->translateLabel(),
+        );
+        Section::configureUsing(function (Section $section): void {
+            $heading = $section->getHeading();
+
+            if (is_string($heading)) {
+                $section->heading(fn (): string => __($heading));
+            }
+        });
+        Column::configureUsing(
+            fn (Column $column): Column => $column->translateLabel(),
+        );
+        BaseFilter::configureUsing(
+            fn (BaseFilter $filter): BaseFilter => $filter->translateLabel(),
+        );
+
         // Remove Livewire's default 12 MB temporary-upload ceiling.
         config()->set('livewire.temporary_file_upload.rules', ['required', 'file']);
 

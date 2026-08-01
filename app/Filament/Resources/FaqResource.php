@@ -12,7 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,11 +26,11 @@ final class FaqResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-question-mark-circle';
 
-    protected static ?string $navigationGroup = 'Content';
+    protected static ?string $navigationGroup = 'Website content';
 
     protected static ?int $navigationSort = 5;
 
-    protected static ?string $navigationLabel = 'FAQs';
+    protected static ?string $navigationLabel = 'Questions & answers';
 
     public static function form(Form $form): Form
     {
@@ -47,11 +47,19 @@ final class FaqResource extends Resource
                     ->rows(4),
             ]),
 
-            Section::make()
+            Section::make('Display options')
+                ->description('The defaults are suitable for most questions.')
+                ->collapsed()
                 ->columns(2)
                 ->schema([
-                    TextInput::make('sort_order')->numeric()->default(0),
-                    Toggle::make('is_active')->label('Active')->default(true),
+                    TextInput::make('sort_order')
+                        ->label('Display order')
+                        ->helperText('Lower numbers appear first.')
+                        ->numeric()
+                        ->default(0),
+                    Toggle::make('is_active')
+                        ->label('Show this question')
+                        ->default(true),
                 ]),
         ]);
     }

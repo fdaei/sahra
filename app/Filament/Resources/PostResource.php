@@ -21,7 +21,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use Filament\Resources\Pages\PageRegistration;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,7 +37,7 @@ final class PostResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-newspaper';
 
-    protected static ?string $navigationGroup = 'Blog';
+    protected static ?string $navigationGroup = 'Articles';
 
     protected static ?int $navigationSort = 1;
 
@@ -72,6 +73,7 @@ final class PostResource extends Resource
 
                 RichEditor::make("translations.{$locale}.content")
                     ->label('Article body')
+                    ->helperText('Insert [[lead_magnet]] on its own line wherever the Content Direction Checklist should appear.')
                     ->toolbarButtons([
                         'bold', 'italic', 'link', 'bulletList', 'orderedList',
                         'h2', 'h3', 'blockquote', 'codeBlock', 'undo', 'redo',
@@ -134,8 +136,8 @@ final class PostResource extends Resource
                             ->helperText('Recalculated automatically on save.'),
 
                         Toggle::make('is_featured')
-                            ->label('Feature on listing')
-                            ->helperText('Shown as the large card at the top of /insights.'),
+                            ->label('Show as the main article')
+                            ->helperText('Displays this article as the large card at the top of the Insights page.'),
                     ]),
 
                 Grid::make(1)->columnSpan(1)->schema([
@@ -188,7 +190,7 @@ final class PostResource extends Resource
                 Tables\Columns\TextColumn::make('status')->badge(),
 
                 Tables\Columns\IconColumn::make('is_featured')
-                    ->label('Featured')
+                    ->label('Main article')
                     ->boolean(),
 
                 Tables\Columns\TextColumn::make('published_at')
@@ -216,7 +218,8 @@ final class PostResource extends Resource
                         fn (PostCategory $record): string => (string) $record->getTranslation('name'),
                     ),
 
-                Tables\Filters\TernaryFilter::make('is_featured'),
+                Tables\Filters\TernaryFilter::make('is_featured')
+                    ->label('Main article'),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([
@@ -234,7 +237,7 @@ final class PostResource extends Resource
     }
 
     /**
-     * @return array<string, \Filament\Resources\Pages\PageRegistration>
+     * @return array<string, PageRegistration>
      */
     public static function getPages(): array
     {

@@ -23,7 +23,8 @@
  * loop through the remaining 13 sections (and then the other 10 pages) is
  * the direct continuation of this work.
  */
-import { computed } from "vue";
+import { computed, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -36,6 +37,11 @@ import {
   TrendingUp,
   UsersRound,
 } from "lucide-vue-next";
+import {
+  useCounters,
+  useHeroStagger,
+  useSectionReveal,
+} from "@/Composables/useMotion";
 import SeoHead from "@/Components/SeoHead.vue";
 import CtaBanner from "@/Components/CtaBanner.vue";
 import ServicesOrbit from "@/Components/Services/ServicesOrbit.vue";
@@ -50,6 +56,7 @@ import type {
   ProjectSummary,
   ServiceItem,
   SeoMeta,
+  SharedProps,
   TestimonialItem,
 } from "@/types";
 
@@ -94,6 +101,7 @@ const props = defineProps<{
   seo: SeoMeta;
 }>();
 
+const page = usePage<SharedProps>();
 const hero = computed(() => props.sections.hero);
 const kpi = computed(() => props.sections.kpi);
 const process = computed(() => props.sections.process);
@@ -102,9 +110,50 @@ const whyUs = computed(() => props.sections.why_us);
 const reviews = computed(() => props.sections.reviews);
 const insights = computed(() => props.sections.insights);
 const faqSection = computed(() => props.sections.faq);
+const insightsSubtitle = computed(() => {
+  if (insights.value?.description || insights.value?.subtitle) {
+    return insights.value.description || insights.value.subtitle;
+  }
+
+  return {
+    en: "Because every creative decision is built around brand clarity, consistency, and growth.",
+    fa: "چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.",
+    ar: "لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.",
+  }[page.props.locale.current];
+});
+
+/*
+ | Testimonial marquee track (A6).
+ |
+ | The animation translates the track -50%, which requires it to be exactly
+ | two identical halves. A half must also be wider than the viewport or the
+ | row visibly runs out mid-loop — the design shows 7 cards, but the seeded
+ | data can hold as few as 1, so each half repeats the source list until it
+ | covers a wide desktop (card 328 + gap 24 = 352 per item).
+ */
+const testimonialTrack = computed(() => {
+  const source = props.testimonials;
+  if (source.length === 0) return [];
+
+  const perHalf = Math.max(1, Math.ceil(2560 / 352 / source.length));
+  const half = Array.from({ length: perHalf }, () => source).flat();
+
+  return [...half, ...half];
+});
 
 const whyUsIcons = [BadgeCheck, PanelsTopLeft, Gem, ClipboardCheck];
 const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
+
+/*
+ | Motion — audit A1 (hero stagger), A3 (KPI counters), A7 (section reveal).
+ | The composables no-op under reduced motion and revert on unmount, so
+ | ScrollTriggers do not survive an Inertia page swap.
+ */
+const heroStack = ref<HTMLElement | null>(null);
+
+useHeroStagger(heroStack);
+useCounters();
+useSectionReveal();
 </script>
 
 <template>
@@ -132,16 +181,16 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
     "
   >
     <!-- hero texts: x=96 y=176, gap-14 (space56) — Figma 1419:9194 -->
+    <!-- A1: the three direct children (badge / texts / CTAs) stagger in on load. -->
     <div
+      ref="heroStack"
       class="relative z-10 flex w-[731px] max-w-[calc(100%-3rem)] flex-col gap-14 px-6 pb-11 pt-[120px] md:ms-24 md:px-0 md:pb-0 md:pt-[176px]"
     >
       <!--
         hero badge — Figma 1419:9195: row, padding 8, gap 8, radius 1000,
         fill gold/100. `hug` sizing, so the pill must not stretch.
       -->
-      <div
-        class="flex w-fit items-center gap-2 rounded-round bg-gold-100 p-2"
-      >
+      <div class="flex w-fit items-center gap-2 rounded-round bg-gold-100 p-2">
         <span
           class="inline-block size-2 rotate-45 bg-gold-700"
           aria-hidden="true"
@@ -174,7 +223,7 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
             the glyphs, as in Figma, rather than across the 731px column.
           -->
           <span
-            class="block w-fit bg-clip-text font-['Idealist',_serif] text-[56px] leading-[80px] tracking-normal text-transparent md:text-[96px]"
+            class="block w-fit bg-clip-text font-display text-[56px] leading-[80px] tracking-normal text-transparent md:text-[96px]"
             :style="
               hero.colors.content
                 ? { color: hero.colors.content, backgroundImage: 'none' }
@@ -237,11 +286,13 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
   <section v-if="kpi" class="section">
     <div
       class="container-narrow grid grid-cols-1 gap-4 text-center md:grid-cols-3"
+      data-reveal-group
     >
       <div
         v-for="(item, i) in kpi.items"
         :key="i"
-        class="edge-gold flex flex-col items-center justify-center gap-2 rounded-sm px-3 py-6"
+        class="edge-gold will-reveal flex flex-col items-center justify-center gap-2 rounded-sm px-3 py-6"
+        data-reveal
       >
         <div class="flex items-center justify-center gap-4">
           <component
@@ -249,7 +300,12 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
             class="size-8 text-gold"
             :stroke-width="1.5"
           />
-          <p class="latin-nums text-[32px] font-medium leading-none text-ink">
+          <!-- A3: counts up to the authored value; the DOM text stays the
+               source of truth so the number is right without JS. -->
+          <p
+            class="latin-nums text-[32px] font-medium leading-none text-ink"
+            data-counter
+          >
             {{ item.value }}
           </p>
         </div>
@@ -277,19 +333,30 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
         }}</span>
         {{ sections.trust_proof?.subtitle }}
       </h2>
+      <!--
+        A2 — the rail scrolls continuously behind the `shade` mask. The list
+        is rendered twice so the -50% loop is seamless; the duplicate is
+        aria-hidden so screen readers announce each client once.
+      -->
       <div class="marquee-mask overflow-hidden">
-        <div class="flex items-center gap-12">
-          <span
-            v-for="(client, i) in clients"
-            :key="i"
-            class="flex size-32 shrink-0 items-center justify-center"
-          >
-            <img
-              :src="client.logo"
-              :alt="client.name"
-              class="w-20 object-contain"
-            />
-          </span>
+        <div
+          class="marquee-track items-center gap-12"
+          style="--marquee-duration: 28s"
+        >
+          <template v-for="copy in 2" :key="copy">
+            <span
+              v-for="(client, i) in clients"
+              :key="`${copy}-${i}`"
+              class="flex size-32 shrink-0 items-center justify-center"
+              :aria-hidden="copy === 2 ? 'true' : undefined"
+            >
+              <img
+                :src="client.logo"
+                :alt="copy === 2 ? '' : client.name"
+                class="w-20 object-contain"
+              />
+            </span>
+          </template>
         </div>
       </div>
     </div>
@@ -342,11 +409,12 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
             {{ whyUs.subtitle }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-2 gap-4" data-reveal-group>
           <div
             v-for="(item, i) in whyUs.items"
             :key="i"
-            class="flex min-h-[184px] flex-col items-start gap-4 rounded-sm border border-gold-200 bg-gold-100 p-8 shadow-[0_4px_5px_rgba(0,0,0,0.05)]"
+            class="will-reveal flex min-h-[184px] flex-col items-start gap-4 rounded-sm border border-gold-200 bg-gold-100 p-8 shadow-[0_4px_5px_rgba(0,0,0,0.05)]"
+            data-reveal
           >
             <component
               :is="whyUsIcons[i] || BadgeCheck"
@@ -382,25 +450,36 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
       </h2>
     </div>
 
-    <div class="mt-11 flex gap-6 overflow-x-auto px-6 pb-4 md:px-24">
-      <div
-        v-for="(t, i) in testimonials"
-        :key="i"
-        class="flex h-[228px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] border-neutral-200 bg-[#f8f7f8] p-6 shadow-testimonial"
-      >
-        <p class="text-body-md leading-normal text-neutral-800">
-          {{ t.quote }}
-        </p>
-        <div class="mt-auto flex items-center gap-2">
-          <img
-            v-if="t.avatar"
-            :src="t.avatar.src"
-            :alt="t.avatar.alt"
-            class="size-12 rounded-full object-cover"
-          />
-          <div>
-            <p class="text-label-lg text-neutral-700">{{ t.name }}</p>
-            <p class="mt-1 text-label-md text-neutral-600">{{ t.role }}</p>
+    <!--
+      A6 — the "cards" frame 1419:9249 is 2452 wide inside a 1248 viewport, so
+      the row travels rather than scrolls. Same duplicate-and-shift-50% trick
+      as the client rail, at the 40s the audit specifies; hovering pauses it so
+      a card can be read (and its 414:864 hover state inspected).
+    -->
+    <div class="marquee-mask mt-11 overflow-hidden pb-4">
+      <!-- No padding on the track: it is `width: max-content`, so any inline
+           padding would be carried into the -50% shift and the loop would drift. -->
+      <div class="marquee-track gap-6" style="--marquee-duration: 40s">
+        <div
+          v-for="(t, i) in testimonialTrack"
+          :key="i"
+          class="testimonial-card flex h-[228px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial"
+          :aria-hidden="i >= testimonials.length ? 'true' : undefined"
+        >
+          <p class="text-body-md leading-normal text-neutral-800">
+            {{ t.quote }}
+          </p>
+          <div class="mt-auto flex items-center gap-2">
+            <img
+              v-if="t.avatar"
+              :src="t.avatar.src"
+              :alt="t.avatar.alt"
+              class="size-12 rounded-full object-cover"
+            />
+            <div>
+              <p class="text-label-lg text-neutral-700">{{ t.name }}</p>
+              <p class="mt-1 text-label-md text-neutral-600">{{ t.role }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -409,33 +488,46 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
 
   <!-- Insights — Figma 1419:9258 -->
   <section v-if="insights" class="section">
-    <div class="container-sahra">
-      <div class="flex items-end justify-between">
-        <div>
-          <div
-            class="eyebrow"
-            :style="{ color: insights.colors.eyebrow || undefined }"
-          >
-            {{ insights.eyebrow }}
-          </div>
+    <div class="container-sahra flex flex-col gap-12">
+      <div class="flex flex-col gap-12">
+        <div
+          class="eyebrow"
+          :style="{ color: insights.colors.eyebrow || undefined }"
+        >
+          {{ insights.eyebrow }}
+        </div>
+        <div
+          class="grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
+        >
           <h2
-            class="max-w-xl text-display-sm"
+            class="text-display-md leading-normal text-neutral-900"
             :style="{ color: insights.colors.title || undefined }"
           >
             {{ insights.title }}
           </h2>
+          <p
+            v-if="insightsSubtitle"
+            class="max-w-[612px] text-title-sm font-medium text-neutral-700"
+            :style="{
+              color:
+                insights.colors.description ||
+                insights.colors.subtitle ||
+                undefined,
+            }"
+          >
+            {{ insightsSubtitle }}
+          </p>
         </div>
       </div>
 
-      <div class="mt-11 grid gap-6 lg:grid-cols-2">
+      <div class="grid gap-6 lg:h-[424px] lg:grid-cols-2" data-reveal-group>
         <a
           v-if="posts[0]"
           :href="posts[0].url"
-          class="group grid overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-card md:grid-cols-[minmax(0,279px)_1fr]"
+          class="group will-reveal grid overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-card md:grid-cols-[279px_1fr]"
+          data-reveal
         >
-          <div
-            class="min-h-[260px] overflow-hidden rounded-sm md:min-h-[392px]"
-          >
+          <div class="h-[260px] overflow-hidden rounded-sm md:h-[392px]">
             <img
               v-if="posts[0].image"
               :src="posts[0].image.src"
@@ -443,7 +535,7 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
               class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.04]"
             />
           </div>
-          <div class="flex min-w-0 flex-col p-6">
+          <div class="flex min-w-0 flex-col py-0 ps-6">
             <div class="flex items-center gap-2 text-body-md text-neutral-700">
               <CalendarDays class="size-6 text-gold" :stroke-width="1.5" />
               <span>{{ posts[0].publishedAt }}</span>
@@ -461,20 +553,21 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
             </span>
           </div>
         </a>
-        <div class="flex flex-col gap-6">
+        <div class="will-reveal flex flex-col gap-6" data-reveal>
           <a
-            v-for="post in posts.slice(1, 3)"
+            v-for="(post, index) in posts.slice(1, 3)"
             :key="post.slug"
             :href="post.url"
-            class="grid flex-1 gap-4 border-b border-neutral-200 pb-6 sm:grid-cols-[180px_1fr]"
+            class="grid flex-1 gap-6 sm:grid-cols-[188px_1fr]"
+            :class="index === 0 ? 'border-b border-neutral-200 pb-6' : ''"
           >
             <img
               v-if="post.image"
               :src="post.image.src"
               :alt="post.image.alt"
-              class="h-[176px] w-full rounded-sm object-cover"
+              class="aspect-square h-[188px] w-[188px] rounded-sm object-cover"
             />
-            <div class="flex flex-col justify-center gap-8">
+            <div class="flex flex-col justify-center gap-6">
               <div
                 class="flex items-center gap-2 text-body-md text-neutral-700"
               >
@@ -507,11 +600,12 @@ const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
         </h2>
       </div>
 
-      <div class="flex flex-col gap-6">
+      <div class="flex flex-col gap-6" data-reveal-group>
         <details
           v-for="(faq, i) in faqs"
           :key="i"
-          class="group rounded-sm border border-gold-200 bg-gold-100 p-8"
+          class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-8"
+          data-reveal
         >
           <summary
             class="flex cursor-pointer list-none items-center justify-between gap-4 text-title-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden"

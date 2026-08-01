@@ -10,7 +10,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -24,7 +24,9 @@ final class SocialLinkResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-link';
 
-    protected static ?string $navigationGroup = 'Site';
+    protected static ?string $navigationGroup = 'Website setup';
+
+    protected static ?string $navigationLabel = 'Social media links';
 
     protected static ?int $navigationSort = 2;
 

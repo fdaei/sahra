@@ -16,13 +16,14 @@ import type { SharedProps } from '@/types'
 const page = usePage<SharedProps>()
 
 const flash = computed(() => page.props.flash)
+const isErrorPage = computed(() => page.component === 'Error')
 
 // Announce flash messages to screen readers when they appear.
 const announcement = computed(() => flash.value.success ?? flash.value.error ?? '')
 </script>
 
 <template>
-  <AppHeader />
+  <AppHeader :minimal="isErrorPage" />
 
   <!--
     The header is a fixed, translucent overlay in every Figma frame — the hero
@@ -44,7 +45,7 @@ const announcement = computed(() => flash.value.success ?? flash.value.error ?? 
     </Transition>
   </main>
 
-  <AppFooter />
+  <AppFooter v-if="!isErrorPage" />
 
   <!-- Flash region. aria-live so success/error is announced without focus. -->
   <div

@@ -9,7 +9,9 @@ use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\TranslatableForm;
+use App\Models\Industry;
 use App\Models\Project;
+use App\Models\Service;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
@@ -20,7 +22,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use Filament\Resources\Pages\PageRegistration;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,7 +41,7 @@ final class ProjectResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-briefcase';
 
-    protected static ?string $navigationGroup = 'Work';
+    protected static ?string $navigationGroup = 'Projects';
 
     protected static ?int $navigationSort = 1;
 
@@ -114,7 +117,7 @@ final class ProjectResource extends Resource
                             ->label('Industry')
                             ->relationship('industry')
                             ->getOptionLabelFromRecordUsing(
-                                fn (Project|\App\Models\Industry $record): string => (string) $record->getTranslation('name'),
+                                fn (Project|Industry $record): string => (string) $record->getTranslation('name'),
                             )
                             ->searchable()
                             ->preload()
@@ -124,7 +127,7 @@ final class ProjectResource extends Resource
                             ->label('Services delivered')
                             ->relationship('services')
                             ->getOptionLabelFromRecordUsing(
-                                fn (\App\Models\Service $record): string => (string) $record->getTranslation('title'),
+                                fn (Service $record): string => (string) $record->getTranslation('title'),
                             )
                             ->multiple()
                             ->preload()
@@ -145,8 +148,8 @@ final class ProjectResource extends Resource
                             ->helperText('Lower numbers appear first.'),
 
                         Toggle::make('is_featured')
-                            ->label('Feature on home page')
-                            ->helperText('Appears in the home projects showcase.'),
+                            ->label('Show this project on the home page')
+                            ->helperText('Displays this project in the selected projects section on the home page.'),
                     ]),
 
                 Grid::make(1)->columnSpan(1)->schema([
@@ -219,7 +222,7 @@ final class ProjectResource extends Resource
                     ->badge(),
 
                 Tables\Columns\IconColumn::make('is_featured')
-                    ->label('Featured')
+                    ->label('Shown on home')
                     ->boolean(),
 
                 Tables\Columns\TextColumn::make('published_at')
@@ -245,11 +248,11 @@ final class ProjectResource extends Resource
                         fn (Builder $query): Builder => $query->withTranslations()->ordered(),
                     )
                     ->getOptionLabelFromRecordUsing(
-                        fn (\App\Models\Industry $record): string => (string) $record->getTranslation('name'),
+                        fn (Industry $record): string => (string) $record->getTranslation('name'),
                     ),
 
                 Tables\Filters\TernaryFilter::make('is_featured')
-                    ->label('Featured'),
+                    ->label('Shown on home'),
 
                 Tables\Filters\TrashedFilter::make(),
             ])
@@ -279,7 +282,7 @@ final class ProjectResource extends Resource
     }
 
     /**
-     * @return array<string, \Filament\Resources\Pages\PageRegistration>
+     * @return array<string, PageRegistration>
      */
     public static function getPages(): array
     {

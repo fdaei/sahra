@@ -19,6 +19,16 @@ return [
         'error'            => 'Something went wrong. Please try again.',
     ],
 
+    // Contact details panel — Figma 466:1216.
+    'details' => [
+        'title'        => 'Contact Details',
+        'whatsapp'     => 'WhatsApp',
+        'location'     => 'Location',
+        'email'        => 'Email',
+        'working_with' => 'Working With',
+        'follow'       => 'Follow Sahra for ideas, projects, and brand insights',
+    ],
+
     'newsletter' => [
         'email'             => 'Email',
         'email_placeholder' => 'you@example.com',

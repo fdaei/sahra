@@ -23,6 +23,8 @@ return [
     'loading'             => 'جارٍ التحميل…',
     'sending'             => 'جارٍ الإرسال…',
 
+    'last_updated'        => 'آخر تحديث: :date',
+
     'get_checklist'       => 'احصل على القائمة',
     'start_conversation'  => 'ابدأ محادثة',
     'lets_talk'           => 'لنتحدث',

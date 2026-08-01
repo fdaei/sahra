@@ -7,11 +7,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PostTagResource\Pages;
 use App\Filament\Support\TranslatableForm;
 use App\Models\PostTag;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,7 +25,9 @@ final class PostTagResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-hashtag';
 
-    protected static ?string $navigationGroup = 'Blog';
+    protected static ?string $navigationGroup = 'Articles';
+
+    protected static ?string $navigationLabel = 'Article tags';
 
     protected static ?int $navigationSort = 3;
 
@@ -51,18 +52,13 @@ final class PostTagResource extends Resource
                     ->required($locale === config('locales.fallback'))
                     ->maxLength(150),
             ]),
-
-            Section::make()
-                ->columns(2)
-                ->schema([
-                ]),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table
-            
+
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->getStateUsing(fn (PostTag $record): string => (string) $record->getTranslation('name'))

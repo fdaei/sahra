@@ -24,6 +24,14 @@ export const MOTION = {
     reveal: 0.7,
     counter: 2,
     hover: 0.4,
+    /*
+     | Component state swaps. Unlike the scroll effects, these ARE stored in
+     | the file: the Service card (1419:9295 -> 501:722) and testimonial card
+     | (1419:9251 -> 414:864) both carry an ON_HOVER/MOUSE_ENTER interaction
+     | with SMART_ANIMATE, EASE_OUT, 0.3s. Audit gap G3 is therefore only
+     | true of the scroll-driven effects, not of these.
+     */
+    state: 0.3,
   },
   stagger: {
     hero: 0.08,
@@ -73,6 +81,14 @@ export function initMotion(): void {
   }
 
   document.documentElement.classList.remove('reduced-motion')
+
+  /*
+   | `.will-reveal` sets the hidden start state in CSS so revealed elements do
+   | not flash before GSAP measures them. That is only safe while GSAP is
+   | actually going to run, so the CSS rule is gated behind this class: if the
+   | bundle fails to load or throws before this point, nothing is ever hidden.
+   */
+  document.documentElement.classList.add('motion-ready')
 
   pageContext = gsap.context(() => {
     // Individual effects register themselves via composables during component

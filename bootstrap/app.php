@@ -10,6 +10,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -28,6 +29,22 @@ return Application::configure(basePath: dirname(__DIR__))
             'locale'          => SetLocale::class,
             'locale.redirect' => RedirectToLocalisedRoute::class,
         ]);
+
+        /*
+         | SetLocale MUST run before SubstituteBindings.
+         |
+         | Route-model binding for the localised slug routes resolves through
+         | Model::resolveRouteBinding() -> scopeWhereSlug(), which matches the
+         | slug against app()->getLocale(). As a route alias, SetLocale would
+         | otherwise run *after* SubstituteBindings (a `web` group middleware),
+         | so a Persian or Arabic slug was looked up among the English
+         | translations and every /fa|ar/work/{slug} and /fa|ar/insights/{slug}
+         | URL 404'd while the /en ones resolved.
+         */
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: SetLocale::class,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /*

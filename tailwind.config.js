@@ -98,21 +98,48 @@ export default {
         // FA/AR — Doran FaNum (Figma "AR-Desktop/*"), Vazirmatn fallback.
         // See docs/ASSET-MANIFEST.md §10 — Doran is commercially licensed.
         arabic: ['"Doran FaNum"', 'Vazirmatn', 'Tahoma', 'sans-serif'],
+        /*
+         | Display accent — eyebrows, hero accent runs, package prices.
+         | Idealist is Latin-only (see its unicode-range in fonts.css), so
+         | fa/ar fall through to the Arabic display face rather than to a
+         | generic serif. Use `font-display` instead of hardcoding the stack.
+         */
+        display: ['Idealist', '"Doran FaNum"', 'Vazirmatn', 'serif'],
       },
 
       fontSize: {
-        // Figma type tokens. lineHeight 100 in Figma == 1.0; we raise body
-        // copy to readable leading while keeping display type tight.
-        'label-md': ['12px', { lineHeight: '1.4', fontWeight: '500' }],
-        'label-lg': ['14px', { lineHeight: '1.4', fontWeight: '500' }],
-        'body-md': ['14px', { lineHeight: '1.6', fontWeight: '400' }],
-        'body-lg': ['16px', { lineHeight: '1.6', fontWeight: '400' }],
-        'title-sm': ['18px', { lineHeight: '1.4', fontWeight: '400' }],
-        'title-md': ['20px', { lineHeight: '1.35', fontWeight: '500' }],
-        'title-lg': ['22px', { lineHeight: '1.3', fontWeight: '500' }],
-        'display-sm': ['36px', { lineHeight: '1.15', fontWeight: '600' }],
-        'display-md': ['40px', { lineHeight: '1.12', fontWeight: '600' }],
-        'display-lg': ['48px', { lineHeight: '1.1', fontWeight: '600' }],
+        /*
+         | Figma type tokens.
+         |
+         | Every text node in the file leaves line height on "Auto"
+         | (`lineHeightUnit: INTRINSIC_%`), which Figma renders at Poppins'
+         | natural 1.5 — verified across the Home, Services, About and
+         | Privacy frames: 48→72, 40→60, 30→45, 20→30, 14→21. Only two nodes
+         | in the whole file override it. So 1.5 IS the design, and the frame
+         | heights the layout is built from assume it; tightening display
+         | leading here would shorten every heading block against the file.
+         */
+        'label-md': ['12px', { lineHeight: '1.5', fontWeight: '500' }],
+        'label-lg': ['14px', { lineHeight: '1.5', fontWeight: '500' }],
+        'body-md': ['14px', { lineHeight: '1.5', fontWeight: '400' }],
+        'body-lg': ['16px', { lineHeight: '1.5', fontWeight: '400' }],
+        // Figma 20/400 — legal body copy, service section intros.
+        'body-xl': ['20px', { lineHeight: '1.5', fontWeight: '400' }],
+        'title-sm': ['18px', { lineHeight: '1.5', fontWeight: '400' }],
+        'title-md': ['20px', { lineHeight: '1.5', fontWeight: '500' }],
+        'title-lg': ['22px', { lineHeight: '1.5', fontWeight: '500' }],
+        // Figma 24/500 — card titles, final-CTA headline.
+        'title-xl': ['24px', { lineHeight: '1.5', fontWeight: '500' }],
+        // Figma 26/600 and 28/500 — legal/section sub-heads.
+        'heading-sm': ['26px', { lineHeight: '1.5', fontWeight: '600' }],
+        'heading-md': ['28px', { lineHeight: '1.5', fontWeight: '500' }],
+        // Figma 30/500 — legal section headings.
+        'heading-lg': ['30px', { lineHeight: '1.5', fontWeight: '500' }],
+        // Figma 32/400 — package price lines.
+        'heading-xl': ['32px', { lineHeight: '1.5', fontWeight: '400' }],
+        'display-sm': ['36px', { lineHeight: '1.5', fontWeight: '500' }],
+        'display-md': ['40px', { lineHeight: '1.5', fontWeight: '600' }],
+        'display-lg': ['48px', { lineHeight: '1.5', fontWeight: '600' }],
       },
 
       maxWidth: {

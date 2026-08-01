@@ -19,8 +19,9 @@
  * Everything renders off `project` (ProjectDetail) — see
  * App\Services\ContentTransformer::projectDetail.
  */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { Link } from '@inertiajs/vue3'
+import projectArcRings from '~img/decor/arc-rings-project.svg'
 import {
   ArrowRight,
   BarChart3,
@@ -36,6 +37,7 @@ import {
 } from 'lucide-vue-next'
 import SeoHead from '@/Components/SeoHead.vue'
 import CtaBanner from '@/Components/CtaBanner.vue'
+import { useHeroStagger, useSectionReveal } from '@/Composables/useMotion'
 import { useTranslations } from '@/Composables/useTranslations'
 import type { ProjectDetail, SeoMeta } from '@/types'
 
@@ -70,17 +72,41 @@ const info = computed(() =>
 
 /** Results icons, in the order the design lists them (target → eye). */
 const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
+
+const pageRoot = ref<HTMLElement | null>(null)
+const intro = ref<HTMLElement | null>(null)
+
+useHeroStagger(intro)
+useSectionReveal(pageRoot)
 </script>
 
 <template>
   <SeoHead :meta="seo" />
 
-  <!-- Page column: gap 200 between major blocks (1361:7093), top inset 184. -->
-  <div
-    class="container-sahra flex flex-col gap-24 pb-24 pt-[136px] md:gap-[144px] md:pt-[184px] lg:gap-[200px]"
-  >
+  <div ref="pageRoot" class="relative overflow-x-clip">
+    <!--
+      Figma 1083:2745 / 1323:7542 — the 1476×1597 concentric rings begin
+      off-canvas at x=-617 and y≈1000 on the desktop frame. Logical `start`
+      mirrors the composition for fa/ar without duplicating the asset.
+    -->
+    <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div class="relative mx-auto h-full w-full max-w-frame">
+        <img
+          :src="projectArcRings"
+          alt=""
+          width="1476"
+          height="1597"
+          class="absolute start-[-617px] top-[1000px] w-[1476px] max-w-none max-md:start-[-760px] max-md:top-[820px]"
+        />
+      </div>
+    </div>
+
+    <!-- Page column: gap 200 between major blocks (1361:7093), top inset 184. -->
+    <div
+      class="container-sahra relative z-10 flex flex-col gap-24 pb-32 pt-[136px] md:gap-[144px] md:pt-[184px] lg:gap-[224px]"
+    >
     <!-- Intro + banner — Figma 1361:7087 (column, gap 80) -->
-    <div class="flex flex-col gap-14 md:gap-20">
+    <div ref="intro" class="flex flex-col gap-14 md:gap-20">
       <div class="flex flex-col gap-10 lg:flex-row lg:justify-between lg:gap-[342px]">
         <div class="flex max-w-[612px] flex-col gap-6">
           <h1 class="text-[36px] font-semibold text-neutral-900 md:text-[48px]">
@@ -133,7 +159,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </div>
 
     <!-- The Challenge — Figma 1294:4818 -->
-    <section v-if="project.challenge" class="flex flex-col gap-10 lg:flex-row lg:justify-between">
+    <section
+      v-if="project.challenge"
+      class="will-reveal flex flex-col gap-10 lg:flex-row lg:justify-between"
+      data-reveal
+    >
       <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.challenge') }}
       </h2>
@@ -163,7 +193,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </section>
 
     <!-- Goals — "Goal card" 1061:2072, row of 4, gap 24 -->
-    <section v-if="project.goals.length > 0" class="flex flex-col gap-12">
+    <section
+      v-if="project.goals.length > 0"
+      class="will-reveal flex flex-col gap-12"
+      data-reveal
+    >
       <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.goals') }}
       </h2>
@@ -171,7 +205,7 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
         <li
           v-for="(card, i) in project.goals"
           :key="i"
-          class="flex flex-col gap-6 rounded-sm border-b border-e border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 px-6 py-12"
+          class="flex flex-col gap-6 rounded-sm border-t-[3px] border-t-gold bg-neutral-50/30 px-6 py-12"
         >
           <span class="text-[36px] font-medium leading-none text-gold">
             {{ String(i + 1).padStart(2, '0') }}
@@ -185,7 +219,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </section>
 
     <!-- Strategy — 2×2, numbered, gold titles, hairline separators -->
-    <section v-if="project.strategy.length > 0" class="flex flex-col gap-10 lg:flex-row lg:justify-between">
+    <section
+      v-if="project.strategy.length > 0"
+      class="will-reveal flex flex-col gap-10 lg:flex-row lg:justify-between"
+      data-reveal
+    >
       <h2 class="shrink-0 text-[32px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.strategy') }}
       </h2>
@@ -205,7 +243,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </section>
 
     <!-- Deliverables — 3 across, numbered cards -->
-    <section v-if="project.deliverables.length > 0" class="flex flex-col gap-12">
+    <section
+      v-if="project.deliverables.length > 0"
+      class="will-reveal flex flex-col gap-12"
+      data-reveal
+    >
       <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.deliverables') }}
       </h2>
@@ -227,7 +269,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </section>
 
     <!-- Content Showcase — 1294:4995; images 400×500, radius 8, gap 24 -->
-    <section v-if="project.showcase.length > 0" class="flex flex-col gap-12">
+    <section
+      v-if="project.showcase.length > 0"
+      class="will-reveal flex flex-col gap-12"
+      data-reveal
+    >
       <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.showcase') }}
       </h2>
@@ -246,7 +292,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </section>
 
     <!-- Results — 1349:8209; stat cards then summary -->
-    <section v-if="project.results.length > 0" class="flex flex-col gap-12">
+    <section
+      v-if="project.results.length > 0"
+      class="will-reveal flex flex-col gap-12"
+      data-reveal
+    >
       <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.results') }}
       </h2>
@@ -280,7 +330,8 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     <!-- Before / after — 1361:7094 -->
     <section
       v-if="project.beforeAfter.before || project.beforeAfter.after"
-      class="grid gap-6 sm:grid-cols-2"
+      class="will-reveal grid gap-6 sm:grid-cols-2"
+      data-reveal
     >
       <figure v-if="project.beforeAfter.before" class="flex flex-col gap-6">
         <figcaption class="text-center text-[28px] font-semibold text-neutral-900">
@@ -305,7 +356,11 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
     </section>
 
     <!-- Next case study — 1033:2288 (column, gap 32) -->
-    <section v-if="project.next" class="flex flex-col gap-8">
+    <section
+      v-if="project.next"
+      class="will-reveal flex flex-col gap-8"
+      data-reveal
+    >
       <p class="text-[24px] font-medium text-neutral-800">
         {{ t('work.next_case_study') }}
       </p>
@@ -321,8 +376,9 @@ const resultIcons = [Target, BarChart3, MessageCircle, Users, Eye]
         />
       </Link>
     </section>
-  </div>
+    </div>
 
-  <!-- Final CTA card — Figma 1419:9333, closing block of 639:1617 -->
-  <CtaBanner v-if="finalCta" :section="finalCta" />
+    <!-- Final CTA card — Figma 1419:9333, closing block of 639:1617 -->
+    <CtaBanner v-if="finalCta" :section="finalCta" />
+  </div>
 </template>

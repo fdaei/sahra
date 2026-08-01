@@ -99,6 +99,44 @@ HTML;
             ],
         ];
 
+        $listingCovers = [
+            'direction-first.webp',
+            'brand-direction.webp',
+            'social-growth.webp',
+            'direction-first.webp',
+            'social-growth.webp',
+            'brand-direction.webp',
+            'direction-first.webp',
+        ];
+
+        foreach ($listingCovers as $offset => $cover) {
+            $number = $offset + 3;
+            $posts[] = [
+                'slug' => "brand-direction-{$number}",
+                'category' => $offset % 2 === 0 ? $socialCategory : $growthCategory,
+                'featured' => false,
+                'cover' => "posts/{$cover}",
+                'en' => [
+                    'title' => 'What Happens When You Create Content Without Direction?',
+                    'subtitle' => 'Clear direction turns activity into meaningful growth',
+                    'excerpt' => 'A practical look at how strategy creates consistency, clarity, and stronger brand growth.',
+                    'content' => $enBody,
+                ],
+                'fa' => [
+                    'title' => 'وقتی بدون جهت محتوا می‌سازید چه اتفاقی می‌افتد؟',
+                    'subtitle' => 'جهت شفاف، فعالیت را به رشد معنادار تبدیل می‌کند',
+                    'excerpt' => 'نگاهی کاربردی به نقش استراتژی در انسجام، شفافیت و رشد قوی‌تر برند.',
+                    'content' => $faBody,
+                ],
+                'ar' => [
+                    'title' => 'ماذا يحدث عندما تنشئ محتوى بلا اتجاه؟',
+                    'subtitle' => 'الاتجاه الواضح يحوّل النشاط إلى نمو هادف',
+                    'excerpt' => 'نظرة عملية على دور الاستراتيجية في الاتساق والوضوح ونمو العلامة.',
+                    'content' => $arBody,
+                ],
+            ];
+        }
+
         foreach ($posts as $index => $data) {
             $post = Post::updateOrCreate(
                 ['id' => $index + 1],

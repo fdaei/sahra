@@ -156,7 +156,7 @@ defineProps<{
   align-items: center;
   gap: 4px;
   color: #bd933b;
-  font-family: Idealist, serif;
+  font-family: Idealist, 'Doran FaNum', Vazirmatn, serif;
   font-size: 24px;
   line-height: 1;
 }

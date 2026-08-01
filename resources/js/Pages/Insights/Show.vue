@@ -13,12 +13,12 @@
  *             then three 68×68 buttons stacked with gap 16
  *   related 1220:4342 column, gap 48
  *
- * The lead-magnet strip sits *inside* the article in the frame, so the body
- * HTML is split at the heading nearest its midpoint and the component is
- * rendered between the halves.
+ * Authors place the lead-magnet strip inside the article with the
+ * [[lead_magnet]] placeholder. Older articles without the placeholder retain
+ * the original midpoint placement until an editor chooses an exact position.
  */
-import { computed, ref } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
+import { computed, ref } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
 import {
   CalendarDays,
   Check,
@@ -26,87 +26,146 @@ import {
   Linkedin,
   PenLine,
   Tag,
-} from 'lucide-vue-next'
-import SeoHead from '@/Components/SeoHead.vue'
-import LeadMagnet from '@/Components/Sections/LeadMagnet.vue'
-import { useTranslations } from '@/Composables/useTranslations'
-import type { PostDetail, SeoMeta, SharedProps } from '@/types'
+} from "lucide-vue-next";
+import SeoHead from "@/Components/SeoHead.vue";
+import CtaBanner from "@/Components/CtaBanner.vue";
+import LeadMagnet from "@/Components/Sections/LeadMagnet.vue";
+import { useTranslations } from "@/Composables/useTranslations";
+import type { PostDetail, SeoMeta, SharedProps } from "@/types";
 
 const props = defineProps<{
-  post: PostDetail
-  leadMagnet: InstanceType<typeof LeadMagnet>['$props']['section'] | null
-  seo: SeoMeta
-}>()
+  post: PostDetail;
+  leadMagnet: InstanceType<typeof LeadMagnet>["$props"]["section"] | null;
+  finalCta: InstanceType<typeof CtaBanner>["$props"]["section"] | null;
+  seo: SeoMeta;
+}>();
 
-const page = usePage<SharedProps>()
-const { t } = useTranslations()
+const page = usePage<SharedProps>();
+const { t } = useTranslations();
 
 /** Meta list — Figma "infos" 1016:1839. Rows drop when the field is empty. */
 const meta = computed(() =>
   [
-    { icon: CalendarDays, label: t('blog.date'), value: props.post.publishedAt },
-    { icon: PenLine, label: t('blog.written_by'), value: props.post.author?.name ?? '' },
-    { icon: Tag, label: t('blog.subject'), value: props.post.category?.name ?? '' },
+    {
+      icon: CalendarDays,
+      label: t("blog.date"),
+      value: props.post.publishedAt,
+    },
+    {
+      icon: PenLine,
+      label: t("blog.written_by"),
+      value: props.post.author?.name ?? "",
+    },
+    {
+      icon: Tag,
+      label: t("blog.subject"),
+      value: props.post.category?.name ?? "",
+    },
   ].filter((row) => row.value),
-)
+);
+
+type ArticlePart = { type: "html"; html: string } | { type: "leadMagnet" };
+
+const leadMagnetMarker = "[[lead_magnet]]";
+const leadMagnetSentinel = "\u0000LEAD_MAGNET\u0000";
 
 /**
- * Split the article at the first heading past the halfway mark so the
- * lead-magnet strip lands between sections rather than mid-paragraph.
+ * Replace authored placeholders with component entries while keeping the
+ * article HTML around them intact. Trix may wrap a marker-only line in either
+ * a paragraph or a div, so remove that wrapper before splitting.
  */
-const bodyParts = computed<[string, string]>(() => {
-  const html = props.post.content
+const articleParts = computed<ArticlePart[]>(() => {
+  const html = props.post.content;
 
-  if (!props.leadMagnet || html.length < 1200) return [html, '']
+  if (!props.leadMagnet) return [{ type: "html", html }];
 
-  const headings = [...html.matchAll(/<h[23][\s>]/gi)].map((m) => m.index ?? 0)
-  const cut = headings.find((i) => i > html.length / 2)
+  if (html.includes(leadMagnetMarker)) {
+    const markedHtml = html
+      .replace(
+        /<(?:p|div)>\s*\[\[lead_magnet\]\]\s*<\/(?:p|div)>/gi,
+        leadMagnetSentinel,
+      )
+      .replace(/\[\[lead_magnet\]\]/gi, leadMagnetSentinel);
 
-  return cut === undefined ? [html, ''] : [html.slice(0, cut), html.slice(cut)]
-})
+    return markedHtml
+      .split(leadMagnetSentinel)
+      .flatMap<ArticlePart>((part, index, parts) => {
+        const entries: ArticlePart[] = [];
 
-const copied = ref(false)
+        if (part.trim()) entries.push({ type: "html", html: part });
+        if (index < parts.length - 1) entries.push({ type: "leadMagnet" });
+
+        return entries;
+      });
+  }
+
+  if (html.length < 1200) return [{ type: "html", html }];
+
+  const headings = [...html.matchAll(/<h[23][\s>]/gi)].map((m) => m.index ?? 0);
+  const cut = headings.find((i) => i > html.length / 2);
+
+  if (cut === undefined) return [{ type: "html", html }];
+
+  return [
+    { type: "html", html: html.slice(0, cut) },
+    { type: "leadMagnet" },
+    { type: "html", html: html.slice(cut) },
+  ];
+});
+
+const copied = ref(false);
 
 async function copyLink(): Promise<void> {
   try {
-    await navigator.clipboard.writeText(window.location.href)
-    copied.value = true
-    setTimeout(() => (copied.value = false), 2000)
+    await navigator.clipboard.writeText(window.location.href);
+    copied.value = true;
+    setTimeout(() => (copied.value = false), 2000);
   } catch {
-    copied.value = false
+    copied.value = false;
   }
 }
 
-const shareUrl = computed(() => props.seo.canonical)
+const shareUrl = computed(() => props.seo.canonical);
 
 const xShare = computed(
   () =>
     `https://x.com/intent/tweet?url=${encodeURIComponent(shareUrl.value)}&text=${encodeURIComponent(props.post.title)}`,
-)
+);
 
 const linkedInShare = computed(
-  () => `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`,
-)
+  () =>
+    `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl.value)}`,
+);
 </script>
 
 <template>
   <SeoHead
     :meta="seo"
     :breadcrumbs="[
-      { name: t('blog.related'), url: `/${page.props.locale.current}/insights` },
+      {
+        name: t('blog.related'),
+        url: `/${page.props.locale.current}/insights`,
+      },
       { name: post.title, url: seo.canonical },
     ]"
   />
 
-  <div class="container-sahra flex flex-col gap-24 pb-24 pt-[136px] md:gap-[144px] md:pt-[184px]">
+  <div
+    class="container-sahra flex flex-col gap-24 pb-32 pt-[136px] md:gap-[144px] md:pt-[184px] lg:gap-[224px]"
+  >
     <!-- Head — Figma 1222:4364 (column, gap 64) -->
     <div class="flex flex-col gap-16">
-      <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+      <div
+        class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between"
+      >
         <div class="flex max-w-[612px] flex-col gap-6">
           <h1 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
             {{ post.title }}
           </h1>
-          <p v-if="post.subtitle" class="text-[18px] font-medium text-neutral-700">
+          <p
+            v-if="post.subtitle"
+            class="text-[18px] font-medium text-neutral-700"
+          >
             {{ post.subtitle }}
           </p>
         </div>
@@ -120,7 +179,9 @@ const linkedInShare = computed(
                 :stroke-width="1.5"
                 aria-hidden="true"
               />
-              <span class="text-label-lg text-neutral-1000">{{ row.label }}</span>
+              <span class="text-label-lg text-neutral-1000">{{
+                row.label
+              }}</span>
             </dt>
             <dd class="text-body-md text-neutral-800">{{ row.value }}</dd>
           </div>
@@ -144,23 +205,23 @@ const linkedInShare = computed(
       <div class="hidden w-[119px] shrink-0 lg:block" aria-hidden="true" />
 
       <div class="flex w-full max-w-[826px] flex-col gap-18">
-        <article
-          class="prose prose-neutral max-w-none prose-headings:font-medium
-                 prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
-          v-html="bodyParts[0]"
-        />
+        <template v-for="(part, index) in articleParts" :key="index">
+          <article
+            v-if="part.type === 'html'"
+            class="prose prose-neutral max-w-none prose-headings:font-medium prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
+            v-html="part.html"
+          />
 
-        <LeadMagnet v-if="leadMagnet && bodyParts[1]" :section="leadMagnet" inline />
+          <LeadMagnet v-else-if="leadMagnet" :section="leadMagnet" inline />
+        </template>
 
-        <article
-          v-if="bodyParts[1]"
-          class="prose prose-neutral max-w-none prose-headings:font-medium
-                 prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
-          v-html="bodyParts[1]"
-        />
-
-        <div v-if="post.tags.length > 0" class="border-t border-neutral-100 pt-8">
-          <p class="mb-3 text-label-md text-neutral-500">{{ t('blog.tags') }}</p>
+        <div
+          v-if="post.tags.length > 0"
+          class="border-t border-neutral-100 pt-8"
+        >
+          <p class="mb-3 text-label-md text-neutral-500">
+            {{ t("blog.tags") }}
+          </p>
           <ul class="flex flex-wrap gap-2">
             <li
               v-for="tag in post.tags"
@@ -174,8 +235,12 @@ const linkedInShare = computed(
       </div>
 
       <!-- Share rail — Figma 622:1143 -->
-      <div class="hidden w-[119px] shrink-0 flex-col items-center gap-6 lg:flex">
-        <p class="text-center text-label-lg text-neutral-900">{{ t('blog.share') }}</p>
+      <div
+        class="hidden w-[119px] shrink-0 flex-col items-center gap-6 lg:flex"
+      >
+        <p class="text-center text-label-lg text-neutral-900">
+          {{ t("blog.share") }}
+        </p>
 
         <div class="flex flex-col gap-4">
           <button
@@ -184,7 +249,11 @@ const linkedInShare = computed(
             :aria-label="copied ? t('blog.link_copied') : t('blog.copy_link')"
             @click="copyLink"
           >
-            <component :is="copied ? Check : Link2" class="size-6" aria-hidden="true" />
+            <component
+              :is="copied ? Check : Link2"
+              class="size-6"
+              aria-hidden="true"
+            />
           </button>
 
           <a
@@ -194,7 +263,12 @@ const linkedInShare = computed(
             class="flex size-[68px] items-center justify-center rounded-round border border-neutral-200 text-neutral-800 transition-colors hover:border-ink hover:text-ink"
             aria-label="X"
           >
-            <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg
+              class="size-5"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
               <path
                 d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
               />
@@ -217,20 +291,23 @@ const linkedInShare = computed(
     <!-- Related — Figma 1220:4342, "blog card" 1228:4645 -->
     <section v-if="post.related.length > 0" class="flex flex-col gap-12">
       <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
-        {{ t('blog.related') }}
+        {{ t("blog.related") }}
       </h2>
 
       <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <li v-for="related in post.related" :key="related.slug">
-          <Link :href="related.url" class="group flex flex-col gap-4 rounded-lg">
+          <Link
+            :href="related.url"
+            class="group flex flex-col gap-4 rounded-lg"
+          >
             <img
               v-if="related.image"
               :src="related.image.src"
               :srcset="related.image.srcset"
               :alt="related.image.alt"
               width="400"
-              height="260"
-              class="h-[260px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
+              height="400"
+              class="h-[400px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
@@ -238,19 +315,32 @@ const linkedInShare = computed(
                   :datetime="related.publishedAtIso"
                   class="flex items-center gap-2 text-body-md text-neutral-500"
                 >
-                  <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                  <CalendarDays
+                    class="size-6 text-gold"
+                    :stroke-width="1.5"
+                    aria-hidden="true"
+                  />
                   {{ related.publishedAt }}
                 </time>
-                <span class="flex items-center gap-2 text-body-md text-neutral-500">
-                  <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
-                  {{ t('blog.reading_time', { minutes: related.readingTime }) }}
+                <span
+                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                >
+                  <span
+                    class="inline-block size-1 rounded-full bg-gold"
+                    aria-hidden="true"
+                  />
+                  {{ t("blog.reading_time", { minutes: related.readingTime }) }}
                 </span>
               </div>
-              <h3 class="text-title-lg text-neutral-900">{{ related.title }}</h3>
+              <h3 class="text-title-lg text-neutral-900">
+                {{ related.title }}
+              </h3>
             </div>
           </Link>
         </li>
       </ul>
     </section>
   </div>
+
+  <CtaBanner v-if="finalCta" :section="finalCta" />
 </template>

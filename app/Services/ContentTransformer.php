@@ -14,6 +14,7 @@ use App\Models\SectionItem;
 use App\Models\Service;
 use App\Models\TeamMember;
 use App\Models\Testimonial;
+use App\Support\Numerals;
 use Illuminate\Support\Collection;
 
 /**
@@ -68,7 +69,9 @@ final class ContentTransformer
         $next = $project->nextProject();
 
         return array_merge(self::projectSummary($project), [
-            'year' => $project->year,
+            // Rendered as a label on the case-study meta row, so it follows the
+            // locale's digit system like any other generated number.
+            'year' => $project->year === null ? null : Numerals::localise((string) $project->year),
             'instagram' => $project->instagram_handle,
             'services' => $project->services
                 ->map(fn (Service $s): string => (string) $s->getTranslation('title'))
@@ -154,15 +157,25 @@ final class ContentTransformer
             'excerpt' => (string) $post->getTranslation('excerpt'),
             'url' => $post->url(absolute: false),
 
-            // Display string in the locale's own format (config/locales.php:
-            // en "M d, Y" → "May 09, 2024", fa/ar "Y/m/d"); the ISO value is
-            // kept alongside it for <time datetime>.
-            'publishedAt' => $post->published_at?->translatedFormat(
-                (string) config('locales.supported.'.app()->getLocale().'.date_format', 'M d, Y'),
-            ) ?? '',
+            /*
+             | Display string in the locale's own format (config/locales.php:
+             | en "M d, Y" → "May 09, 2024", fa/ar "Y/m/d"), then run through
+             | Numerals because translatedFormat() localises month names but
+             | still emits ASCII digits. The ISO value is deliberately NOT
+             | converted — it feeds <time datetime> and must stay machine
+             | readable.
+             */
+            'publishedAt' => Numerals::localise(
+                $post->published_at?->translatedFormat(
+                    (string) config('locales.supported.'.app()->getLocale().'.date_format', 'M d, Y'),
+                ) ?? '',
+            ),
             'publishedAtIso' => $post->published_at?->toIso8601String() ?? '',
 
+            // Numeric, so the frontend can pluralise; the locale-formatted
+            // string sits beside it for direct rendering.
             'readingTime' => $post->reading_minutes,
+            'readingTimeLabel' => Numerals::localiseNumber($post->reading_minutes),
             'category' => $post->category === null ? null : [
                 'slug' => (string) $post->category->getTranslation('slug'),
                 'name' => (string) $post->category->getTranslation('name'),

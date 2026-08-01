@@ -46,22 +46,22 @@ function columnHeading(index: number, fallback: string): string {
     :lang="page.props.locale.htmlLang"
     :dir="page.props.locale.direction"
   >
-    <div class="container-sahra relative py-12">
+    <div class="container-sahra relative py-6 md:py-12">
       <div class="relative z-10 flex flex-col gap-10">
         <div
           class="grid gap-10 md:grid-cols-2
                  lg:grid-cols-[402px_minmax(0,1fr)] lg:justify-between lg:gap-12"
         >
         <!-- Brand -->
-        <div class="flex max-w-[402px] flex-col items-start gap-8">
+        <div class="flex max-w-[402px] flex-col items-start gap-4 md:gap-8">
           <BrandLogo variant="full" :height="28" :label="settings.siteName" />
-          <p class="text-[16px] font-normal leading-normal text-neutral-600">
+          <p class="text-[12px] font-normal leading-normal text-neutral-600 md:text-[16px]">
             {{ settings.description }}
           </p>
         </div>
 
           <div
-            class="grid gap-10 sm:grid-cols-2
+            class="grid grid-cols-2 gap-x-10 gap-y-10
                    lg:grid-cols-[max-content_max-content_minmax(190px,max-content)] lg:gap-[88px]"
           >
             <!-- Menu columns -->
@@ -70,18 +70,18 @@ function columnHeading(index: number, fallback: string): string {
               :key="column.id"
               :aria-label="columnHeading(columnIndex, column.label)"
             >
-              <h2 class="text-[16px] font-medium leading-normal text-neutral-900">
+              <h2 class="text-[14px] font-medium leading-normal text-neutral-900 md:text-[16px]">
                 {{ columnHeading(columnIndex, column.label) }}
               </h2>
 
-              <ul class="mt-4 flex flex-col items-start gap-3">
+              <ul class="mt-3 flex flex-col items-start gap-2 md:mt-4 md:gap-3">
                 <li v-for="child in column.children" :key="child.id">
                   <Link
                     :href="child.url"
                     :target="child.target"
                     :rel="child.target === '_blank' ? 'noopener noreferrer' : undefined"
-                    class="text-[14px] font-medium leading-normal text-neutral-600
-                           transition-colors hover:text-gold"
+                    class="text-[14px] font-normal leading-normal text-neutral-600
+                           transition-colors hover:text-gold md:font-medium"
                   >
                     {{ child.label }}
                   </Link>
@@ -90,12 +90,15 @@ function columnHeading(index: number, fallback: string): string {
             </nav>
 
             <!-- Info -->
-            <div>
-              <h2 class="text-[16px] font-medium leading-normal text-neutral-900">
+            <div class="col-span-2 lg:col-span-1">
+              <h2 class="text-[14px] font-medium leading-normal text-neutral-900 md:text-[16px]">
                 {{ t('footer.info') }}
               </h2>
 
-              <ul class="mt-4 flex flex-col gap-3 text-[14px] font-medium leading-normal text-neutral-600">
+              <ul
+                class="mt-3 flex flex-col gap-2 text-[14px] font-normal leading-normal
+                       text-neutral-600 md:mt-4 md:gap-3 md:font-medium"
+              >
                 <li v-if="settings.contact.location" class="flex items-center gap-2">
                   <MapPin class="size-4 shrink-0 text-neutral-600" aria-hidden="true" />
                   <span>{{ settings.contact.location }}</span>
@@ -126,9 +129,9 @@ function columnHeading(index: number, fallback: string): string {
         </div>
 
         <div
-          class="relative z-10 flex flex-col items-center justify-between gap-3
-                 border-t border-neutral-300 py-6 text-[14px] font-medium leading-normal
-                 text-neutral-600 sm:flex-row"
+          class="relative z-10 flex flex-col items-start justify-between gap-4
+                 border-t border-neutral-300 py-6 text-[12px] font-medium leading-normal
+                 text-neutral-600 sm:flex-row sm:items-center sm:gap-3 sm:text-[14px]"
         >
           <p>{{ t('footer.copyright', { year, name: settings.siteName }) }}</p>
 
@@ -143,15 +146,21 @@ function columnHeading(index: number, fallback: string): string {
         </div>
       </div>
 
-      <!-- Watermark is positioned behind the bottom row, as in Figma. -->
-      <div
-        class="pointer-events-none absolute inset-inline-0 bottom-[-85px] select-none
-               text-center font-sans text-[clamp(9rem,21vw,19rem)] font-semibold
-               leading-none text-neutral-50"
+      <!--
+        Watermark — Figma 1065:2315. This is the Sahra logotype drawn as
+        vector paths with a built-in linear gradient (#231F20 at 15% fading to
+        transparent), not text: setting "SAHRA" in Poppins gets the wrong
+        letterforms and a flat fill. Exported at its native 1248x305.
+      -->
+      <img
+        src="/icons/sahra/footer-wordmark.svg"
+        alt=""
+        width="1248"
+        height="305"
+        class="pointer-events-none absolute inset-inline-0 bottom-0 w-full select-none"
         aria-hidden="true"
-      >
-        SAHRA
-      </div>
+        decoding="async"
+      />
     </div>
   </footer>
 </template>

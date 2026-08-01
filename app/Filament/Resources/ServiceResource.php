@@ -18,7 +18,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
+use Filament\Resources\Pages\PageRegistration;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -36,7 +37,7 @@ final class ServiceResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-2x2';
 
-    protected static ?string $navigationGroup = 'Content';
+    protected static ?string $navigationGroup = 'Website content';
 
     protected static ?int $navigationSort = 2;
 
@@ -56,44 +57,58 @@ final class ServiceResource extends Resource
                         );
                     }),
 
-                TextInput::make("translations.{$locale}.slug")
-                    ->label('Anchor slug')
-                    ->required($locale === config('locales.fallback'))
-                    ->maxLength(200)
-                    ->helperText("In-page anchor: /{$locale}/services#slug. Not a route."),
-
                 Textarea::make("translations.{$locale}.description")
                     ->label('Description')
+                    ->helperText('A short explanation shown on the Services page.')
                     ->rows(3),
 
                 TagsInput::make("translations.{$locale}.features")
-                    ->label('Feature list')
-                    ->placeholder('Add a feature')
-                    ->helperText('Bullet points shown beside the service image.'),
+                    ->label('What is included?')
+                    ->placeholder('Add an item')
+                    ->helperText('Add short items such as “Content planning” or “Monthly reporting”.'),
 
-                TextInput::make("translations.{$locale}.image_alt")
-                    ->label('Image alt text')
-                    ->maxLength(300),
+                Section::make('Advanced (optional)')
+                    ->description('Usually you do not need to change these fields.')
+                    ->collapsed()
+                    ->schema([
+                        TextInput::make("translations.{$locale}.slug")
+                            ->label('Page anchor')
+                            ->required($locale === config('locales.fallback'))
+                            ->maxLength(200)
+                            ->helperText("Used in the page link: /{$locale}/services#slug."),
+
+                        TextInput::make("translations.{$locale}.image_alt")
+                            ->label('Image description for accessibility')
+                            ->helperText('Describe the image briefly for visitors using screen readers.')
+                            ->maxLength(300),
+                    ]),
             ]),
 
             Grid::make(3)->schema([
-                Section::make('Settings')
+                Section::make('Display')
                     ->columnSpan(2)
-                    ->columns(2)
                     ->schema([
-                        TextInput::make('sort_order')
-                            ->numeric()
-                            ->default(0)
-                            ->helperText('Controls the order of sections on /services.'),
-
-                        TextInput::make('icon')
-                            ->label('Icon name')
-                            ->maxLength(50)
-                            ->helperText('A lucide-vue-next icon name.'),
-
                         Toggle::make('show_on_home')
-                            ->label('Show in home services cloud')
+                            ->label('Show this service on the home page')
+                            ->helperText('Turn this off to keep it only on the Services page.')
                             ->default(true),
+
+                        Section::make('Advanced display settings')
+                            ->description('Only change these when adjusting the site layout.')
+                            ->collapsed()
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('sort_order')
+                                    ->label('Display order')
+                                    ->numeric()
+                                    ->default(0)
+                                    ->helperText('Lower numbers appear first.'),
+
+                                TextInput::make('icon')
+                                    ->label('Icon name')
+                                    ->maxLength(50)
+                                    ->helperText('Technical icon identifier. Leave the current value unchanged if unsure.'),
+                            ]),
                     ]),
 
                 Grid::make(1)->columnSpan(1)->schema([
@@ -136,7 +151,7 @@ final class ServiceResource extends Resource
                 Tables\Columns\TextColumn::make('status')->badge(),
 
                 Tables\Columns\IconColumn::make('show_on_home')
-                    ->label('On home')
+                    ->label('Shown on home')
                     ->boolean(),
 
                 Tables\Columns\TextColumn::make('projects_count')
@@ -172,7 +187,7 @@ final class ServiceResource extends Resource
     }
 
     /**
-     * @return array<string, \Filament\Resources\Pages\PageRegistration>
+     * @return array<string, PageRegistration>
      */
     public static function getPages(): array
     {

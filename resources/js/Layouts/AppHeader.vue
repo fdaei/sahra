@@ -30,6 +30,8 @@ import type { SharedProps } from '@/types'
 const page = usePage<SharedProps>()
 const { t } = useTranslations()
 
+defineProps<{ minimal?: boolean }>()
+
 const mobileOpen = ref(false)
 
 const items = computed(() => page.props.navigation.header.filter((i) => !i.isCta))
@@ -48,18 +50,24 @@ function isActive(url: string): boolean {
 
 <template>
   <header class="fixed inset-inline-0 top-0 z-header backdrop-blur-header bg-white/5">
-    <div class="flex items-center gap-[262px] px-24 py-6">
+    <div
+      class="flex items-center px-5 py-6 lg:px-24"
+      :class="minimal ? 'justify-between' : 'lg:gap-[262px]'"
+    >
       <Link
         :href="`/${page.props.locale.current}`"
-        class="w-[140px] shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold"
+        class="w-[80px] shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold lg:w-[140px]"
         :aria-label="page.props.settings.siteName"
       >
         <BrandLogo variant="full" :height="56" :label="page.props.settings.siteName" />
       </Link>
 
-      <div class="hidden w-[846px] items-center justify-between lg:flex">
+      <div
+        class="hidden items-center lg:flex"
+        :class="minimal ? 'ms-auto' : 'w-[846px] justify-between'"
+      >
         <!-- menu: gap-24 (space24) — Figma "I1419:9339;159:453" -->
-        <nav :aria-label="t('common.primary_navigation')">
+        <nav v-if="!minimal" :aria-label="t('common.primary_navigation')">
           <ul class="flex items-center gap-6">
             <li v-for="item in items" :key="item.id">
               <Link
@@ -77,7 +85,7 @@ function isActive(url: string): boolean {
 
         <!-- header ctas: gap-16 (space16) — Figma "I1419:9339;173:189" -->
         <div class="flex items-center justify-center gap-4">
-          <LanguageSwitcher />
+          <LanguageSwitcher v-if="!minimal" />
 
           <Link
             v-if="cta"
@@ -90,6 +98,7 @@ function isActive(url: string): boolean {
       </div>
 
       <button
+        v-if="!minimal"
         type="button"
         class="touch-target ms-auto -me-2 inline-flex size-11 items-center justify-center rounded-sm text-ink lg:hidden"
         :aria-label="t('common.open_menu')"

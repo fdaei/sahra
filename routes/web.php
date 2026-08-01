@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AboutController;
+use App\Http\Controllers\AdminLocaleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalController;
@@ -28,6 +29,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 $localePattern = implode('|', array_keys(config('locales.supported')));
+
+Route::get('admin/language/{locale}', AdminLocaleController::class)
+    ->middleware('auth')
+    ->whereIn('locale', ['en', 'fa'])
+    ->name('admin.locale');
 
 // SEO endpoints — not locale-prefixed.
 Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');

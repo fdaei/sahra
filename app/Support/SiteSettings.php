@@ -69,6 +69,12 @@ final class SiteSettings
 
         $value = $all[$key];
 
+        // Non-translatable values are stored as {"value": ...}. Unwrap that
+        // envelope before treating an array as a locale map.
+        if (is_array($value) && array_key_exists('value', $value)) {
+            $value = $value['value'];
+        }
+
         // Translatable settings are stored as {"en": "...", "fa": "..."}.
         if (is_array($value)) {
             return $value[$locale]

@@ -11,7 +11,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -24,7 +24,9 @@ final class RedirectResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-path-rounded-square';
 
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Advanced';
+
+    protected static ?string $navigationLabel = 'Old URL redirects';
 
     protected static ?int $navigationSort = 2;
 

@@ -23,6 +23,8 @@ return [
     'loading'             => 'در حال بارگذاری…',
     'sending'             => 'در حال ارسال…',
 
+    'last_updated'        => 'آخرین به‌روزرسانی: :date',
+
     'get_checklist'       => 'دریافت چک‌لیست',
     'start_conversation'  => 'شروع گفتگو',
     'lets_talk'           => 'گفتگو کنیم',

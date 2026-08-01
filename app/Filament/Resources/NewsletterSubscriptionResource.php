@@ -7,11 +7,12 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\NewsletterSubscriptionResource\Pages;
 use App\Models\NewsletterSubscription;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Lead-magnet signups. Figma 1419:9322.
@@ -23,11 +24,11 @@ final class NewsletterSubscriptionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-envelope';
 
-    protected static ?string $navigationGroup = 'Submissions';
+    protected static ?string $navigationGroup = 'Messages';
 
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $navigationLabel = 'Newsletter';
+    protected static ?string $navigationLabel = 'Newsletter subscribers';
 
     public static function form(Form $form): Form
     {
@@ -68,7 +69,7 @@ final class NewsletterSubscriptionResource extends Resource
                 Action::make('export')
                     ->label('Export CSV')
                     ->icon('heroicon-o-arrow-down-tray')
-                    ->action(function (): \Symfony\Component\HttpFoundation\StreamedResponse {
+                    ->action(function (): StreamedResponse {
                         $rows = NewsletterSubscription::query()
                             ->whereNull('unsubscribed_at')
                             ->orderBy('created_at')

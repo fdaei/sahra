@@ -12,7 +12,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
@@ -32,15 +32,15 @@ final class ContactSubmissionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-inbox-arrow-down';
 
-    protected static ?string $navigationGroup = 'Submissions';
+    protected static ?string $navigationGroup = 'Messages';
 
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Contact enquiries';
+    protected static ?string $navigationLabel = 'Contact messages';
 
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::query()->unread()->count();
+        $count = self::getModel()::query()->unread()->count();
 
         return $count > 0 ? (string) $count : null;
     }

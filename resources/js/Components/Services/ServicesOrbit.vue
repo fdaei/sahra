@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import orbitInner from '~img/decor/service-orbit-inner.svg'
+import orbitOuter from '~img/decor/service-orbit-outer.svg'
+import { useScrubRotate } from '@/Composables/useMotion'
 import type { ServiceItem } from '@/types'
 
 interface ServiceSection {
@@ -7,13 +11,45 @@ interface ServiceSection {
   description: string
 }
 
-defineProps<{
+const props = defineProps<{
   section: ServiceSection
   services: ServiceItem[]
 }>()
 
+const serviceFor = (services: ServiceItem[], needle: string): ServiceItem | undefined =>
+  services.find((service) => service.title.toLowerCase().includes(needle))
+
 const serviceLabel = (services: ServiceItem[], needle: string, fallback: string) =>
-  services.find((service) => service.title.toLowerCase().includes(needle))?.title ?? fallback
+  serviceFor(services, needle)?.title ?? fallback
+
+/** The four orbiting pills, in the order Figma positions them. */
+const pills = computed(() =>
+  (
+    [
+      ['social', 'social', 'Social Media support'],
+      ['branding', 'brand', 'Branding'],
+      ['content', 'content', 'Content Production'],
+      ['design', 'design', 'Marketing Design'],
+    ] as const
+  ).map(([modifier, needle, fallback]) => ({
+    modifier,
+    label: serviceLabel(props.services, needle, fallback),
+    image: serviceFor(props.services, needle)?.image ?? null,
+  })),
+)
+
+/*
+ | A4 — the two dashed rings rotate −8°→8° as the section crosses the viewport,
+ | scrubbed to scroll position with no easing. Each ring is rotated in place
+ | (about its own centre) rather than via a shared wrapper, because the rings
+ | are absolutely positioned at different diameters and a wrapper transform
+ | would move them off their concentric centre.
+ */
+const outerRing = ref<HTMLElement | null>(null)
+const innerRing = ref<HTMLElement | null>(null)
+
+useScrubRotate(outerRing)
+useScrubRotate(innerRing)
 </script>
 
 <template>
@@ -38,8 +74,14 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
       <div class="orbit-stage mt-[72px]" aria-label="Marketing services connected to brand growth">
         <div class="orbit-glow" aria-hidden="true" />
         <div class="orbit-line" aria-hidden="true" />
-        <div class="orbit-circle orbit-circle--outer" aria-hidden="true" />
-        <div class="orbit-circle orbit-circle--inner" aria-hidden="true" />
+        <!--
+          Rings Ellipse 33 (520) and Ellipse 28 (320). Both are a 2px dashed
+          3/3 stroke painted with a gold gradient (opacity .8 -> .4 -> .8) plus
+          an inner glow — none of which a CSS border can express, so they ship
+          as the exported vectors rather than as `border: dotted`.
+        -->
+        <img ref="outerRing" :src="orbitOuter" class="orbit-circle orbit-circle--outer" alt="" aria-hidden="true" />
+        <img ref="innerRing" :src="orbitInner" class="orbit-circle orbit-circle--inner" alt="" aria-hidden="true" />
 
         <span class="orbit-endpoint orbit-endpoint--start" aria-hidden="true" />
         <span class="orbit-endpoint orbit-endpoint--middle-a" aria-hidden="true" />
@@ -50,18 +92,27 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
         <strong class="orbit-axis orbit-axis--growth">Growth</strong>
 
         <span class="orbit-core">Clear Brand Presence</span>
-        <span class="service-pill service-pill--social">
-          {{ serviceLabel(services, 'social', 'Social Media support') }}
-        </span>
-        <span class="service-pill service-pill--branding">
-          {{ serviceLabel(services, 'brand', 'Branding') }}
-        </span>
-        <span class="service-pill service-pill--content">
-          {{ serviceLabel(services, 'content', 'Content Production') }}
-        </span>
-        <span class="service-pill service-pill--design">
-          {{ serviceLabel(services, 'design', 'Marketing Design') }}
-        </span>
+
+        <!--
+          Service card 1419:9295-9298. Each carries an ON_HOVER interaction
+          that CHANGE_TOs variant 501:722 with SMART_ANIMATE / EASE_OUT /
+          0.3s. That variant is the same pill with a 216x116 radius-8 panel
+          revealed beneath it (overlapping by 8px — the component stacks at
+          gap -8). The panel is blank in the file, so it shows the service's
+          own image where the CMS has one.
+        -->
+        <div
+          v-for="pill in pills"
+          :key="pill.modifier"
+          class="service-pill"
+          :class="`service-pill--${pill.modifier}`"
+        >
+          <span class="service-pill__label">{{ pill.label }}</span>
+
+          <span v-if="pill.image" class="service-pill__preview" aria-hidden="true">
+            <img :src="pill.image.src" :alt="''" loading="lazy" decoding="async" />
+          </span>
+        </div>
       </div>
     </div>
   </section>
@@ -79,7 +130,7 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   gap: 4px;
   width: fit-content;
   color: #bd933b;
-  font-family: Idealist, serif;
+  font-family: Idealist, 'Doran FaNum', Vazirmatn, serif;
   font-size: 24px;
   line-height: 1;
 }
@@ -124,8 +175,6 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   position: absolute;
   left: 50%;
   top: 50%;
-  border: 2px dotted #bd933b;
-  border-radius: 50%;
   transform: translate(-50%, -50%);
 }
 
@@ -172,7 +221,8 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   white-space: nowrap;
 }
 
-.service-pill {
+.service-pill__label {
+  display: block;
   padding: 8px 16px;
   border-radius: 1000px;
   background: linear-gradient(rgb(255 255 255 / 20%), rgb(255 255 255 / 20%)),
@@ -181,6 +231,48 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   font-weight: 500;
   line-height: 27px;
   color: white;
+}
+
+/*
+ | Hover variant 501:722 — a 216x116 radius-8 panel under the pill, pulled up
+ | 8px because the component stacks at gap -8. Transition matches the stored
+ | prototype timing (SMART_ANIMATE, EASE_OUT, 0.3s).
+ */
+.service-pill__preview {
+  position: absolute;
+  inset-inline-start: 50%;
+  top: 100%;
+  z-index: -1;
+  margin-top: -8px;
+  width: 216px;
+  height: 116px;
+  overflow: hidden;
+  border-radius: 8px;
+  background: #fff;
+  opacity: 0;
+  transform: translate(-50%, -12px) scale(0.96);
+  transform-origin: top center;
+  transition:
+    opacity 0.3s ease-out,
+    transform 0.3s ease-out;
+}
+
+.service-pill__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.service-pill:hover .service-pill__preview,
+.service-pill:focus-within .service-pill__preview {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .service-pill__preview {
+    transition: none;
+  }
 }
 
 .service-pill--social { left: 345px; top: 98px; }
@@ -195,7 +287,7 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   border-radius: 4px;
   background: linear-gradient(150deg, #bd933b 20%, #fff 145%);
   color: #231f20;
-  font-family: Idealist, serif;
+  font-family: Idealist, 'Doran FaNum', Vazirmatn, serif;
   font-size: 18px;
   line-height: 20px;
 }
@@ -240,14 +332,24 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   .service-pill {
     position: relative;
     inset: auto;
+    white-space: normal;
+  }
+
+  .service-pill__label {
     display: flex;
     min-height: 48px;
     align-items: center;
     justify-content: center;
-    white-space: normal;
+    height: 100%;
     text-align: center;
     font-size: 14px;
     line-height: 20px;
+  }
+
+  /* The mobile frame (1419:9191) stacks the pills in a 2-up grid with no
+     hover affordance, and a 216px panel would overlap its neighbours. */
+  .service-pill__preview {
+    display: none;
   }
 }
 </style>

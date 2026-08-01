@@ -98,7 +98,7 @@ onBeforeUnmount(() => {
       <div class="flex flex-col gap-12 lg:gap-24">
         <header class="flex flex-col gap-12">
           <div
-            class="inline-flex w-fit items-center gap-1 font-['Idealist',_serif] text-[24px] leading-none text-gold"
+            class="inline-flex w-fit items-center gap-1 font-display text-[24px] leading-none text-gold"
           >
             <span
               class="size-2 rotate-45 rounded-round bg-gold shadow-[-2px_-2px_12px_rgba(189,147,59,0.5),2px_2px_12px_rgba(189,147,59,0.5)]"

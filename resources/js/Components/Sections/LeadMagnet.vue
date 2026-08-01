@@ -3,6 +3,16 @@ interface LeadMagnetSection {
   title: string
   description: string
   primaryCta: { label: string; url: string } | null
+  colors?: {
+    title?: string | null
+    description?: string | null
+  }
+  image?: {
+    src: string
+    alt: string
+    width: number
+    height: number
+  } | null
 }
 
 withDefaults(
@@ -26,14 +36,14 @@ withDefaults(
                px-6 py-8 text-white sm:px-10 lg:px-16 lg:py-16"
       >
         <img
-          src="/images/sahra/content-direction-checklist-bg.png"
-          alt=""
+          :src="section.image?.src || '/images/sahra/content-direction-checklist-bg.png'"
+          :alt="section.image?.alt || ''"
           width="1024"
           height="1024"
           class="pointer-events-none absolute inset-inline-0 bottom-[-90px] h-auto
                  w-[102.73%] max-w-none object-cover max-lg:inset-0 max-lg:size-full
                  max-lg:object-cover max-lg:object-bottom"
-          aria-hidden="true"
+          :aria-hidden="section.image?.alt ? undefined : 'true'"
           decoding="async"
         />
         <div
@@ -46,10 +56,16 @@ withDefaults(
                  md:flex-row md:items-center"
         >
           <div class="flex flex-col items-start gap-2">
-            <h2 class="text-[20px] font-medium leading-normal text-white md:text-[22px]">
+            <h2
+              class="text-[20px] font-medium leading-normal text-white md:text-[22px]"
+              :style="{ color: section.colors?.title || undefined }"
+            >
               {{ section.title }}
             </h2>
-            <p class="text-[16px] font-normal leading-normal text-neutral-100">
+            <p
+              class="text-[16px] font-normal leading-normal text-neutral-100"
+              :style="{ color: section.colors?.description || undefined }"
+            >
               {{ section.description }}
             </p>
           </div>

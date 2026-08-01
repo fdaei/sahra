@@ -6,6 +6,7 @@ namespace App\Filament\Pages;
 
 use App\Models\Setting;
 use App\Support\SiteSettings;
+use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Tabs;
@@ -33,7 +34,7 @@ final class ManageSettings extends Page implements HasForms
 
     protected static ?string $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationGroup = 'Site';
+    protected static ?string $navigationGroup = 'Website setup';
 
     protected static ?int $navigationSort = 3;
 
@@ -67,6 +68,21 @@ final class ManageSettings extends Page implements HasForms
     public static function canAccess(): bool
     {
         return auth()->user()?->isAdmin() ?? false;
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('admin.navigation.groups.Website setup');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return app()->getLocale() === 'fa' ? 'تنظیمات سایت' : 'Site settings';
+    }
+
+    public function getTitle(): string
+    {
+        return app()->getLocale() === 'fa' ? 'تنظیمات سایت' : 'Site settings';
     }
 
     public function mount(): void
@@ -173,12 +189,12 @@ final class ManageSettings extends Page implements HasForms
     }
 
     /**
-     * @return array<int, \Filament\Actions\Action>
+     * @return array<int, Action>
      */
     protected function getFormActions(): array
     {
         return [
-            \Filament\Actions\Action::make('save')
+            Action::make('save')
                 ->label('Save changes')
                 ->submit('save'),
         ];

@@ -119,6 +119,17 @@ final class ProjectSeeder extends Seeder
 
             if (($data['featured'] ?? false) === true) {
                 $this->cheshmehDetail($project);
+
+                foreach ([
+                    'projects/cheshmeh-showcase-1.webp',
+                    'projects/cheshmeh-showcase-2.webp',
+                    'projects/cheshmeh-showcase-3.webp',
+                ] as $order => $path) {
+                    $project->images()->updateOrCreate(
+                        ['sort_order' => $order],
+                        ['path' => $path],
+                    );
+                }
             }
         }
     }
@@ -159,11 +170,11 @@ final class ProjectSeeder extends Seeder
 
         $results = $this->section($project, SectionType::Results, 3);
         $this->items($results, [
-            ['en' => ['value' => '+189%', 'title' => 'ROI'], 'fa' => ['value' => '+۱۸۹٪', 'title' => 'بازگشت سرمایه'], 'ar' => ['value' => '+189%', 'title' => 'عائد الاستثمار']],
-            ['en' => ['value' => '+154%', 'title' => 'Reach'], 'fa' => ['value' => '+۱۵۴٪', 'title' => 'دسترسی'], 'ar' => ['value' => '+154%', 'title' => 'الوصول']],
-            ['en' => ['value' => '+189%', 'title' => 'Interaction'], 'fa' => ['value' => '+۱۸۹٪', 'title' => 'تعامل'], 'ar' => ['value' => '+189%', 'title' => 'التفاعل']],
-            ['en' => ['value' => '+256%', 'title' => 'Follower'], 'fa' => ['value' => '+۲۵۶٪', 'title' => 'دنبال‌کننده'], 'ar' => ['value' => '+256%', 'title' => 'المتابعون']],
-            ['en' => ['value' => '+72%', 'title' => 'View'], 'fa' => ['value' => '+۷۲٪', 'title' => 'بازدید'], 'ar' => ['value' => '+72%', 'title' => 'المشاهدات']],
+            ['en' => ['value' => '+189%', 'title' => 'ROI'], 'fa' => ['value' => '+۱۸۹٪', 'title' => 'بازگشت سرمایه'], 'ar' => ['value' => '+١٨٩٪', 'title' => 'عائد الاستثمار']],
+            ['en' => ['value' => '+154%', 'title' => 'Reach'], 'fa' => ['value' => '+۱۵۴٪', 'title' => 'دسترسی'], 'ar' => ['value' => '+١٥٤٪', 'title' => 'الوصول']],
+            ['en' => ['value' => '+189%', 'title' => 'Interaction'], 'fa' => ['value' => '+۱۸۹٪', 'title' => 'تعامل'], 'ar' => ['value' => '+١٨٩٪', 'title' => 'التفاعل']],
+            ['en' => ['value' => '+256%', 'title' => 'Follower'], 'fa' => ['value' => '+۲۵۶٪', 'title' => 'دنبال‌کننده'], 'ar' => ['value' => '+٢٥٦٪', 'title' => 'المتابعون']],
+            ['en' => ['value' => '+72%', 'title' => 'View'], 'fa' => ['value' => '+۷۲٪', 'title' => 'بازدید'], 'ar' => ['value' => '+٧٢٪', 'title' => 'المشاهدات']],
         ]);
 
         $project->update([

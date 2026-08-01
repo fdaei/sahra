@@ -23,6 +23,8 @@ return [
     'loading'             => 'Loading…',
     'sending'             => 'Sending…',
 
+    'last_updated'        => 'Last updated: :date',
+
     'get_checklist'       => 'Get checklist',
     'start_conversation'  => 'Start a Conversation',
     'lets_talk'           => "Let's Talk",

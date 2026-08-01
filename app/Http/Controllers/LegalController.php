@@ -41,6 +41,9 @@ final class LegalController extends Controller
 
         return Inertia::render('Legal', [
             'title' => (string) $page->getTranslation('title'),
+            // Figma 1031:2201 — the intro paragraph beside the title. Seeded
+            // on every legal page but previously never handed to the view.
+            'subtitle' => (string) $page->getTranslation('subtitle'),
             'content' => (string) $page->getTranslation('content'),
             'updatedAt' => $page->updated_at?->toIso8601String(),
             'seo' => SeoBuilder::forPage($page, $request->url()),

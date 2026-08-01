@@ -16,8 +16,9 @@
  *       services     row gap 8, 14/400 black-500, 4px gold dot separators —
  *                    only present in the "hover" variant 553:921
  */
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
+import { ChevronDown } from 'lucide-vue-next'
 import CtaBanner from '@/Components/CtaBanner.vue'
 import FilterChips from '@/Components/FilterChips.vue'
 import SeoHead from '@/Components/SeoHead.vue'
@@ -37,7 +38,7 @@ interface SectionContent {
   items: Array<{ value: string; title: string; description: string; icon: string | null }>
 }
 
-defineProps<{
+const props = defineProps<{
   heading: { eyebrow: string; title: string; description: string }
   projects: ProjectSummary[]
   filters: { slug: string; name: string }[]
@@ -50,6 +51,21 @@ const page = usePage<SharedProps>()
 const { t } = useTranslations()
 
 const basePath = computed(() => `/${page.props.locale.current}/work`)
+
+/*
+ | Figma 1214:3933 lays out six cards and then the "More Works" control
+ | (1215:4065). The controller returns the full set in one payload, so the
+ | reveal is client-side — no request, and every project stays crawlable
+ | because the markup below only hides the overflow after hydration.
+ */
+const PAGE_SIZE = 6
+const shown = ref(PAGE_SIZE)
+
+const visibleProjects = computed(() => props.projects.slice(0, shown.value))
+const hasMore = computed(() => props.projects.length > shown.value)
+
+// Switching filters re-renders a different set; start it back at page one.
+watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
 </script>
 
 <template>
@@ -58,12 +74,14 @@ const basePath = computed(() => `/${page.props.locale.current}/work`)
   <div class="container-sahra flex flex-col gap-16 pb-24 pt-[136px] md:gap-24 md:pt-[192px]">
     <!-- Heading + filters — Figma "Main title & tag" beside 542:871 -->
     <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-      <div class="flex max-w-[612px] flex-col gap-6">
+      <!-- "Main title & tag" 1005:1609 — eyebrow, gap 48, then title over
+           subtitle at gap 24. -->
+      <div class="flex max-w-[612px] flex-col gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
-        <h1 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
-          {{ heading.title }}
-        </h1>
-        <p class="text-body-lg text-neutral-700">{{ heading.description }}</p>
+        <div class="flex flex-col gap-6">
+          <h1 class="text-display-md md:text-display-lg">{{ heading.title }}</h1>
+          <p class="text-title-sm font-medium text-neutral-700">{{ heading.description }}</p>
+        </div>
       </div>
 
       <FilterChips
@@ -85,7 +103,7 @@ const basePath = computed(() => `/${page.props.locale.current}/work`)
     </p>
 
     <ul v-else class="grid gap-x-6 gap-y-24 sm:grid-cols-2">
-      <li v-for="project in projects" :key="project.slug">
+      <li v-for="project in visibleProjects" :key="project.slug">
         <Link :href="project.url" class="group flex flex-col gap-10 rounded-md">
           <div
             class="overflow-hidden rounded-md border border-neutral-100 shadow-card"
@@ -151,6 +169,18 @@ const basePath = computed(() => `/${page.props.locale.current}/work`)
         </Link>
       </li>
     </ul>
+
+    <!-- "More Works" — Figma 1215:4065, centred under the grid. -->
+    <button
+      v-if="hasMore"
+      type="button"
+      class="mx-auto inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900
+             transition-opacity hover:opacity-70"
+      @click="shown += PAGE_SIZE"
+    >
+      {{ t('common.load_more') }}
+      <ChevronDown class="size-6 shrink-0" aria-hidden="true" />
+    </button>
   </div>
 
   <!-- Final CTA — Figma 1419:9333 (shared component) -->

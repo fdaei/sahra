@@ -258,10 +258,13 @@ page exists as a frame; category/tag filtering is a client-side filter chip row
 
 ## 6. Animation inventory
 
-Derived from frame structure and component naming. The file's prototype layer is minimal —
-most motion is implied by the design (marquee widths, orbit rings, counters), not by
-Smart Animate links. Each entry below records what the design *requires*; the exact easing
-values are not stored as Figma variables and are specified here as production defaults.
+Derived from frame structure and component naming. Scroll-driven motion is implied by the
+design (marquee widths, orbit rings, counters) rather than prototyped, and its easing is
+specified here as a production default.
+
+> **Correction (2026-07-29).** "The file's prototype layer is minimal" was wrong for
+> *component state* changes. Reading `interactions` on the nodes shows real prototype
+> links with stored transitions — see §6b. Gap G3 applies only to the scroll effects.
 
 | # | Animation | Evidence in file | Trigger | Implementation |
 |---|---|---|---|---|
@@ -280,6 +283,26 @@ values are not stored as Figma variables and are specified here as production de
 
 All are gated behind `prefers-reduced-motion: reduce` → animations resolve instantly to
 final state. Marquees stop. Scrub effects are disabled.
+
+---
+
+## 6b. Prototype interactions stored in the file
+
+Read from each node's `interactions` array. **Every one of these uses the same
+transition: `SMART_ANIMATE`, `EASE_OUT`, `0.3s`** — mirrored as
+`MOTION.duration.state` in `resources/js/lib/motion.ts`.
+
+| Node | Trigger | Changes to | What actually differs |
+|---|---|---|---|
+| `Service card` `1419:9295-9298` | `ON_HOVER` | `501:722` | Reveals a **216x116, radius-8 panel beneath the pill**, overlapping it by 8 (the component stacks at gap −8). The panel is a blank white placeholder in the file — implemented as the service's own image. |
+| `testimonial card` `1419:9251-9257` | `MOUSE_ENTER` | `414:864` | Card goes from `#F8F7F8` + black/200 hairline to **primary black** under a top→bottom gradient (transparent to 50%, then gold at 30%), and all text lifts to white. |
+| `FAQ box` `I1419:9278;438:620-623` | `ON_CLICK` | open variant | Accordion. Implemented natively with `<details>/<summary>`. |
+| `Project preview` `1419:9225-9228` | `ON_CLICK` | project node | Showcase thumbnail selection. |
+| `Language switcher` `I1419:9339;173:182` | `ON_HOVER` | open variant | Dropdown. |
+
+> The service-card hover was previously read as "the chips play video". There are **no
+> video or GIF fills anywhere in the file** — every fill is `SOLID`, `IMAGE` or a gradient.
+> What reads as video is this hover-revealed media panel.
 
 ---
 

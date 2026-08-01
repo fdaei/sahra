@@ -157,7 +157,14 @@ standard Lucide glyphs. They are provided by the `lucide-vue-next` package alrea
 | Family | Locales | Source | Status |
 |---|---|---|---|
 | **Poppins** | `en` | Google Fonts (OFL) | Self-hosted; download script provided |
-| **Doran FaNum** | `fa`, `ar` | **Commercial licence required** | **You must supply the files** |
+| **Doran FaNum** | `fa`, `ar` | Commercial licence | **Supplied** — `public/fonts/doran/*.ttf` |
+| **Idealist** | all | Commercial licence | **Supplied** — `public/fonts/idealist/Idealist-Models.ttf` |
+
+> **Idealist was missed by the original audit.** The file sets it on every
+> section eyebrow (`small title`, 24/400 gold) and on the package price lines —
+> 56 text nodes in total, across every page. It is a third family, distinct from
+> both Poppins and Doran. It is now declared in `resources/css/fonts.css` and
+> applied through the `.eyebrow` component class in `resources/css/app.css`.
 
 `Doran FaNum` is not freely distributable and could not be fetched by the build
 environment. Until the licensed files are placed, FA/AR locales fall back to
@@ -178,6 +185,24 @@ Fetch the free fonts with:
 ```bash
 ./scripts/fetch-fonts.sh
 ```
+
+---
+
+## 10b. Exported via the REST API
+
+These were pulled straight from the file with the `/v1/images` endpoint and are
+committed. Re-run the same call with the node ID to refresh any of them.
+
+| Node ID | Asset | Format | Target path |
+|---|---|---|---|
+| `1061:2133` | Goal-card trend icon (gold, 2px stroke) | SVG | `public/icons/sahra/goal.svg` |
+| `951:3598` | About hero arch-sculpture cutout | PNG 2× | `public/images/sahra/about-hero-sculpture.png` |
+| `1027:2062` | 404 horizon artwork | PNG 2× | `public/images/sahra/404-horizon.png` |
+| `453:878` (fill) | Contact card background | PNG | `public/images/sahra/contact-bg.png` |
+
+The Contact background is an *image fill*, not a renderable node — resolve it
+through `/v1/files/$FILE_KEY/images` using the fill's `imageRef` rather than
+`/v1/images`.
 
 ---
 

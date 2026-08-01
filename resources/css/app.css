@@ -80,8 +80,16 @@
     height: auto;
   }
 
-  /* Numerals stay Latin in FA/AR headings where the design shows them so
-     (e.g. "+70k", "2024"). Applied opt-in via .latin-nums. */
+  /*
+   | Keeps a numeric run reading as one unit inside RTL copy — "+٧٠ ألف" lays
+   | out with the sign and digits together, the way the frames set "+70K".
+   |
+   | It does NOT force Latin digits, despite the name: fa/ar render their own
+   | digit systems (Persian U+06F0, Arabic U+0660), transliterated server-side
+   | by App\Support\Numerals for generated values and authored directly for CMS
+   | content. `lnum`/`lining-nums` only picks lining over oldstyle figures
+   | within whichever script is in use; CSS cannot convert between digit blocks.
+   */
   .latin-nums {
     font-feature-settings: 'lnum' 1;
     font-variant-numeric: lining-nums;
@@ -155,9 +163,11 @@
    */
   .eyebrow {
     @apply inline-flex w-fit items-center gap-1 text-gold;
-    font-family: 'Idealist', serif;
+    font-family: 'Idealist', 'Doran FaNum', Vazirmatn, serif;
     font-size: 24px;
     font-weight: 400;
+    /* Idealist renders at a 1.08 intrinsic ratio in the file (24 -> 26). */
+    line-height: 26px;
   }
 
   .eyebrow::before {
@@ -168,6 +178,77 @@
     box-shadow:
       2px 2px 12px 0 rgba(189, 147, 59, 0.5),
       -2px -2px 12px 0 rgba(189, 147, 59, 0.5);
+  }
+
+  /*
+   | Testimonial card — Figma 1419:9251, with the MOUSE_ENTER interaction
+   | stored in the file: CHANGE_TO variant 414:864 "en-hover" via
+   | SMART_ANIMATE / EASE_OUT / 0.3s.
+   |
+   | Default is the light chip (#F8F7F8 on a black/200 hairline); hover swaps
+   | to primary black carrying a top-to-bottom gradient that is transparent
+   | until 50% then gold at 30%, and lifts every text layer to white.
+   */
+  .testimonial-card {
+    @apply border-neutral-200 bg-[#f8f7f8];
+    transition:
+      background-color 0.3s ease-out,
+      background-image 0.3s ease-out,
+      border-color 0.3s ease-out;
+  }
+
+  .testimonial-card:hover,
+  .testimonial-card:focus-within {
+    @apply border-neutral-100 bg-ink;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 50%,
+      rgba(189, 147, 59, 0.3) 100%
+    );
+  }
+
+  .testimonial-card:hover :is(p),
+  .testimonial-card:focus-within :is(p) {
+    @apply text-paper;
+  }
+
+  /*
+   | Marquee track — audit A2 (client logos, 28s) and A6 (testimonials, 40s).
+   |
+   | The markup renders its children twice; the track translates exactly -50%,
+   | so the second copy lands where the first began and the loop is seamless.
+   | Duration comes in per-instance as --marquee-duration. RTL travels the
+   | other way, and hovering pauses it so a reader can stop on a card.
+   |
+   | Reduced motion is already handled above: `.reduced-motion .marquee-track`
+   | kills the animation and the transform, leaving a static row.
+   */
+  /* Declared here, not in tailwind.config.js: Tailwind only emits keyframes
+     that a generated `animation-*` utility references, so a config entry used
+     only by hand-written CSS gets purged from the build. */
+  @keyframes marquee-scroll {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-scroll var(--marquee-duration, 28s) linear infinite;
+  }
+
+  :where(html[dir='rtl']) .marquee-track {
+    animation-direction: reverse;
+  }
+
+  .marquee-mask:hover .marquee-track,
+  .marquee-mask:focus-within .marquee-track {
+    animation-play-state: paused;
   }
 
   /* Edge fade for marquees — Figma "shade" 1419:9215. */
@@ -189,9 +270,14 @@
   }
 
   /* Elements animated by GSAP start hidden — but only when motion is allowed,
-     otherwise reduced-motion users would see nothing at all. */
+     otherwise reduced-motion users would see nothing at all.
+
+     `html.motion-ready` is added by initMotion() once GSAP has loaded and is
+     about to run. Without that gate a bundle failure would leave every
+     `.will-reveal` element hidden forever, so the hidden state is opt-in from
+     JS rather than the default. */
   @media (prefers-reduced-motion: no-preference) {
-    .will-reveal {
+    :where(html.motion-ready) .will-reveal {
       opacity: 0;
       transform: translateY(32px);
     }

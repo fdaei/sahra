@@ -20,72 +20,89 @@
  * The featured card is only present on an unfiltered first page — see
  * PostController@index.
  */
-import { computed } from 'vue'
-import { Link, usePage } from '@inertiajs/vue3'
-import { ArrowUpRight, CalendarDays } from 'lucide-vue-next'
-import CtaBanner from '@/Components/CtaBanner.vue'
-import FilterChips from '@/Components/FilterChips.vue'
-import SeoHead from '@/Components/SeoHead.vue'
-import { useTranslations } from '@/Composables/useTranslations'
-import type { PostSummary, SeoMeta, SharedProps } from '@/types'
+import { computed } from "vue";
+import { Link, usePage } from "@inertiajs/vue3";
+import { ArrowUpRight, CalendarDays, ChevronDown } from "lucide-vue-next";
+import CtaBanner from "@/Components/CtaBanner.vue";
+import FilterChips from "@/Components/FilterChips.vue";
+import SeoHead from "@/Components/SeoHead.vue";
+import { useTranslations } from "@/Composables/useTranslations";
+import type { PostSummary, SeoMeta, SharedProps } from "@/types";
 
 interface SectionContent {
-  eyebrow: string
-  title: string
-  subtitle: string
-  description: string
-  content: string
-  colors: Record<'eyebrow' | 'title' | 'subtitle' | 'description' | 'content', string | null>
-  primaryCta: { label: string; url: string } | null
-  secondaryCta: { label: string; url: string } | null
-  image: { src: string; alt: string; width: number; height: number } | null
-  items: Array<{ value: string; title: string; description: string; icon: string | null }>
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  content: string;
+  colors: Record<
+    "eyebrow" | "title" | "subtitle" | "description" | "content",
+    string | null
+  >;
+  primaryCta: { label: string; url: string } | null;
+  secondaryCta: { label: string; url: string } | null;
+  image: { src: string; alt: string; width: number; height: number } | null;
+  items: Array<{
+    value: string;
+    title: string;
+    description: string;
+    icon: string | null;
+  }>;
 }
 
 const props = defineProps<{
-  heading: { eyebrow: string; title: string; description: string }
-  featured: PostSummary | null
+  heading: { eyebrow: string; title: string; description: string };
+  featured: PostSummary | null;
   posts: {
-    data: PostSummary[]
-    currentPage: number
-    lastPage: number
-    total: number
-    nextPageUrl: string | null
-    prevPageUrl: string | null
-  }
-  categories: { slug: string; name: string }[]
-  filters: { category: string | null; q: string | null }
-  sections: Record<string, SectionContent>
-  seo: SeoMeta
-}>()
+    data: PostSummary[];
+    currentPage: number;
+    lastPage: number;
+    total: number;
+    nextPageUrl: string | null;
+    prevPageUrl: string | null;
+  };
+  categories: { slug: string; name: string }[];
+  filters: { category: string | null; q: string | null };
+  sections: Record<string, SectionContent>;
+  seo: SeoMeta;
+}>();
 
-const page = usePage<SharedProps>()
-const { t } = useTranslations()
+const page = usePage<SharedProps>();
+const { t } = useTranslations();
 
-const basePath = computed(() => `/${page.props.locale.current}/insights`)
+const basePath = computed(() => `/${page.props.locale.current}/insights`);
 
 /**
  * The frame lays the first two cards out 2-up (612 wide) and everything
  * after them 3-up (400 wide), so the split is part of the design, not an
  * arbitrary breakpoint.
  */
-const leadRow = computed(() => props.posts.data.slice(0, 2))
-const restRows = computed(() => props.posts.data.slice(2))
-
+const leadRow = computed(() => props.posts.data.slice(0, 2));
+const restRows = computed(() => props.posts.data.slice(2));
 </script>
 
 <template>
   <SeoHead :meta="seo" />
 
-  <div class="container-sahra flex flex-col gap-16 pb-24 pt-[136px] md:gap-24 md:pt-[192px]">
+  <div
+    class="container-sahra flex flex-col gap-16 pb-32 pt-[136px] md:gap-24 md:pt-[192px]"
+  >
     <!-- Heading + filters -->
-    <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
-      <div class="flex max-w-[612px] flex-col gap-6">
+    <div
+      class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between"
+    >
+      <!-- "Main title & tag" 1016:1891 — eyebrow, gap 48, then title over
+           subtitle at gap 24. -->
+      <div class="flex max-w-[612px] flex-col gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
-        <h1 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
-          {{ heading.title }}
-        </h1>
-        <p class="text-body-lg text-neutral-700">{{ heading.description }}</p>
+        <div class="flex flex-col gap-6">
+          <h1 class="text-display-md md:text-display-lg">
+            {{ heading.title }}
+          </h1>
+          <p class="text-title-sm font-medium text-neutral-700">
+            {{ heading.description }}
+          </p>
+        </div>
       </div>
 
       <FilterChips
@@ -137,17 +154,28 @@ const restRows = computed(() => props.posts.data.slice(2))
                 :datetime="featured.publishedAtIso"
                 class="flex items-center gap-2 text-body-md text-neutral-500"
               >
-                <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                <CalendarDays
+                  class="size-6 text-gold"
+                  :stroke-width="1.5"
+                  aria-hidden="true"
+                />
                 {{ featured.publishedAt }}
               </time>
-              <span class="flex items-center gap-2 text-body-md text-neutral-500">
-                <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
-                {{ t('blog.reading_time', { minutes: featured.readingTime }) }}
+              <span
+                class="flex items-center gap-2 text-body-md text-neutral-500"
+              >
+                <span
+                  class="inline-block size-1 rounded-full bg-gold"
+                  aria-hidden="true"
+                />
+                {{ t("blog.reading_time", { minutes: featured.readingTime }) }}
               </span>
             </div>
 
-            <span class="flex items-center gap-2 text-body-lg font-medium text-neutral-900">
-              {{ t('common.read_article') }}
+            <span
+              class="flex items-center gap-2 text-body-lg font-medium text-neutral-900"
+            >
+              {{ t("common.read_article") }}
               <ArrowUpRight
                 class="size-6 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 rtl:-scale-x-100"
                 :stroke-width="1.5"
@@ -163,11 +191,11 @@ const restRows = computed(() => props.posts.data.slice(2))
       v-if="posts.data.length === 0 && !featured"
       class="py-16 text-center text-body-lg text-neutral-500"
     >
-      {{ t('common.empty_posts') }}
+      {{ t("common.empty_posts") }}
     </p>
 
     <!-- Card rows — 1228:4571 (2-up) then 3-up -->
-    <template v-else>
+    <div v-else class="flex flex-col gap-24">
       <ul v-if="leadRow.length > 0" class="grid gap-6 sm:grid-cols-2">
         <li v-for="post in leadRow" :key="post.slug">
           <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
@@ -186,15 +214,26 @@ const restRows = computed(() => props.posts.data.slice(2))
                   :datetime="post.publishedAtIso"
                   class="flex items-center gap-2 text-body-md text-neutral-500"
                 >
-                  <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                  <CalendarDays
+                    class="size-6 text-gold"
+                    :stroke-width="1.5"
+                    aria-hidden="true"
+                  />
                   {{ post.publishedAt }}
                 </time>
-                <span class="flex items-center gap-2 text-body-md text-neutral-500">
-                  <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
-                  {{ t('blog.reading_time', { minutes: post.readingTime }) }}
+                <span
+                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                >
+                  <span
+                    class="inline-block size-1 rounded-full bg-gold"
+                    aria-hidden="true"
+                  />
+                  {{ t("blog.reading_time", { minutes: post.readingTime }) }}
                 </span>
               </div>
-              <h3 class="text-[24px] font-medium text-neutral-900 md:text-[28px]">
+              <h3
+                class="text-[24px] font-medium text-neutral-900 md:text-[28px]"
+              >
                 {{ post.title }}
               </h3>
             </div>
@@ -202,7 +241,10 @@ const restRows = computed(() => props.posts.data.slice(2))
         </li>
       </ul>
 
-      <ul v-if="restRows.length > 0" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul
+        v-if="restRows.length > 0"
+        class="grid gap-x-6 gap-y-24 sm:grid-cols-2 lg:grid-cols-3"
+      >
         <li v-for="post in restRows" :key="post.slug">
           <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
             <img
@@ -211,8 +253,8 @@ const restRows = computed(() => props.posts.data.slice(2))
               :srcset="post.image.srcset"
               :alt="post.image.alt"
               width="400"
-              height="260"
-              class="h-[260px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
+              height="400"
+              class="h-[400px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
@@ -220,12 +262,21 @@ const restRows = computed(() => props.posts.data.slice(2))
                   :datetime="post.publishedAtIso"
                   class="flex items-center gap-2 text-body-md text-neutral-500"
                 >
-                  <CalendarDays class="size-6 text-gold" :stroke-width="1.5" aria-hidden="true" />
+                  <CalendarDays
+                    class="size-6 text-gold"
+                    :stroke-width="1.5"
+                    aria-hidden="true"
+                  />
                   {{ post.publishedAt }}
                 </time>
-                <span class="flex items-center gap-2 text-body-md text-neutral-500">
-                  <span class="inline-block size-1 rounded-full bg-gold" aria-hidden="true" />
-                  {{ t('blog.reading_time', { minutes: post.readingTime }) }}
+                <span
+                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                >
+                  <span
+                    class="inline-block size-1 rounded-full bg-gold"
+                    aria-hidden="true"
+                  />
+                  {{ t("blog.reading_time", { minutes: post.readingTime }) }}
                 </span>
               </div>
               <h3 class="text-title-lg text-neutral-900">{{ post.title }}</h3>
@@ -233,7 +284,15 @@ const restRows = computed(() => props.posts.data.slice(2))
           </Link>
         </li>
       </ul>
-    </template>
+    </div>
+
+    <div
+      v-if="posts.data.length > 0 && posts.lastPage === 1"
+      class="mx-auto inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900"
+    >
+      {{ t("common.load_more") }}
+      <ChevronDown class="size-6 shrink-0" aria-hidden="true" />
+    </div>
 
     <!-- Pagination -->
     <nav
@@ -246,7 +305,7 @@ const restRows = computed(() => props.posts.data.slice(2))
         :href="posts.prevPageUrl"
         class="rounded-sm border border-neutral-200 px-6 py-3 text-label-lg text-neutral-800 transition-colors hover:border-ink"
       >
-        {{ t('common.previous') }}
+        {{ t("common.previous") }}
       </Link>
       <span class="latin-nums text-body-md text-neutral-500">
         {{ posts.currentPage }} / {{ posts.lastPage }}
@@ -256,7 +315,7 @@ const restRows = computed(() => props.posts.data.slice(2))
         :href="posts.nextPageUrl"
         class="rounded-sm border border-neutral-200 px-6 py-3 text-label-lg text-neutral-800 transition-colors hover:border-ink"
       >
-        {{ t('common.next') }}
+        {{ t("common.next") }}
       </Link>
     </nav>
   </div>
