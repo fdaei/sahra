@@ -62,7 +62,7 @@ defineProps<{
     The right layer sits behind the heading and first service, the left layer
     behind the middle of the list — which is where the frame puts them.
   -->
-  <section class="section-first relative overflow-hidden">
+  <section class="section-first relative overflow-hidden md:pt-[184px]">
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       <div class="relative mx-auto h-full w-full max-w-frame">
         <img
@@ -106,7 +106,7 @@ defineProps<{
         <article
           v-for="(service, i) in services"
           :key="service.slug"
-          class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-[137px]"
+          class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-[137px]"
           :class="i % 2 === 1 ? 'lg:flex-row-reverse' : ''"
         >
           <div class="flex flex-col gap-10 lg:max-w-[507px] lg:py-12">
@@ -119,7 +119,7 @@ defineProps<{
                 <li
                   v-for="(feature, fi) in service.features"
                   :key="fi"
-                  class="text-title-sm font-medium text-neutral-800"
+                  class="ms-[27px] list-disc text-title-sm font-medium text-neutral-800"
                 >
                   {{ feature }}
                 </li>
@@ -144,5 +144,9 @@ defineProps<{
   </section>
 
   <!-- Final CTA — Figma 1323:7506 (shared component 1419:9333) -->
-  <CtaBanner v-if="sections.final_cta" :section="sections.final_cta" />
+  <CtaBanner
+    v-if="sections.final_cta"
+    :section="sections.final_cta"
+    spacing-class="lg:pt-[224px]"
+  />
 </template>

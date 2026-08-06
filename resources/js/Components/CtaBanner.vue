@@ -28,6 +28,7 @@ const glow = ref<HTMLElement | null>(null)
 useParallax(glow, 20)
 
 defineProps<{
+  spacingClass?: string
   section: {
     eyebrow: string
     title: string
@@ -40,11 +41,11 @@ defineProps<{
 </script>
 
 <template>
-  <section class="pb-[224px] pt-24">
+  <section class="pb-[224px] pt-24" :class="spacingClass">
     <div class="container-sahra">
       <div
-        class="relative flex min-h-[483px] flex-col justify-center gap-2
-               overflow-hidden rounded-lg bg-ink p-8 md:p-14"
+        class="relative flex min-h-[359px] flex-col justify-center gap-2 overflow-hidden rounded-lg
+               bg-ink p-6 md:min-h-[483px] md:p-14"
       >
         <img
           ref="glow"
@@ -63,23 +64,23 @@ defineProps<{
         />
 
         <p
-          class="relative z-10 font-display text-[24px] leading-[26px] text-gold"
+          class="relative z-10 font-display text-[16px] leading-6 text-gold md:text-[24px] md:leading-[26px]"
           :style="{ color: section.colors.eyebrow || undefined }"
         >
           {{ section.eyebrow }}
         </p>
 
-        <div class="relative z-10 flex flex-col gap-10">
-          <div class="flex flex-col gap-12">
-            <div class="flex flex-col gap-6">
+        <div class="relative z-10 flex flex-col gap-6 md:gap-10">
+          <div class="flex flex-col gap-10 md:gap-12">
+            <div class="flex flex-col gap-4 md:gap-6">
               <h2
-                class="text-display-md text-paper lg:max-w-[505px]"
+                class="text-[24px] font-semibold leading-normal text-paper md:text-display-md lg:max-w-[505px]"
                 :style="{ color: section.colors.title || undefined }"
               >
                 {{ section.title }}
               </h2>
               <p
-                class="text-title-sm font-medium text-neutral-100 lg:max-w-[715px]"
+                class="text-body-md text-neutral-100 md:text-title-sm md:font-medium lg:max-w-[715px]"
                 :style="{ color: section.colors.description || undefined }"
               >
                 {{ section.description }}
@@ -89,17 +90,17 @@ defineProps<{
             <a
               v-if="section.primaryCta"
               :href="section.primaryCta.url"
-              class="inline-flex w-fit items-center gap-1 rounded-sm bg-paper px-6 py-3
-                     text-title-sm text-ink transition-opacity hover:opacity-90"
+              class="inline-flex w-fit items-center gap-1 rounded-sm bg-paper px-3 py-3
+                     text-body-md text-ink transition-opacity hover:opacity-90 md:px-6 md:text-title-sm"
             >
               {{ section.primaryCta.label }}
-              <ArrowRight class="size-6 shrink-0 rtl:-scale-x-100" aria-hidden="true" />
+              <ArrowRight class="size-5 shrink-0 rtl:-scale-x-100 md:size-6" aria-hidden="true" />
             </a>
           </div>
 
           <p
             v-if="section.subtitle"
-            class="text-title-sm font-medium text-neutral-100"
+            class="text-[12px] font-medium leading-normal text-neutral-300 md:text-title-sm md:text-neutral-100"
             :style="{ color: section.colors.subtitle || undefined }"
           >
             {{ section.subtitle }}

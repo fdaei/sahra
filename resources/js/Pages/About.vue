@@ -74,7 +74,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
 <template>
   <SeoHead :meta="seo" />
 
-  <section class="section-first relative overflow-hidden pb-[128px]">
+  <section class="relative overflow-hidden pb-[64px] pt-[160px] md:pb-[128px] md:pt-[192px]">
     <!--
       Arc rings — Figma 951:3589 "Clip path group", x=672 y=-506, 1500x1320.
       Six concentric gold ellipse strokes (#BD933B at 0.2, 2.19 width) that
@@ -101,11 +101,11 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
     </div>
 
-    <div class="container-sahra relative flex flex-col gap-24 lg:gap-[200px]">
+    <div class="container-sahra relative flex flex-col gap-16 lg:gap-[200px]">
       <!-- Hero — Figma 1043:1735 -->
       <div
         v-if="hero"
-        class="flex flex-col items-center gap-12 lg:flex-row lg:justify-between lg:gap-[100px] xl:gap-[250px]"
+        class="grid grid-cols-[1fr_130px] items-start gap-4 lg:flex lg:flex-row lg:items-center lg:justify-between lg:gap-[100px] xl:gap-[250px]"
       >
         <div class="flex w-full flex-col gap-12 lg:max-w-[506px]">
           <p
@@ -130,18 +130,18 @@ const heroImage = computed(() => hero.value?.image ?? null);
           <div class="flex flex-col gap-6">
             <h1 :style="{ color: hero.colors.title || undefined }">
               <span
-                class="block font-display text-[44px] font-normal leading-none tracking-[-0.01em] text-gold md:text-[76px]"
+                class="block font-display text-[32px] font-normal leading-none tracking-[-0.01em] text-gold md:text-[76px]"
                 >{{ hero.title }}</span
               >
               <span
                 v-if="hero.content"
-                class="mt-2 block text-[26px] font-medium leading-[1.2] tracking-[-0.02em] text-neutral-900 md:text-[40px]"
+                class="mt-2 block text-[22px] font-medium leading-[1.2] tracking-[-0.02em] text-neutral-900 md:text-[40px]"
                 :style="{ color: hero.colors.content || undefined }"
                 >{{ hero.content }}</span
               >
             </h1>
             <p
-              class="text-title-sm font-medium text-neutral-700"
+              class="text-body-md text-neutral-700 md:text-title-sm md:font-medium"
               :style="{ color: hero.colors.description || undefined }"
             >
               {{ hero.description }}
@@ -154,7 +154,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
           :alt="heroImage?.alt ?? ''"
           width="321"
           height="405"
-          class="w-[240px] shrink-0 object-contain lg:w-[321px]"
+          class="w-[130px] shrink-0 object-contain lg:w-[321px]"
           :aria-hidden="heroImage ? undefined : 'true'"
         />
       </div>
@@ -172,7 +172,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
           none and the inherited body ink is black/1000, one step too dark.
         -->
         <h2
-          class="text-display-md leading-[1.2] text-neutral-900 lg:max-w-[472px] lg:shrink-0"
+          class="text-[22px] font-semibold leading-[1.2] text-neutral-900 md:text-display-md lg:max-w-[472px] lg:shrink-0"
           :style="{ color: story.colors.title || undefined }"
         >
           {{ story.title }}
@@ -180,14 +180,14 @@ const heroImage = computed(() => hero.value?.image ?? null);
 
         <div class="flex flex-col gap-6 lg:max-w-[612px]">
           <p
-            class="text-title-sm font-medium text-neutral-700"
+            class="text-body-md text-neutral-700 md:text-title-sm md:font-medium"
             :style="{ color: story.colors.description || undefined }"
           >
             {{ story.description }}
           </p>
           <p
             v-if="story.content"
-            class="text-title-sm font-medium text-neutral-700"
+            class="text-body-md text-neutral-700 md:text-title-sm md:font-medium"
             :style="{ color: story.colors.content || undefined }"
           >
             {{ story.content }}
@@ -196,18 +196,18 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
 
       <!-- How we think — Figma 1288:4182 -->
-      <div v-if="howWeThink" class="flex flex-col gap-12">
+      <div v-if="howWeThink" class="flex flex-col gap-8 md:gap-12">
         <div
           class="flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-[348px]"
         >
           <h2
-            class="text-display-md lg:shrink-0"
+            class="text-[22px] font-semibold md:text-display-md lg:shrink-0"
             :style="{ color: howWeThink.colors.title || undefined }"
           >
             {{ howWeThink.title }}
           </h2>
           <p
-            class="text-title-sm font-medium text-neutral-700 lg:max-w-[612px]"
+            class="text-body-md text-neutral-700 md:text-title-sm md:font-medium lg:max-w-[612px]"
             :style="{ color: howWeThink.colors.description || undefined }"
           >
             {{ howWeThink.description }}
@@ -219,18 +219,18 @@ const heroImage = computed(() => hero.value?.image ?? null);
           <div
             v-for="(item, i) in howWeThink.items"
             :key="i"
-            class="flex flex-col gap-6 rounded-sm border-t-[3px] border-t-gold bg-neutral-50/30 px-6 py-12"
+            class="flex flex-col gap-4 rounded-sm border border-gold-400 px-6 py-6 md:gap-6 md:border-x-0 md:border-b-0 md:border-t-[3px] md:bg-neutral-50/30 md:py-12"
           >
             <img
               :src="item.icon || '/icons/sahra/goal.svg'"
               alt=""
               width="32"
               height="32"
-              class="size-8"
+              class="size-5 md:size-8"
             />
             <div class="flex flex-col gap-2">
-              <h3 class="text-title-xl text-neutral-900">{{ item.title }}</h3>
-              <p class="text-title-sm text-neutral-800">
+              <h3 class="text-[16px] font-medium text-neutral-900 md:text-title-xl">{{ item.title }}</h3>
+              <p class="text-[12px] text-neutral-800 md:text-title-sm">
                 {{ item.description }}
               </p>
             </div>
@@ -239,7 +239,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
 
       <!-- Team — Figma 1288:4194 -->
-      <div v-if="team" class="relative isolate flex flex-col gap-24">
+      <div v-if="team" class="relative isolate flex flex-col gap-8 md:gap-24">
         <!--
           Dune contours 979:1394 — x=37 y=-104, 1160x1000 within the 1248 team
           track, so it bleeds above the header and sits behind the copy. Hidden
@@ -259,13 +259,13 @@ const heroImage = computed(() => hero.value?.image ?? null);
           class="relative z-10 flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-[328px]"
         >
           <h2
-            class="max-w-[287px] text-display-md leading-normal [text-wrap:initial] lg:shrink-0"
+            class="max-w-[287px] text-[22px] font-semibold leading-normal [text-wrap:initial] md:text-display-md lg:shrink-0"
             :style="{ color: team.colors.title || undefined }"
           >
             {{ team.title }}
           </h2>
           <p
-            class="text-title-xl text-neutral-800 lg:max-w-[612px]"
+            class="hidden text-title-xl text-neutral-800 md:block lg:max-w-[612px]"
             :style="{ color: team.colors.description || undefined }"
           >
             {{ team.description }}
@@ -274,18 +274,17 @@ const heroImage = computed(() => hero.value?.image ?? null);
 
         <!-- member card — Figma 992:2644 -->
         <div
-          class="relative z-10 grid grid-cols-2 gap-6 sm:grid-cols-3 lg:grid-cols-5 lg:gap-[26px]"
+          class="relative z-10 flex gap-4 overflow-hidden md:grid md:grid-cols-3 md:gap-6 lg:grid-cols-5 lg:gap-[26px]"
         >
           <figure
             v-for="(member, i) in props.team"
             :key="i"
-            class="flex flex-col gap-2 overflow-hidden rounded-sm border border-neutral-200 bg-paper/60"
+            class="flex w-[174px] shrink-0 flex-col gap-2 overflow-hidden rounded-sm border border-neutral-200 bg-paper/60 md:w-auto"
           >
             <!--
-              Figma renders every member portrait desaturated (992:2644) while
-              the source uploads are colour, so the grayscale is applied here
-              rather than baked into the asset — an admin can swap the photo in
-              Filament without having to pre-process it.
+              The Figma source portraits are colour. Keep the resting state
+              desaturated and reveal the original colour when the portrait is
+              hovered or keyboard-focused.
             -->
             <img
               v-if="member.image"
@@ -294,16 +293,16 @@ const heroImage = computed(() => hero.value?.image ?? null);
               :alt="member.image.alt"
               :width="member.image.width"
               :height="member.image.height"
-              class="aspect-square w-full rounded-sm object-cover grayscale"
+              class="aspect-square w-full rounded-sm object-cover grayscale transition-[filter] duration-300 hover:grayscale-0 focus-visible:grayscale-0 motion-reduce:transition-none"
             />
             <div
               v-else
               class="aspect-square w-full rounded-sm bg-neutral-100"
             />
 
-            <figcaption class="flex flex-col gap-1 px-4 py-2">
-              <p class="text-title-lg text-neutral-900">{{ member.name }}</p>
-              <p class="text-title-sm text-neutral-600">{{ member.role }}</p>
+            <figcaption class="flex flex-col gap-1 px-3 py-2 md:px-4">
+              <p class="text-[14px] font-medium text-neutral-900 md:text-title-lg">{{ member.name }}</p>
+              <p class="text-[12px] text-neutral-600 md:text-title-sm">{{ member.role }}</p>
             </figcaption>
           </figure>
         </div>

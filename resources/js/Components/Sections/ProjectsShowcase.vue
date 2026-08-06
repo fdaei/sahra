@@ -87,7 +87,7 @@ onBeforeUnmount(() => {
 <template>
   <section
     ref="sectionRoot"
-    class="section overflow-hidden"
+    class="h-[965px] overflow-hidden py-14 md:h-auto md:py-24 lg:py-28"
     aria-labelledby="projects-showcase-title"
     @mouseenter="isPaused = true"
     @mouseleave="isPaused = false"
@@ -95,10 +95,10 @@ onBeforeUnmount(() => {
     @focusout="isPaused = false"
   >
     <div class="container-sahra">
-      <div class="flex flex-col gap-12 lg:gap-24">
-        <header class="flex flex-col gap-12">
+      <div class="flex flex-col gap-10 lg:gap-24">
+        <header class="flex flex-col gap-8 lg:gap-12">
           <div
-            class="inline-flex w-fit items-center gap-1 font-display text-[24px] leading-none text-gold"
+            class="inline-flex w-fit items-center gap-1 font-display text-[16px] leading-none text-gold md:text-[24px]"
           >
             <span
               class="size-2 rotate-45 rounded-round bg-gold shadow-[-2px_-2px_12px_rgba(189,147,59,0.5),2px_2px_12px_rgba(189,147,59,0.5)]"
@@ -112,7 +112,7 @@ onBeforeUnmount(() => {
           >
             <h2
               id="projects-showcase-title"
-              class="max-w-[506px] text-[36px] font-semibold leading-[1.2] text-neutral-900 lg:text-[40px]"
+              class="max-w-[506px] text-[26px] font-semibold leading-[1.2] text-neutral-900 lg:text-[40px]"
             >
               {{ section.title }}
             </h2>
@@ -127,21 +127,21 @@ onBeforeUnmount(() => {
 
         <div
           v-if="projects.length"
-          class="grid items-center gap-10 lg:grid-cols-[minmax(0,612px)_minmax(0,530px)] lg:justify-between xl:grid-cols-[612px_530px] xl:gap-0"
+          class="grid items-center gap-4 lg:grid-cols-[minmax(0,612px)_minmax(0,530px)] lg:justify-between lg:gap-10 xl:grid-cols-[612px_530px] xl:gap-0"
         >
           <div
-            class="order-2 flex min-w-0 flex-col lg:order-1"
+            class="order-1 flex min-w-0 flex-col lg:order-1"
             role="tablist"
             aria-label="Projects"
           >
             <article
               v-for="(project, index) in projects"
               :key="project.slug"
-              class="project-slide-row"
-              :class="{ 'is-active': activeIndex === index }"
+              class="project-slide-row max-lg:hidden"
+              :class="{ 'is-active max-lg:!block': activeIndex === index }"
             >
               <div
-                class="group py-5 lg:py-6"
+                class="group py-4 lg:py-6"
                 @mouseenter="selectProject(index)"
               >
                 <span class="flex items-center justify-between gap-4">
@@ -227,7 +227,7 @@ onBeforeUnmount(() => {
           </div>
 
           <div
-            class="order-1 aspect-[530/663] w-full overflow-hidden rounded-lg bg-neutral-50 lg:order-2"
+            class="order-2 aspect-[362/453] w-full overflow-hidden rounded-lg bg-neutral-50 lg:order-2 lg:aspect-[530/663]"
           >
             <Transition name="project-image" mode="out-in">
               <a

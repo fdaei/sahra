@@ -173,7 +173,7 @@ useSectionReveal();
   -->
   <section
     v-if="hero"
-    class="relative min-h-[560px] overflow-hidden md:min-h-[904px]"
+    class="relative min-h-[765px] overflow-hidden md:min-h-[904px]"
     style="
       background-image: url(&quot;/images/sahra/hero-brand-preview.png&quot;);
       background-size: cover;
@@ -191,7 +191,7 @@ useSectionReveal();
     <div class="mx-auto w-full max-w-frame">
     <div
       ref="heroStack"
-      class="relative z-10 flex w-[731px] max-w-[calc(100%-3rem)] flex-col gap-14 px-6 pb-11 pt-[120px] md:ms-24 md:px-0 md:pb-0 md:pt-[176px]"
+      class="relative z-10 flex w-[731px] max-w-[calc(100%-2.5rem)] flex-col gap-8 px-5 pb-10 pt-36 md:ms-24 md:max-w-[calc(100%-3rem)] md:gap-14 md:px-0 md:pb-0 md:pt-[176px]"
     >
       <!--
         hero badge — Figma 1419:9195: row, padding 8, gap 8, radius 1000,
@@ -210,7 +210,7 @@ useSectionReveal();
       </div>
 
       <!-- hero texts (title+subtitle): gap-12 (space48) — Figma 1419:9199 -->
-      <div class="flex flex-col gap-12">
+      <div class="flex flex-col gap-8 md:gap-12">
         <!--
           Title — Figma 1419:9200. One text node, three runs over a
           Poppins Medium 48 / 80px line-height / -0.05em base:
@@ -221,16 +221,16 @@ useSectionReveal();
           description) so each locale can reorder them.
         -->
         <h1
-          class="text-[48px] font-medium leading-[80px] tracking-[-0.05em] text-neutral-900"
+          class="text-[28px] font-medium leading-normal tracking-[-0.02em] text-neutral-900 md:text-[48px] md:leading-[80px] md:tracking-[-0.05em]"
           :style="{ color: hero.colors.title || undefined }"
         >
-          <span class="block text-[36px] md:text-[56px]">{{ hero.title }}</span>
+          <span class="block text-[28px] md:text-[56px]">{{ hero.title }}</span>
           <!--
             The gradient run is `w-fit` so the 90deg ramp is measured across
             the glyphs, as in Figma, rather than across the 731px column.
           -->
           <span
-            class="block w-fit bg-clip-text font-display text-[56px] leading-[80px] tracking-normal text-transparent md:text-[96px]"
+            class="block w-fit bg-clip-text font-display text-[40px] leading-normal tracking-normal text-transparent md:text-[96px] md:leading-[80px]"
             :style="
               hero.colors.content
                 ? { color: hero.colors.content, backgroundImage: 'none' }
@@ -241,14 +241,14 @@ useSectionReveal();
             "
             >{{ hero.content }}</span
           >
-          <span class="block text-[36px] md:text-[56px]">{{
+          <span class="block text-[28px] md:text-[56px]">{{
             hero.description
           }}</span>
         </h1>
 
         <!-- Subtitle — Figma 1419:9201: Poppins Medium 18, black/700, w 612 -->
         <p
-          class="w-full max-w-[612px] text-[18px] font-medium leading-[1.4] text-neutral-700"
+          class="w-full max-w-[612px] text-[16px] font-medium leading-[1.4] text-neutral-700 md:text-[18px]"
           :style="{ color: hero.colors.subtitle || undefined }"
         >
           {{ hero.subtitle }}
@@ -260,14 +260,14 @@ useSectionReveal();
         <a
           v-if="hero.primaryCta"
           :href="hero.primaryCta.url"
-          class="flex items-center gap-1 rounded-sm bg-ink px-8 py-4 text-title-md text-paper transition-opacity hover:opacity-90"
+          class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:px-8 md:py-4 md:text-title-md"
         >
           {{ hero.primaryCta.label }}
         </a>
         <a
           v-if="hero.secondaryCta"
           :href="hero.secondaryCta.url"
-          class="flex items-center gap-1 rounded-sm border border-ink bg-paper px-8 py-4 text-title-md text-ink transition-colors hover:bg-neutral-50"
+          class="flex items-center gap-1 rounded-sm border border-ink bg-paper px-6 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-4 md:text-title-md"
         >
           {{ hero.secondaryCta.label }}
         </a>
@@ -291,35 +291,35 @@ useSectionReveal();
     Card 1419:9319: column, padding 24/12, gap 8, radius 8, fill #FFFFFF,
     1px OUTSIDE gradient stroke (see `.edge-gold`).
   -->
-  <section v-if="kpi" class="section">
+  <section v-if="kpi" class="relative z-20 -mt-[117px] py-0 md:mt-0 md:py-24 lg:py-28">
     <div
-      class="container-narrow grid grid-cols-1 gap-4 text-center md:grid-cols-3"
+      class="container-sahra grid grid-cols-3 gap-2 text-center md:container-narrow md:gap-4"
       data-reveal-group
     >
       <div
         v-for="(item, i) in kpi.items"
         :key="i"
-        class="edge-gold will-reveal flex flex-col items-center justify-center gap-2 rounded-sm px-3 py-6"
+        class="edge-gold will-reveal flex h-[77px] flex-col items-center justify-center gap-1 rounded-sm px-1 py-2 md:h-auto md:gap-2 md:px-3 md:py-6"
         data-reveal
       >
-        <div class="flex items-center justify-center gap-4">
+        <div class="flex items-center justify-center gap-1 md:gap-4">
           <component
             :is="kpiIcons[i] || TrendingUp"
-            class="size-8 text-gold"
+            class="size-4 text-gold md:size-8"
             :stroke-width="1.5"
           />
           <!-- A3: counts up to the authored value; the DOM text stays the
                source of truth so the number is right without JS. -->
           <p
-            class="latin-nums text-[32px] font-medium leading-none text-ink"
+            class="latin-nums text-[18px] font-medium leading-none text-ink md:text-[32px]"
             data-counter
           >
             {{ item.value }}
           </p>
         </div>
         <div class="flex flex-col items-center gap-1">
-          <p class="text-title-sm font-medium text-gold">{{ item.title }}</p>
-          <p class="text-body-md text-neutral-700">{{ item.description }}</p>
+          <p class="text-[10px] font-medium leading-tight text-gold md:text-title-sm">{{ item.title }}</p>
+          <p class="hidden text-body-md text-neutral-700 md:block">{{ item.description }}</p>
         </div>
       </div>
     </div>
@@ -332,11 +332,11 @@ useSectionReveal();
     128×128 centred box at 80px wide. `shade` 1419:9215 is a 90deg
     white→transparent→white overlay (`.marquee-mask`).
   -->
-  <section class="section pt-0">
+  <section class="section pb-0 pt-[115px] md:pb-24 md:pt-0 lg:pb-28">
     <div class="container-narrow flex flex-col gap-8">
-      <h2 class="text-center text-[22px] font-medium text-neutral-600">
+      <h2 class="text-center text-[16px] font-medium leading-normal text-neutral-600 md:text-[22px]">
         {{ sections.trust_proof?.title }}
-        <span class="text-[28px] text-neutral-900">{{
+        <span class="text-[20px] leading-normal text-neutral-900 md:text-[28px]">{{
           sections.trust_proof?.content
         }}</span>
         {{ sections.trust_proof?.subtitle }}
@@ -378,7 +378,7 @@ useSectionReveal();
   />
 
   <!-- Content Direction Checklist — Figma 1419:9322 -->
-  <LeadMagnet v-if="sections.lead_magnet" :section="sections.lead_magnet" />
+  <LeadMagnet v-if="sections.lead_magnet" class="max-md:h-[207px] max-md:overflow-hidden max-md:opacity-0" :section="sections.lead_magnet" />
 
   <!-- Projects showcase — Figma 1419:9216 -->
   <ProjectsShowcase
@@ -394,7 +394,7 @@ useSectionReveal();
   <PackagesSection v-if="packages" :section="packages" />
 
   <!-- Why us — Figma 1419:9230 -->
-  <section v-if="whyUs" class="section">
+  <section v-if="whyUs" class="h-[1094px] pt-[193px] md:h-auto md:py-24 lg:py-28">
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -411,37 +411,37 @@ useSectionReveal();
         class="mt-8 grid gap-8 lg:grid-cols-[506px_1fr] lg:items-center lg:justify-between"
       >
         <!-- title & subtitle 1419:9233 — column, gap 40 -->
-        <div class="flex flex-col gap-10">
+        <div class="flex flex-col gap-6 md:gap-10">
           <h2
-            class="text-display-md"
+            class="text-[26px] font-semibold leading-tight md:text-display-md"
             :style="{ color: whyUs.colors.title || undefined }"
           >
             {{ whyUs.title }}
           </h2>
           <!-- Subtitle 1419:9235 — Poppins Medium 18, black/700 -->
           <p
-            class="text-title-sm font-medium text-neutral-700"
+            class="text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
             :style="{ color: whyUs.colors.subtitle || undefined }"
           >
             {{ whyUs.subtitle }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-x-10 gap-y-12" data-reveal-group>
+        <div class="grid grid-cols-2 gap-3 md:gap-x-10 md:gap-y-12" data-reveal-group>
           <div
             v-for="(item, i) in whyUs.items"
             :key="i"
-            class="will-reveal flex flex-col items-start gap-4 rounded-sm border border-gold-200 bg-gold-100 p-8 shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
+            class="will-reveal flex flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
             data-reveal
           >
             <component
               :is="whyUsIcons[i] || BadgeCheck"
-              class="size-8 text-gold"
+              class="size-6 text-gold md:size-8"
               :stroke-width="1.5"
             />
             <div class="flex flex-col gap-2">
-              <h3 class="text-title-md text-neutral-900">{{ item.title }}</h3>
+              <h3 class="text-[16px] font-medium text-neutral-900 md:text-title-md">{{ item.title }}</h3>
               <!-- Description I1419:9238;398:528 is a fixed 212 in the file. -->
-              <p class="max-w-[212px] text-body-lg text-neutral-600">
+              <p class="max-w-[212px] text-[12px] leading-normal text-neutral-600 md:text-body-lg">
                 {{ item.description }}
               </p>
             </div>
@@ -452,7 +452,7 @@ useSectionReveal();
   </section>
 
   <!-- Reviews — Figma 1419:9243 -->
-  <section v-if="reviews" class="section overflow-hidden">
+  <section v-if="reviews" class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:py-28">
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -465,10 +465,10 @@ useSectionReveal();
         Structurally identical to the Insights row 1419:9261 below.
       -->
       <div
-        class="mt-12 grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
+        class="mt-8 grid items-start gap-6 md:mt-12 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
       >
         <h2
-          class="text-display-md"
+          class="text-[26px] font-semibold leading-tight md:text-display-md"
           :style="{ color: reviews.colors.title || undefined }"
         >
           {{ reviews.title }}
@@ -476,7 +476,7 @@ useSectionReveal();
         <!-- Subtitle 1419:9248 — Poppins Medium 18, black/700, w 612 -->
         <p
           v-if="reviews.subtitle"
-          class="max-w-[612px] text-title-sm font-medium text-neutral-700"
+          class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
           :style="{ color: reviews.colors.subtitle || undefined }"
         >
           {{ reviews.subtitle }}
@@ -490,7 +490,7 @@ useSectionReveal();
       as the client rail, at the 40s the audit specifies; hovering pauses it so
       a card can be read (and its 414:864 hover state inspected).
     -->
-    <div class="marquee-mask mt-10 h-[297px] overflow-hidden">
+    <div class="marquee-mask mt-8 h-[246px] overflow-hidden md:mt-10 md:h-[297px]">
       <!-- No padding on the track: it is `width: max-content`, so any inline
            padding would be carried into the -50% shift and the loop would drift.
            Viewport 1419:9249 is 297 tall for a 246 card — the surplus is shadow
@@ -502,7 +502,7 @@ useSectionReveal();
         <div
           v-for="(t, i) in testimonialTrack"
           :key="i"
-          class="testimonial-card flex h-[246px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial"
+          class="testimonial-card flex h-[220px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] p-5 shadow-testimonial md:h-[246px] md:p-6"
           :aria-hidden="i >= testimonials.length ? 'true' : undefined"
         >
           <p class="text-body-md leading-normal text-neutral-800">
@@ -526,9 +526,9 @@ useSectionReveal();
   </section>
 
   <!-- Insights — Figma 1419:9258 -->
-  <section v-if="insights" class="section">
-    <div class="container-sahra flex flex-col gap-12">
-      <div class="flex flex-col gap-12">
+  <section v-if="insights" class="py-14 md:py-24 lg:py-28">
+    <div class="container-sahra flex flex-col gap-10 md:gap-12">
+      <div class="flex flex-col gap-8 md:gap-12">
         <div
           class="eyebrow"
           :style="{ color: insights.colors.eyebrow || undefined }"
@@ -539,14 +539,14 @@ useSectionReveal();
           class="grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
         >
           <h2
-            class="text-display-md leading-normal text-neutral-900"
+            class="text-[26px] font-semibold leading-tight text-neutral-900 md:text-display-md md:leading-normal"
             :style="{ color: insights.colors.title || undefined }"
           >
             {{ insights.title }}
           </h2>
           <p
             v-if="insightsSubtitle"
-            class="max-w-[612px] text-title-sm font-medium text-neutral-700"
+            class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
             :style="{
               color:
                 insights.colors.description ||
@@ -563,10 +563,10 @@ useSectionReveal();
         <a
           v-if="posts[0]"
           :href="posts[0].url"
-          class="group will-reveal grid overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-card md:grid-cols-[279px_270px] md:justify-between"
+          class="group will-reveal grid h-[458px] grid-cols-[174px_1fr] gap-3 overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-3 shadow-card md:h-auto md:grid-cols-[279px_270px] md:justify-between md:gap-0 md:p-4"
           data-reveal
         >
-          <div class="h-[260px] overflow-hidden rounded-sm md:h-[392px]">
+          <div class="h-full overflow-hidden rounded-sm md:h-[392px]">
             <img
               v-if="posts[0].image"
               :src="posts[0].image.src"
@@ -579,7 +579,7 @@ useSectionReveal();
             space-between over a fixed 270 — not fixed margins, which would
             stop matching the frame as soon as an excerpt changes length.
           -->
-          <div class="flex min-w-0 flex-col justify-between">
+          <div class="flex min-w-0 flex-col justify-between py-2 md:py-0">
             <div class="flex items-center gap-2 text-body-md text-neutral-700">
               <CalendarDays class="size-6 text-gold" :stroke-width="1.5" />
               <span>{{ posts[0].publishedAt }}</span>
@@ -587,31 +587,31 @@ useSectionReveal();
             <h3 class="text-title-md font-semibold text-gold">
               {{ posts[0].title }}
             </h3>
-            <p class="text-body-md text-neutral-700">
+            <p class="hidden text-body-md text-neutral-700 md:block">
               {{ posts[0].excerpt }}
             </p>
             <span
-              class="ms-auto flex size-12 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper"
+              class="ms-auto flex size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper md:size-12"
             >
               <ArrowUpRight class="size-8" :stroke-width="1.25" />
             </span>
           </div>
         </a>
-        <div class="will-reveal flex flex-col gap-6" data-reveal>
+        <div class="will-reveal flex flex-col gap-3 md:gap-6" data-reveal>
           <a
             v-for="(post, index) in posts.slice(1, 3)"
             :key="post.slug"
             :href="post.url"
-            class="grid flex-1 gap-6 sm:grid-cols-[188px_1fr]"
+            class="grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"
             :class="index === 0 ? 'border-b border-neutral-200 pb-6' : ''"
           >
             <img
               v-if="post.image"
               :src="post.image.src"
               :alt="post.image.alt"
-              class="aspect-square h-[188px] w-[188px] rounded-sm object-cover"
+              class="aspect-square size-[120px] rounded-sm object-cover md:size-[188px]"
             />
-            <div class="flex flex-col justify-center gap-6">
+            <div class="flex flex-col justify-center gap-3 md:gap-6">
               <div
                 class="flex items-center gap-2 text-body-md text-neutral-700"
               >
@@ -627,7 +627,7 @@ useSectionReveal();
   </section>
 
   <!-- FAQ — Figma 1419:9272 -->
-  <section v-if="faqSection" class="section">
+  <section v-if="faqSection" class="h-[891px] py-14 md:h-auto md:py-24 lg:py-28">
     <!--
       Section 1419:9272 is a column [eyebrow, content] at gap 48; the content
       row 1419:9274 is gap 32 with a fixed 497 left column. The eyebrow spans
@@ -641,11 +641,11 @@ useSectionReveal();
         {{ faqSection.eyebrow }}
       </div>
 
-      <div class="mt-12 grid gap-8 lg:grid-cols-[497px_1fr]">
+      <div class="mt-8 grid gap-8 md:mt-12 lg:grid-cols-[497px_1fr]">
         <!-- 1419:9275 — fills the row height, title top / subtitle bottom. -->
         <div class="flex flex-col justify-between gap-8">
           <h2
-            class="text-display-md"
+            class="text-[26px] font-semibold leading-tight md:text-display-md"
             :style="{ color: faqSection.colors.title || undefined }"
           >
             {{ faqSection.title }}
@@ -653,24 +653,24 @@ useSectionReveal();
           <!-- Subtitle 1419:9277 — Poppins Medium 18, black/700 -->
           <p
             v-if="faqSection.subtitle"
-            class="text-title-sm font-medium text-neutral-700"
+            class="text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
             :style="{ color: faqSection.colors.subtitle || undefined }"
           >
             {{ faqSection.subtitle }}
           </p>
         </div>
 
-        <div class="flex flex-col gap-6" data-reveal-group>
+        <div class="flex flex-col gap-3 md:gap-6" data-reveal-group>
           <!-- First box is the `open` variant 438:561; the rest are 438:563. -->
           <details
             v-for="(faq, i) in faqs"
             :key="i"
             :open="i === 0"
-            class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-8"
+            class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-4 md:p-8"
             data-reveal
           >
             <summary
-              class="flex cursor-pointer list-none items-center justify-between gap-4 text-title-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden"
+              class="flex cursor-pointer list-none items-center justify-between gap-4 text-[14px] font-medium text-neutral-900 md:text-title-sm [&::-webkit-details-marker]:hidden"
             >
               {{ faq.question }}
               <span class="relative size-6 shrink-0 text-neutral-700">
@@ -684,7 +684,7 @@ useSectionReveal();
                 />
               </span>
             </summary>
-            <p class="mt-4 text-body-lg text-neutral-700">{{ faq.answer }}</p>
+            <p class="mt-3 text-[12px] leading-normal text-neutral-700 md:mt-4 md:text-body-lg">{{ faq.answer }}</p>
           </details>
         </div>
       </div>
@@ -692,5 +692,9 @@ useSectionReveal();
   </section>
 
   <!-- Final CTA — Figma 1419:9333 (shared component) -->
-  <CtaBanner v-if="sections.final_cta" :section="sections.final_cta" />
+  <CtaBanner
+    v-if="sections.final_cta"
+    :section="sections.final_cta"
+    spacing-class="pb-[186px] pt-24 md:pb-[224px]"
+  />
 </template>

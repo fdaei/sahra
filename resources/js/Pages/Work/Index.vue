@@ -76,7 +76,7 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
     224 (content -> final CTA), 120 (heading row -> grid), 96 (grid -> More).
     They are separate auto-layout levels in the file and stay separate here.
   -->
-  <div class="container-sahra flex flex-col gap-16 pb-56 pt-[136px] md:gap-[120px] md:pt-[184px]">
+  <div class="container-sahra flex flex-col gap-16 pb-32 pt-[160px] md:gap-[120px] md:pt-[184px]">
     <!-- Heading + filters — Figma 1219:4240: space-between, items-center -->
     <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
       <!-- "Main title & tag" 1005:1609 — eyebrow, gap 48, then title over
@@ -84,8 +84,8 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
       <div class="flex max-w-[611px] flex-col gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
         <div class="flex flex-col gap-6">
-          <h1 class="text-display-md md:text-display-lg">{{ heading.title }}</h1>
-          <p class="text-title-sm font-medium text-neutral-700">{{ heading.description }}</p>
+          <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-lg">{{ heading.title }}</h1>
+          <p class="text-body-lg text-neutral-700 md:text-title-sm md:font-medium">{{ heading.description }}</p>
         </div>
       </div>
 
@@ -109,9 +109,13 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
       {{ t('common.empty_projects') }}
     </p>
 
-    <ul v-else class="grid w-full gap-x-6 gap-y-24 sm:grid-cols-2">
-      <li v-for="project in visibleProjects" :key="project.slug">
-        <Link :href="project.url" class="group flex flex-col gap-10 rounded-md">
+    <ul v-else class="grid w-full gap-x-6 gap-y-16 sm:grid-cols-2 md:gap-y-24">
+      <li
+        v-for="(project, projectIndex) in visibleProjects"
+        :key="project.slug"
+        :class="projectIndex >= 4 ? 'max-sm:hidden' : ''"
+      >
+        <Link :href="project.url" class="group flex flex-col gap-4 rounded-md md:gap-10">
           <div
             class="overflow-hidden rounded-md border border-neutral-100 shadow-card"
           >
@@ -130,25 +134,25 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
           <div class="flex flex-col gap-6">
             <div class="flex flex-col gap-4">
               <div class="flex items-center justify-between gap-4">
-                <h2 class="text-[28px] font-semibold text-neutral-900 md:text-[36px]">
+                <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[36px]">
                   {{ project.title }}
                 </h2>
                 <span
                   v-if="project.industry"
-                  class="flex shrink-0 items-center gap-2 text-label-lg text-neutral-500"
+                  class="flex shrink-0 items-center gap-2 text-[12px] font-medium text-neutral-500 md:text-label-lg"
                 >
                   <img
                     src="/icons/sahra/industry.svg"
                     alt=""
                     width="24"
                     height="24"
-                    class="size-6"
+                    class="size-4 md:size-6"
                     aria-hidden="true"
                   />
                   {{ project.industry }}
                 </span>
               </div>
-              <p class="text-body-lg text-neutral-700">{{ project.excerpt }}</p>
+              <p class="text-body-md text-neutral-700 md:text-body-lg">{{ project.excerpt }}</p>
             </div>
 
             <!--
@@ -181,12 +185,12 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
     <button
       v-if="hasMore"
       type="button"
-      class="inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900
+      class="inline-flex items-center gap-1 text-body-md font-medium text-neutral-900 md:gap-2 md:text-body-lg
              transition-opacity hover:opacity-70"
       @click="shown += PAGE_SIZE"
     >
       {{ t('common.load_more') }}
-      <ChevronDown class="size-6 shrink-0" aria-hidden="true" />
+      <ChevronDown class="size-4 shrink-0 md:size-6" aria-hidden="true" />
     </button>
     </div>
   </div>

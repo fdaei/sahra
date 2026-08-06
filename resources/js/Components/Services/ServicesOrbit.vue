@@ -294,7 +294,7 @@ useScrubRotate(innerRing)
 
 @media (max-width: 1023px) {
   .services-orbit {
-    min-height: auto;
+    min-height: 828px;
   }
 
   .orbit-stage {

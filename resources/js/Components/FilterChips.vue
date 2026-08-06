@@ -46,8 +46,8 @@ function hrefFor(slug: string | null): string {
 
 function classesFor(slug: string | null): string {
   return props.active === slug
-    ? 'text-[18px] text-neutral-1000'
-    : 'text-[16px] text-neutral-500 hover:text-neutral-800'
+    ? 'text-[16px] font-medium text-neutral-1000 md:text-[18px] md:font-normal'
+    : 'text-[14px] font-medium text-neutral-500 hover:text-neutral-800 md:text-[16px] md:font-normal'
 }
 </script>
 
@@ -55,7 +55,9 @@ function classesFor(slug: string | null): string {
   <div
     role="group"
     class="flex gap-4"
-    :class="direction === 'column' ? 'flex-col' : 'flex-wrap items-center gap-x-8'"
+    :class="direction === 'column'
+      ? 'items-center overflow-hidden md:items-start lg:flex-col lg:overflow-visible'
+      : 'flex-wrap items-center gap-x-8'"
   >
     <Link
       :href="hrefFor(null)"

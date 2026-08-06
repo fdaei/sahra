@@ -85,7 +85,7 @@ const restRows = computed(() => props.posts.data.slice(2));
   <SeoHead :meta="seo" />
 
   <div
-    class="container-sahra flex flex-col gap-16 pb-32 pt-[136px] md:gap-24 md:pt-[192px]"
+    class="container-sahra flex flex-col gap-12 pb-32 pt-[160px] md:gap-24 md:pt-[192px]"
   >
     <!-- Heading + filters -->
     <div
@@ -96,10 +96,10 @@ const restRows = computed(() => props.posts.data.slice(2));
       <div class="flex max-w-[612px] flex-col gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
         <div class="flex flex-col gap-6">
-          <h1 class="text-display-md md:text-display-lg">
+          <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-lg">
             {{ heading.title }}
           </h1>
-          <p class="text-title-sm font-medium text-neutral-700">
+          <p class="text-body-lg text-neutral-700 md:text-title-sm md:font-medium">
             {{ heading.description }}
           </p>
         </div>
@@ -120,7 +120,7 @@ const restRows = computed(() => props.posts.data.slice(2));
     <Link
       v-if="featured"
       :href="featured.url"
-      class="group flex flex-col gap-8 rounded-lg bg-[#FBF9F5] p-4 lg:flex-row lg:items-center"
+      class="group flex flex-col gap-4 rounded-lg md:gap-8 md:bg-[#FBF9F5] md:p-4 lg:flex-row lg:items-center"
     >
       <img
         v-if="featured.image"
@@ -132,7 +132,7 @@ const restRows = computed(() => props.posts.data.slice(2));
         class="aspect-[612/459] w-full shrink-0 rounded-lg border border-neutral-100 object-cover shadow-card lg:w-[612px]"
       />
 
-      <div class="flex flex-1 flex-col gap-12">
+      <div class="flex flex-1 flex-col gap-4 md:gap-12">
         <span
           v-if="featured.category"
           class="w-fit rounded-round bg-gold-600 px-2 py-1 text-body-md text-paper"
@@ -140,12 +140,12 @@ const restRows = computed(() => props.posts.data.slice(2));
           {{ featured.category.name }}
         </span>
 
-        <div class="flex flex-col gap-[72px]">
+        <div class="flex flex-col gap-4 md:gap-[72px]">
           <div class="flex flex-col gap-6">
-            <h2 class="text-[28px] font-medium text-neutral-900 md:text-[32px]">
+            <h2 class="text-[18px] font-medium text-neutral-900 md:text-[32px]">
               {{ featured.title }}
             </h2>
-            <p class="text-body-lg text-neutral-800">{{ featured.excerpt }}</p>
+            <p class="hidden text-body-lg text-neutral-800 md:block">{{ featured.excerpt }}</p>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-4">
@@ -173,7 +173,7 @@ const restRows = computed(() => props.posts.data.slice(2));
             </div>
 
             <span
-              class="flex items-center gap-2 text-body-lg font-medium text-neutral-900"
+              class="hidden items-center gap-2 text-body-lg font-medium text-neutral-900 md:flex"
             >
               {{ t("common.read_article") }}
               <ArrowUpRight
@@ -195,7 +195,7 @@ const restRows = computed(() => props.posts.data.slice(2));
     </p>
 
     <!-- Card rows — 1228:4571 (2-up) then 3-up -->
-    <div v-else class="flex flex-col gap-24">
+    <div v-else class="flex flex-col gap-16 md:gap-24">
       <ul v-if="leadRow.length > 0" class="grid gap-6 sm:grid-cols-2">
         <li v-for="post in leadRow" :key="post.slug">
           <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
@@ -206,7 +206,7 @@ const restRows = computed(() => props.posts.data.slice(2));
               :alt="post.image.alt"
               width="612"
               height="400"
-              class="h-[400px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
+              class="h-[245px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
@@ -232,7 +232,7 @@ const restRows = computed(() => props.posts.data.slice(2));
                 </span>
               </div>
               <h3
-                class="text-[24px] font-medium text-neutral-900 md:text-[28px]"
+                class="text-[18px] font-medium text-neutral-900 md:text-[28px]"
               >
                 {{ post.title }}
               </h3>
@@ -245,7 +245,11 @@ const restRows = computed(() => props.posts.data.slice(2));
         v-if="restRows.length > 0"
         class="grid gap-x-6 gap-y-24 sm:grid-cols-2 lg:grid-cols-3"
       >
-        <li v-for="post in restRows" :key="post.slug">
+        <li
+          v-for="(post, postIndex) in restRows"
+          :key="post.slug"
+          :class="postIndex >= 2 ? 'max-sm:hidden' : ''"
+        >
           <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
             <img
               v-if="post.image"
@@ -254,7 +258,7 @@ const restRows = computed(() => props.posts.data.slice(2));
               :alt="post.image.alt"
               width="400"
               height="400"
-              class="h-[400px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
+              class="h-[245px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
@@ -279,7 +283,7 @@ const restRows = computed(() => props.posts.data.slice(2));
                   {{ t("blog.reading_time", { minutes: post.readingTime }) }}
                 </span>
               </div>
-              <h3 class="text-title-lg text-neutral-900">{{ post.title }}</h3>
+              <h3 class="text-[18px] font-medium text-neutral-900 md:text-title-lg">{{ post.title }}</h3>
             </div>
           </Link>
         </li>

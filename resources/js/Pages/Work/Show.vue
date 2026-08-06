@@ -109,30 +109,30 @@ useSectionReveal(pageRoot)
       The trailing 224 is the gap to the final CTA card, hence pb-56.
     -->
     <div
-      class="container-sahra relative z-10 flex flex-col gap-24 pb-56 pt-[136px] md:gap-[144px] md:pt-[184px]"
+      class="container-sahra relative z-10 flex flex-col gap-0 pb-0 pt-[160px] md:gap-[144px] md:pb-56 md:pt-[184px]"
     >
     <!--
       1361:7093 — the major-block stack, gap 200. Everything from the intro
       through the results sits at this interval; only before/after and the
       next-case-study link drop to the outer 144.
     -->
-    <div class="flex flex-col gap-24 md:gap-[200px]">
+    <div class="flex flex-col gap-0 md:gap-[200px]">
     <!-- Intro + banner — Figma 1361:7087 (column, gap 80) -->
-    <div ref="intro" class="flex flex-col gap-14 md:gap-20">
-      <div class="flex flex-col gap-10 lg:flex-row lg:justify-between lg:gap-[342px]">
-        <div class="flex max-w-[612px] flex-col gap-6">
-          <h1 class="text-[36px] font-semibold text-neutral-900 md:text-[48px]">
+    <div ref="intro" class="flex flex-col gap-6 md:gap-20">
+      <div class="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-[342px]">
+        <div class="flex max-w-[612px] flex-col gap-4 md:gap-6">
+          <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-[48px]">
             {{ project.title }}
           </h1>
           <p
             v-if="project.excerpt"
-            class="text-[18px] font-medium text-neutral-700"
+            class="text-[16px] font-normal leading-normal tracking-[-0.02em] text-neutral-700 md:text-[18px] md:font-medium md:tracking-normal"
           >
             {{ project.excerpt }}
           </p>
         </div>
 
-        <dl v-if="info.length > 0" class="flex shrink-0 flex-col gap-6">
+        <dl v-if="info.length > 0" class="grid w-full shrink-0 grid-flow-col grid-cols-2 grid-rows-2 justify-between gap-y-4 md:flex md:w-auto md:flex-col md:gap-6">
           <div v-for="row in info" :key="row.label" class="flex flex-col gap-1">
             <dt class="flex items-center gap-2">
               <component
@@ -141,9 +141,9 @@ useSectionReveal(pageRoot)
                 :stroke-width="1.5"
                 aria-hidden="true"
               />
-              <span class="text-label-lg text-neutral-1000">{{ row.label }}</span>
+              <span class="text-[14px] font-medium leading-[18px] text-neutral-1000 md:text-label-lg">{{ row.label }}</span>
             </dt>
-            <dd class="max-w-[220px] text-body-md text-neutral-800">
+            <dd class="max-w-[220px] text-[14px] leading-[18px] text-neutral-800 md:text-body-md">
               <a
                 v-if="row.href"
                 :href="row.href"
@@ -166,22 +166,22 @@ useSectionReveal(pageRoot)
         :alt="project.banner.alt"
         width="1248"
         height="624"
-        class="aspect-[1248/624] w-full rounded-lg object-cover shadow-banner"
+        class="h-[272px] w-full rounded-lg object-cover shadow-banner md:h-auto md:aspect-[1248/624]"
       />
     </div>
 
     <!-- The Challenge — Figma 1294:4818 -->
     <section
       v-if="project.challenge"
-      class="will-reveal flex flex-col gap-10 lg:flex-row lg:justify-between"
+      class="will-reveal mt-1 flex min-h-[277px] flex-col gap-8 md:mt-0 md:min-h-0 md:gap-10 lg:flex-row lg:justify-between"
       data-reveal
     >
-      <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+      <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.challenge') }}
       </h2>
 
-      <div class="flex w-full max-w-[612px] flex-col gap-6">
-        <p class="text-[24px] font-medium text-ink md:text-[32px]">
+      <div class="flex w-full max-w-[612px] flex-col gap-4 md:gap-6">
+        <p class="text-[18px] font-medium leading-normal text-ink md:text-[32px]">
           &ldquo;{{ project.challenge }}&rdquo;
         </p>
         <ul
@@ -191,7 +191,7 @@ useSectionReveal(pageRoot)
           <li
             v-for="(point, i) in project.challengePoints"
             :key="i"
-            class="flex items-center gap-2 text-[18px] text-neutral-800"
+            class="flex items-center gap-2 text-body-md text-neutral-800 md:text-[18px]"
           >
             <MoveRight
               class="size-5 shrink-0 text-gold rtl:-scale-x-100"
@@ -207,24 +207,24 @@ useSectionReveal(pageRoot)
     <!-- Goals — "Goal card" 1061:2072, row of 4, gap 24 -->
     <section
       v-if="project.goals.length > 0"
-      class="will-reveal flex flex-col gap-12"
+      class="will-reveal mt-[104px] flex flex-col gap-12 md:mt-0"
       data-reveal
     >
-      <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+      <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.goals') }}
       </h2>
       <ol class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <li
           v-for="(card, i) in project.goals"
           :key="i"
-          class="flex flex-col gap-6 rounded-sm border-t-[3px] border-t-gold bg-neutral-50/30 px-6 py-12"
+          class="flex h-36 flex-col gap-4 rounded-sm border border-gold-300 bg-neutral-50/30 p-6 shadow-[2px_2px_10px_rgba(0,0,0,0.05)] md:h-auto md:gap-6 md:border-x-0 md:border-b-0 md:border-t-[3px] md:border-t-gold md:py-12 md:shadow-none"
         >
-          <span class="text-[36px] font-medium leading-none text-gold">
+          <span class="text-[22px] font-medium leading-none text-gold md:text-[36px]">
             {{ String(i + 1).padStart(2, '0') }}
           </span>
           <span class="flex flex-col gap-2">
-            <span class="text-[24px] font-medium text-neutral-900">{{ card.title }}</span>
-            <span class="text-[18px] text-neutral-800">{{ card.description }}</span>
+            <span class="text-[18px] font-medium text-neutral-900 md:text-[24px]">{{ card.title }}</span>
+            <span class="text-[14px] leading-normal text-neutral-800 md:text-[18px]">{{ card.description }}</span>
           </span>
         </li>
       </ol>
@@ -233,23 +233,23 @@ useSectionReveal(pageRoot)
     <!-- Strategy — 2×2, numbered, gold titles, hairline separators -->
     <section
       v-if="project.strategy.length > 0"
-      class="will-reveal flex flex-col gap-10 lg:flex-row lg:justify-between"
+      class="will-reveal mt-[90px] flex h-[620px] flex-col gap-12 md:mt-0 md:h-auto md:gap-10 lg:flex-row lg:justify-between"
       data-reveal
     >
-      <h2 class="shrink-0 text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+      <h2 class="shrink-0 text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.strategy') }}
       </h2>
-      <ol class="grid w-full max-w-[860px] gap-x-12 gap-y-10 sm:grid-cols-2">
+      <ol class="grid h-[539px] w-full max-w-[860px] grid-cols-2 grid-rows-[280px_259px] md:h-auto md:grid-rows-none">
         <li
           v-for="(card, i) in project.strategy"
           :key="i"
-          class="flex flex-col gap-4 border-neutral-100 sm:[&:nth-child(odd)]:border-e sm:[&:nth-child(odd)]:pe-12 sm:[&:nth-child(-n+2)]:border-b sm:[&:nth-child(-n+2)]:pb-10"
+          class="flex flex-col gap-4 border-gold-300 p-4 md:p-6 [&:nth-child(odd)]:border-e [&:nth-child(-n+2)]:border-b"
         >
-          <span class="text-label-md text-neutral-500">
+          <span class="text-[18px] font-medium leading-normal text-gold">
             {{ String(i + 1).padStart(2, '0') }}
           </span>
-          <h3 class="text-title-md text-gold">{{ card.title }}</h3>
-          <p class="text-body-md text-neutral-700">{{ card.description }}</p>
+          <h3 class="text-[16px] font-medium leading-normal text-gold md:text-[24px]">{{ card.title }}</h3>
+          <p class="text-[14px] leading-normal text-neutral-700 md:text-[18px]">{{ card.description }}</p>
         </li>
       </ol>
     </section>
@@ -257,23 +257,23 @@ useSectionReveal(pageRoot)
     <!-- Deliverables — 3 across, numbered cards -->
     <section
       v-if="project.deliverables.length > 0"
-      class="will-reveal flex flex-col gap-12"
+      class="will-reveal mt-[111px] flex flex-col gap-12 md:mt-0"
       data-reveal
     >
-      <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+      <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.deliverables') }}
       </h2>
       <ol class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         <li
           v-for="(card, i) in project.deliverables"
           :key="i"
-          class="flex flex-col gap-6 rounded-sm border border-gold-400/60 px-6 py-8"
+          class="flex flex-col gap-4 rounded-sm border border-gold-400/60 p-6 md:gap-6 md:py-8"
         >
-          <span class="text-[36px] font-medium leading-none text-gold">
+          <span class="text-[22px] font-medium leading-none text-gold md:text-[36px]">
             {{ String(i + 1).padStart(2, '0') }}
           </span>
           <span class="flex flex-col gap-2">
-            <span class="text-[24px] font-medium text-neutral-900">{{ card.title }}</span>
+            <span class="text-[18px] font-medium text-neutral-900 md:text-[24px]">{{ card.title }}</span>
             <span class="text-body-md text-neutral-700">{{ card.description }}</span>
           </span>
         </li>
@@ -283,21 +283,26 @@ useSectionReveal(pageRoot)
     <!-- Content Showcase — 1294:4995; images 400×500, radius 8, gap 24 -->
     <section
       v-if="project.showcase.length > 0"
-      class="will-reveal flex flex-col gap-12"
+      class="will-reveal relative mt-[76px] h-[488px] md:mt-0 md:h-auto"
       data-reveal
     >
-      <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+      <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.showcase') }}
       </h2>
-      <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <li v-for="(image, i) in project.showcase" :key="i">
+      <div class="absolute start-[67px] top-[79px] flex gap-16 text-[14px] leading-normal md:hidden" aria-label="Content types">
+        <span class="font-medium text-ink underline">Post</span>
+        <span class="text-neutral-700">Story</span>
+        <span class="text-neutral-700">Logo</span>
+      </div>
+      <ul class="absolute inset-x-0 top-[160px] flex gap-4 overflow-hidden md:static md:mt-12 md:gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+        <li v-for="(image, i) in project.showcase" :key="i" class="w-[262px] shrink-0 sm:w-auto">
           <img
             :src="image.src"
             :srcset="image.srcset"
             :alt="image.alt"
             width="400"
             height="500"
-            class="aspect-[4/5] w-full rounded-sm object-cover"
+            class="h-[328px] w-full rounded-sm object-cover sm:h-auto sm:aspect-[4/5]"
           />
         </li>
       </ul>
@@ -306,18 +311,18 @@ useSectionReveal(pageRoot)
     <!-- Results — 1349:8209; stat cards then summary -->
     <section
       v-if="project.results.length > 0"
-      class="will-reveal flex flex-col gap-12"
+      class="will-reveal mt-[76px] flex flex-col gap-0 md:mt-0 md:gap-12"
       data-reveal
     >
-      <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+      <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.results') }}
       </h2>
 
-      <ul class="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-5">
+      <ul class="mt-12 grid grid-cols-2 gap-3 md:mt-0 md:grid-cols-3 md:gap-6 lg:grid-cols-5">
         <li
           v-for="(stat, i) in project.results"
           :key="i"
-          class="flex flex-col gap-4 rounded-sm bg-gold-100 px-8 py-4"
+          class="flex flex-col gap-4 rounded-sm bg-gold-100 px-6 py-4 md:px-8"
         >
           <component
             :is="resultIcons[i] || Target"
@@ -326,8 +331,8 @@ useSectionReveal(pageRoot)
             aria-hidden="true"
           />
           <span class="flex flex-col gap-2">
-            <span class="text-title-lg text-neutral-900">{{ stat.label }}</span>
-            <span class="latin-nums text-[30px] font-medium leading-none text-gold">
+            <span class="text-[18px] font-medium leading-normal text-neutral-900 md:text-title-lg">{{ stat.label }}</span>
+            <span class="latin-nums text-[22px] font-medium leading-normal text-gold md:text-[30px] md:leading-none">
               {{ stat.value }}
             </span>
           </span>
@@ -335,7 +340,7 @@ useSectionReveal(pageRoot)
       </ul>
 
       <!-- Summary 1349:8207 — Poppins Medium 24, black/800 -->
-      <p v-if="project.resultsSummary" class="whitespace-pre-line text-[24px] font-medium text-neutral-800">
+      <p v-if="project.resultsSummary" class="mt-8 whitespace-pre-line text-[16px] leading-normal text-neutral-800 md:mt-0 md:text-[24px] md:font-medium">
         {{ project.resultsSummary }}
       </p>
     </section>
@@ -344,27 +349,27 @@ useSectionReveal(pageRoot)
     <!-- Before / after — 1361:7094: row gap 24, columns 612, images 306 tall -->
     <section
       v-if="project.beforeAfter.before || project.beforeAfter.after"
-      class="will-reveal grid gap-6 sm:grid-cols-2"
+      class="will-reveal mt-[74px] grid gap-4 md:mt-0 md:gap-6 sm:grid-cols-2"
       data-reveal
     >
-      <figure v-if="project.beforeAfter.before" class="flex flex-col gap-6">
-        <figcaption class="text-center text-[28px] font-semibold text-neutral-900">
+      <figure v-if="project.beforeAfter.before" class="flex flex-col gap-3 md:gap-6">
+        <figcaption class="text-center text-[20px] font-medium text-neutral-900 md:text-[28px] md:font-semibold">
           {{ t('work.before') }}
         </figcaption>
         <img
           :src="project.beforeAfter.before.src"
           :alt="project.beforeAfter.before.alt"
-          class="h-[306px] w-full rounded-sm object-cover shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
+          class="h-[181px] w-full rounded-sm object-cover shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:h-[306px]"
         />
       </figure>
-      <figure v-if="project.beforeAfter.after" class="flex flex-col gap-6">
-        <figcaption class="text-center text-[28px] font-semibold text-neutral-900">
+      <figure v-if="project.beforeAfter.after" class="flex flex-col gap-3 md:gap-6">
+        <figcaption class="text-center text-[20px] font-medium text-neutral-900 md:text-[28px] md:font-semibold">
           {{ t('work.after') }}
         </figcaption>
         <img
           :src="project.beforeAfter.after.src"
           :alt="project.beforeAfter.after.alt"
-          class="h-[306px] w-full rounded-sm object-cover shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
+          class="h-[181px] w-full rounded-sm object-cover shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:h-[306px]"
         />
       </figure>
     </section>
@@ -372,19 +377,19 @@ useSectionReveal(pageRoot)
     <!-- Next case study — 1033:2288 (column, gap 32) -->
     <section
       v-if="project.next"
-      class="will-reveal flex flex-col gap-8"
+      class="will-reveal mt-[58px] flex flex-col gap-2 md:mt-0 md:gap-8"
       data-reveal
     >
-      <p class="text-[24px] font-medium text-neutral-800">
+      <p class="text-body-lg font-medium text-neutral-800 md:text-[24px]">
         {{ t('work.next_case_study') }}
       </p>
       <Link
         :href="project.next.url"
-        class="group inline-flex w-fit items-center gap-4 rounded-sm text-[36px] font-semibold text-neutral-1000 transition-colors hover:text-gold"
+        class="group inline-flex w-fit items-center gap-2 rounded-sm text-[26px] font-medium text-neutral-1000 transition-colors hover:text-gold md:gap-4 md:text-[40px]"
       >
         {{ project.next.title }}
         <ArrowRight
-          class="size-8 transition-transform group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1"
+          class="size-8 transition-transform group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1 md:size-10"
           :stroke-width="1.5"
           aria-hidden="true"
         />
@@ -393,6 +398,10 @@ useSectionReveal(pageRoot)
     </div>
 
     <!-- Final CTA card — Figma 1419:9333, closing block of 639:1617 -->
-    <CtaBanner v-if="finalCta" :section="finalCta" />
+    <CtaBanner
+      v-if="finalCta"
+      :section="finalCta"
+      spacing-class="pb-[344px] pt-[58px] md:pb-[224px] md:pt-24"
+    />
   </div>
 </template>

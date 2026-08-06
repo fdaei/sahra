@@ -26,7 +26,7 @@ defineProps<{
 
 <template>
   <section
-    class="relative isolate overflow-hidden bg-black py-14 text-paper md:py-24 lg:py-28"
+    class="relative isolate h-[1852px] overflow-hidden bg-black py-14 text-paper md:h-auto md:py-24 lg:py-28"
     data-figma-node="1419:9323"
   >
     <img
@@ -37,38 +37,38 @@ defineProps<{
     <div class="pointer-events-none absolute inset-0 -z-20 bg-black" />
 
     <div class="mx-auto w-full max-w-[1248px] px-5 md:px-10 xl:px-0">
-      <div class="flex flex-col gap-12">
+      <div class="flex flex-col gap-8 md:gap-12">
         <div class="packages-eyebrow">{{ section.eyebrow }}</div>
 
         <div
           class="grid gap-6 lg:grid-cols-[506px_minmax(0,612px)] lg:justify-between lg:gap-[130px]"
         >
           <h2
-            class="max-w-[506px] text-display-sm text-paper md:text-display-md"
+            class="max-w-[506px] text-[26px] font-semibold leading-tight text-paper md:text-display-md"
           >
             {{ section.title }}
           </h2>
-          <p class="max-w-[612px] text-title-sm font-medium text-neutral-100">
+          <p class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-100 md:text-title-sm">
             {{ section.subtitle }}
           </p>
         </div>
       </div>
 
       <div
-        class="mt-14 grid items-stretch gap-6 md:mt-18 md:grid-cols-2"
+        class="mt-10 grid items-stretch gap-4 md:mt-18 md:grid-cols-2 md:gap-6"
         :class="{ 'xl:grid-cols-3': section.items.length >= 3 }"
       >
         <article
           v-for="item in section.items"
           :key="item.id"
-          class="flex min-w-0 flex-col rounded-lg border border-neutral-800 bg-white/[0.07] p-6 md:p-8"
+          class="flex min-w-0 flex-col rounded-lg border border-neutral-800 bg-white/[0.07] p-4 md:p-8"
           :class="{
             'border-gold/40 bg-[linear-gradient(135deg,rgba(189,147,59,0.20),rgba(255,255,255,0.07))]':
               item.badge,
           }"
         >
           <div class="flex items-center gap-2">
-            <h3 class="text-[28px] font-medium leading-none text-neutral-50">
+            <h3 class="text-[22px] font-medium leading-none text-neutral-50 md:text-[28px]">
               {{ item.title }}
             </h3>
             <span
@@ -79,7 +79,7 @@ defineProps<{
             </span>
           </div>
 
-          <div class="mt-6">
+          <div class="mt-4 md:mt-6">
             <p class="text-label-lg leading-none text-neutral-200">
               {{ item.label }}
             </p>
@@ -96,9 +96,9 @@ defineProps<{
             </p>
           </div>
 
-          <div class="my-6 h-px bg-neutral-800" aria-hidden="true" />
+          <div class="my-4 h-px bg-neutral-800 md:my-6" aria-hidden="true" />
 
-          <ul class="flex flex-1 flex-col gap-6">
+          <ul class="flex flex-1 flex-col gap-4 md:gap-6">
             <li
               v-for="feature in item.features"
               :key="feature"
@@ -120,7 +120,7 @@ defineProps<{
             </li>
           </ul>
 
-          <div class="my-6 h-px bg-neutral-800" aria-hidden="true" />
+          <div class="my-4 h-px bg-neutral-800 md:my-6" aria-hidden="true" />
           <p class="text-center text-body-lg leading-none text-neutral-100">
             {{ item.footer }}
           </p>
@@ -128,7 +128,7 @@ defineProps<{
       </div>
 
       <div
-        class="mt-14 flex flex-col gap-8 rounded-sm border border-neutral-800 bg-white/[0.07] p-6 md:mt-18 md:flex-row md:items-center md:justify-between md:px-16 md:py-16"
+        class="mt-10 flex flex-col gap-5 rounded-sm border border-neutral-800 bg-white/[0.07] p-4 md:mt-18 md:flex-row md:items-center md:justify-between md:gap-8 md:px-16 md:py-16"
       >
         <div>
           <h3 class="text-title-lg font-medium leading-none text-paper">
@@ -173,4 +173,3 @@ defineProps<{
   content: "";
 }
 </style>
-

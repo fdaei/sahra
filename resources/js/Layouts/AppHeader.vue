@@ -64,10 +64,15 @@ function isActive(url: string): boolean {
     >
       <Link
         :href="`/${page.props.locale.current}`"
-        class="w-[80px] shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold lg:w-[140px]"
+        class="w-[120px] shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold lg:w-[140px]"
         :aria-label="page.props.settings.siteName"
       >
-        <BrandLogo variant="full" :height="56" :label="page.props.settings.siteName" />
+        <BrandLogo
+          variant="full"
+          :height="56"
+          :label="page.props.settings.siteName"
+          class="h-[48px] w-[120px] lg:h-[56px] lg:w-[140px]"
+        />
       </Link>
 
       <div

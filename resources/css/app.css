@@ -164,20 +164,32 @@
   .eyebrow {
     @apply inline-flex w-fit items-center gap-1 text-gold;
     font-family: 'Idealist', 'Doran FaNum', Vazirmatn, serif;
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 400;
     /* Idealist renders at a 1.08 intrinsic ratio in the file (24 -> 26). */
-    line-height: 26px;
+    line-height: 24px;
   }
 
   .eyebrow::before {
     content: '';
     @apply inline-block shrink-0 rounded-round bg-gold;
-    width: 11.31px;
-    height: 11.31px;
+    width: 8.49px;
+    height: 8.49px;
     box-shadow:
       2px 2px 12px 0 rgba(189, 147, 59, 0.5),
       -2px -2px 12px 0 rgba(189, 147, 59, 0.5);
+  }
+
+  @media (min-width: 768px) {
+    .eyebrow {
+      font-size: 24px;
+      line-height: 26px;
+    }
+
+    .eyebrow::before {
+      width: 11.31px;
+      height: 11.31px;
+    }
   }
 
   /*

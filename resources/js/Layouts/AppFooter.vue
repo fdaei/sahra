@@ -47,21 +47,26 @@ function columnHeading(index: number, fallback: string): string {
     :dir="page.props.locale.direction"
   >
     <div class="container-sahra relative py-6 md:py-12">
-      <div class="relative z-10 flex flex-col gap-10">
+      <div class="relative z-10 flex flex-col gap-2 md:gap-10">
         <div
           class="grid gap-10 md:grid-cols-2
                  lg:grid-cols-[402px_minmax(0,1fr)] lg:justify-between lg:gap-12"
         >
         <!-- Brand -->
         <div class="flex max-w-[402px] flex-col items-start gap-4 md:gap-8">
-          <BrandLogo variant="full" :height="28" :label="settings.siteName" />
+          <BrandLogo
+            variant="full"
+            :height="25"
+            :label="settings.siteName"
+            class="h-[25px] w-[87px]"
+          />
           <p class="text-[12px] font-normal leading-normal text-neutral-600 md:text-[16px]">
             {{ settings.description }}
           </p>
         </div>
 
           <div
-            class="grid grid-cols-2 gap-x-10 gap-y-10
+            class="grid grid-cols-2 gap-x-10 gap-y-1 md:gap-y-10
                    lg:grid-cols-[max-content_max-content_minmax(190px,max-content)] lg:gap-[88px]"
           >
             <!-- Menu columns -->

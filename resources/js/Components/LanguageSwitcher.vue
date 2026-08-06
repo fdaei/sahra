@@ -42,14 +42,16 @@ function isCurrent(code: LocaleCode): boolean {
 <template>
   <details ref="root" class="relative">
     <summary
-      class="flex cursor-pointer list-none items-center gap-2 rounded-sm px-3 py-2
+      class="flex cursor-pointer list-none items-center gap-2 rounded-xs p-2
              text-label-lg text-neutral-800 transition-colors hover:text-gold
              focus-visible:ring-2 focus-visible:ring-gold [&::-webkit-details-marker]:hidden"
       :aria-label="$t('common.change_language')"
     >
-      <Globe class="size-4" aria-hidden="true" />
-      <span class="uppercase">{{ page.props.locale.current }}</span>
-      <ChevronDown class="size-4 transition-transform [details[open]_&]:rotate-180" aria-hidden="true" />
+      <span class="flex items-center gap-1">
+        <Globe class="size-5" aria-hidden="true" />
+        <span class="uppercase">{{ page.props.locale.current }}</span>
+      </span>
+      <ChevronDown class="size-5 transition-transform [details[open]_&]:rotate-180" aria-hidden="true" />
     </summary>
 
     <ul
