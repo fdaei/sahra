@@ -141,7 +141,7 @@ function submit(): void {
     (457:991, blur 20) beside a 423-wide column (1288:4130) that carries the
     contact-details panel and the social row.
   -->
-  <section class="section min-h-[1945px] pb-32 pt-[136px] md:min-h-0 md:pb-[216px] md:pt-[184px]">
+  <section class="section min-h-[1945px] pb-32 pt-[136px] md:min-h-0 md:pb-[204px] md:pt-[184px]">
     <div class="container-sahra max-md:px-0">
       <div
         class="relative overflow-hidden rounded-lg bg-neutral-100 lg:min-h-[854px] lg:pe-6"

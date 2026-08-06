@@ -332,7 +332,7 @@ useSectionReveal();
     128×128 centred box at 80px wide. `shade` 1419:9215 is a 90deg
     white→transparent→white overlay (`.marquee-mask`).
   -->
-  <section class="section pb-0 pt-[115px] md:pb-24 md:pt-0 lg:pb-28">
+  <section class="section h-[317px] pb-0 pt-[115px] md:h-auto md:pb-24 md:pt-0 lg:pb-28">
     <div class="container-narrow flex flex-col gap-8">
       <h2 class="text-center text-[16px] font-medium leading-normal text-neutral-600 md:text-[22px]">
         {{ sections.trust_proof?.title }}
@@ -695,6 +695,6 @@ useSectionReveal();
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[186px] pt-24 md:pb-[224px]"
+    spacing-class="pb-[182px] pt-24 md:pb-[260px]"
   />
 </template>

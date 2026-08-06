@@ -151,26 +151,26 @@ const linkedInShare = computed(
   />
 
   <div
-    class="container-sahra flex flex-col gap-24 pb-32 pt-[136px] md:gap-[144px] md:pt-[184px] lg:gap-[224px]"
+    class="container-sahra flex flex-col gap-0 pb-0 pt-[160px] md:gap-[144px] md:pb-32 md:pt-[184px] lg:gap-[224px]"
   >
     <!-- Head — Figma 1222:4364 (column, gap 64) -->
-    <div class="flex flex-col gap-16">
+    <div class="flex flex-col gap-11 md:gap-16">
       <div
-        class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between"
+        class="flex flex-col gap-[38px] lg:flex-row lg:items-start lg:justify-between lg:gap-10"
       >
-        <div class="flex max-w-[612px] flex-col gap-6">
-          <h1 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+        <div class="flex h-[181px] max-w-[612px] flex-col gap-6 md:h-auto">
+          <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-[40px]">
             {{ post.title }}
           </h1>
           <p
             v-if="post.subtitle"
-            class="text-[18px] font-medium text-neutral-700"
+            class="text-[16px] font-normal leading-normal text-neutral-700 md:text-[18px] md:font-medium"
           >
             {{ post.subtitle }}
           </p>
         </div>
 
-        <dl v-if="meta.length > 0" class="flex shrink-0 flex-col gap-6">
+        <dl v-if="meta.length > 0" class="grid h-[106px] w-[346px] shrink-0 grid-cols-2 grid-rows-2 gap-x-[92px] gap-y-[26px] md:flex md:h-auto md:w-auto md:flex-col md:gap-6">
           <div v-for="row in meta" :key="row.label" class="flex flex-col gap-1">
             <dt class="flex items-center gap-2">
               <component
@@ -195,24 +195,45 @@ const linkedInShare = computed(
         :alt="post.image.alt"
         width="1248"
         height="624"
-        class="aspect-[1248/624] w-full rounded-lg border border-neutral-100 object-cover shadow-card"
+        class="h-[272px] w-full rounded-lg border border-neutral-100 object-cover shadow-card md:h-auto md:aspect-[1248/624]"
       />
     </div>
 
+    <div class="mt-[35px] flex h-[85px] flex-col gap-4 md:hidden">
+      <p class="text-[14px] font-medium leading-[21px] text-neutral-900">{{ t('blog.share') }}</p>
+      <div class="flex gap-4">
+        <button
+          type="button"
+          class="flex size-12 items-center justify-center rounded-round border border-neutral-200 text-neutral-800"
+          :aria-label="copied ? t('blog.link_copied') : t('blog.copy_link')"
+          @click="copyLink"
+        >
+          <component :is="copied ? Check : Link2" class="size-5" aria-hidden="true" />
+        </button>
+        <a :href="xShare" target="_blank" rel="noopener noreferrer" class="flex size-12 items-center justify-center rounded-round border border-neutral-200 text-neutral-800" aria-label="X">
+          <span class="text-[18px] font-medium">X</span>
+        </a>
+        <a :href="linkedInShare" target="_blank" rel="noopener noreferrer" class="flex size-12 items-center justify-center rounded-round border border-neutral-200 text-neutral-800" aria-label="LinkedIn">
+          <Linkedin class="size-5" :stroke-width="1.5" aria-hidden="true" />
+        </a>
+      </div>
+    </div>
+
     <!-- Body + share rail — Figma 1222:4363 -->
-    <div class="flex justify-center gap-10">
+    <div class="mt-6 flex justify-center gap-10 md:mt-0">
       <!-- Balancing rail: present in the frame (1222:4343) at zero opacity. -->
       <div class="hidden w-[119px] shrink-0 lg:block" aria-hidden="true" />
 
-      <div class="flex w-full max-w-[826px] flex-col gap-18">
+      <div class="flex w-full max-w-[826px] flex-col gap-[182px] md:gap-18">
         <template v-for="(part, index) in articleParts" :key="index">
           <article
             v-if="part.type === 'html'"
-            class="prose prose-neutral max-w-none prose-headings:font-medium prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
+            class="prose prose-neutral max-w-none max-md:[&_h3]:mb-6 max-md:[&_h3]:mt-10 max-md:[&_h3]:text-[20px] max-md:[&_h3]:font-medium max-md:[&_h3]:leading-[30px] max-md:[&_h3:first-child]:mt-0 max-md:[&_h3:first-child]:leading-[33px] max-md:[&_p]:m-0 max-md:[&_p]:text-[14px] max-md:[&_p]:leading-[21px] prose-headings:font-medium prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
+            :class="index === 0 ? 'max-md:h-[1001px]' : 'max-md:h-[514px]'"
             v-html="part.html"
           />
 
-          <LeadMagnet v-else-if="leadMagnet" :section="leadMagnet" inline />
+          <LeadMagnet v-else-if="leadMagnet" class="max-md:hidden" :section="leadMagnet" inline />
         </template>
 
         <div
@@ -289,13 +310,13 @@ const linkedInShare = computed(
     </div>
 
     <!-- Related — Figma 1220:4342, "blog card" 1228:4645 -->
-    <section v-if="post.related.length > 0" class="flex flex-col gap-12">
-      <h2 class="text-[32px] font-semibold text-neutral-900 md:text-[40px]">
+    <section v-if="post.related.length > 0" class="mt-16 flex h-[468px] flex-col gap-10 overflow-hidden md:mt-0 md:h-auto md:gap-12">
+      <h2 class="text-[22px] font-semibold leading-normal text-neutral-900 md:text-[40px]">
         {{ t("blog.related") }}
       </h2>
 
-      <ul class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        <li v-for="related in post.related" :key="related.slug">
+      <ul class="flex gap-4 md:grid md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <li v-for="related in post.related" :key="related.slug" class="w-[268px] shrink-0 md:w-auto">
           <Link
             :href="related.url"
             class="group flex flex-col gap-4 rounded-lg"
@@ -307,7 +328,7 @@ const linkedInShare = computed(
               :alt="related.image.alt"
               width="400"
               height="400"
-              class="h-[400px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02]"
+              class="size-[268px] rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px] md:w-full"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
@@ -342,5 +363,9 @@ const linkedInShare = computed(
     </section>
   </div>
 
-  <CtaBanner v-if="finalCta" :section="finalCta" />
+  <CtaBanner
+    v-if="finalCta"
+    :section="finalCta"
+    spacing-class="pb-[109px] pt-24 md:pb-[277px]"
+  />
 </template>

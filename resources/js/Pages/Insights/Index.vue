@@ -325,5 +325,9 @@ const restRows = computed(() => props.posts.data.slice(2));
   </div>
 
   <!-- Final CTA — Figma 1419:9333 (shared component) -->
-  <CtaBanner v-if="sections.final_cta" :section="sections.final_cta" />
+  <CtaBanner
+    v-if="sections.final_cta"
+    :section="sections.final_cta"
+    spacing-class="pb-[226px] pt-24 md:pb-[304px]"
+  />
 </template>

@@ -26,6 +26,7 @@ const props = defineProps<{
 
 const page = usePage<SharedProps>()
 const { t } = useTranslations()
+const isPrivacy = computed(() => page.url.includes('privacy-policy'))
 
 /**
  * Figma reads "Last updated: July 2026" — month and year only, so a same-month
@@ -46,7 +47,10 @@ const lastUpdated = computed(() => {
 <template>
   <SeoHead :meta="seo" />
 
-  <section class="min-h-[2499px] pb-[160px] pt-[160px] md:min-h-0 md:pb-[224px] md:pt-[192px]">
+  <section
+    class="min-h-[2499px] pb-[160px] pt-[160px] md:min-h-0 md:pt-[192px]"
+    :class="isPrivacy ? 'md:pb-[250px]' : 'md:pb-[202px]'"
+  >
     <div class="container-sahra">
       <!-- Figma 1091:3353 — title/intro column, last-updated at the far end. -->
       <div class="flex flex-col gap-4 md:gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-16">

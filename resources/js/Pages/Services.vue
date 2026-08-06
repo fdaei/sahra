@@ -62,7 +62,7 @@ defineProps<{
     The right layer sits behind the heading and first service, the left layer
     behind the middle of the list — which is where the frame puts them.
   -->
-  <section class="section-first relative overflow-hidden md:pt-[184px]">
+  <section class="relative overflow-hidden pt-[160px] md:pt-[184px]">
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       <div class="relative mx-auto h-full w-full max-w-frame">
         <img
@@ -75,14 +75,14 @@ defineProps<{
       </div>
     </div>
 
-    <div class="container-sahra relative flex flex-col gap-24 lg:gap-[200px]">
+    <div class="container-sahra relative flex flex-col gap-[72px] lg:gap-[200px]">
       <!-- Heading — Figma 1323:7505 / "Main title & tag" 1363:7520 -->
-      <div class="flex max-w-[612px] flex-col gap-12">
+      <div class="flex h-[184px] max-w-[612px] flex-col gap-6 md:h-auto md:gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
 
         <div class="flex flex-col gap-6">
-          <h1 class="text-display-lg">{{ heading.title }}</h1>
-          <p class="text-title-sm font-medium text-neutral-700">{{ heading.description }}</p>
+          <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-lg">{{ heading.title }}</h1>
+          <p class="text-[16px] leading-normal text-neutral-700 md:text-title-sm md:font-medium">{{ heading.description }}</p>
         </div>
       </div>
 
@@ -106,20 +106,23 @@ defineProps<{
         <article
           v-for="(service, i) in services"
           :key="service.slug"
-          class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between lg:gap-[137px]"
-          :class="i % 2 === 1 ? 'lg:flex-row-reverse' : ''"
+          class="flex flex-col gap-10 lg:h-auto lg:flex-row lg:items-start lg:justify-between lg:gap-[137px]"
+          :class="[
+            i % 2 === 1 ? 'lg:flex-row-reverse' : '',
+            i < 2 ? 'max-lg:h-[628px]' : 'max-lg:h-[612px]',
+          ]"
         >
-          <div class="flex flex-col gap-10 lg:max-w-[507px] lg:py-12">
-            <h2 class="text-display-md">{{ service.title }}</h2>
+          <div class="order-2 flex flex-col gap-6 lg:order-none lg:max-w-[507px] lg:gap-10 lg:py-12">
+            <h2 class="text-[24px] font-semibold leading-normal text-neutral-900 md:text-display-md">{{ service.title }}</h2>
 
-            <div class="flex flex-col gap-12">
-              <p class="text-title-md text-neutral-800">{{ service.description }}</p>
+            <div class="flex flex-col gap-6 lg:gap-12">
+              <p class="text-[16px] leading-normal text-neutral-800 md:text-title-md">{{ service.description }}</p>
 
               <ul v-if="service.features.length > 0" class="flex flex-col gap-4">
                 <li
                   v-for="(feature, fi) in service.features"
                   :key="fi"
-                  class="ms-[27px] list-disc text-title-sm font-medium text-neutral-800"
+                  class="ms-6 list-disc text-[16px] font-medium leading-normal text-neutral-800 md:ms-[27px] md:text-title-sm"
                 >
                   {{ feature }}
                 </li>
@@ -132,11 +135,11 @@ defineProps<{
             :src="service.image.src"
             :srcset="service.image.srcset"
             :alt="service.image.alt"
-            class="aspect-[604/786] w-full rounded-sm object-cover lg:w-[604px] lg:shrink-0"
+            class="order-1 h-[272px] w-full rounded-sm object-cover lg:order-none lg:h-auto lg:aspect-[604/786] lg:w-[604px] lg:shrink-0"
           />
           <div
             v-else
-            class="aspect-[604/786] w-full rounded-sm bg-neutral-100 lg:w-[604px] lg:shrink-0"
+            class="order-1 h-[272px] w-full rounded-sm bg-neutral-100 lg:order-none lg:h-auto lg:aspect-[604/786] lg:w-[604px] lg:shrink-0"
           />
         </article>
       </div>
@@ -147,6 +150,6 @@ defineProps<{
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="lg:pt-[224px]"
+    spacing-class="pb-[194px] pt-24 md:pb-[204px] lg:pt-[224px]"
   />
 </template>

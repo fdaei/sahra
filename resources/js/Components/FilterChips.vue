@@ -62,7 +62,7 @@ function classesFor(slug: string | null): string {
     <Link
       :href="hrefFor(null)"
       :class="classesFor(null)"
-      class="w-fit rounded-xs transition-colors"
+          class="w-fit whitespace-nowrap rounded-xs transition-colors"
       :aria-current="active === null ? 'true' : undefined"
     >
       {{ t('common.all') }}

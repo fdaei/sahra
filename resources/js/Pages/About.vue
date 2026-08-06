@@ -74,7 +74,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
 <template>
   <SeoHead :meta="seo" />
 
-  <section class="relative overflow-hidden pb-[64px] pt-[160px] md:pb-[128px] md:pt-[192px]">
+  <section class="relative overflow-hidden pb-0 pt-[139px] md:pb-[128px] md:pt-[192px]">
     <!--
       Arc rings — Figma 951:3589 "Clip path group", x=672 y=-506, 1500x1320.
       Six concentric gold ellipse strokes (#BD933B at 0.2, 2.19 width) that
@@ -101,11 +101,11 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
     </div>
 
-    <div class="container-sahra relative flex flex-col gap-16 lg:gap-[200px]">
+    <div class="container-sahra relative flex flex-col gap-0 lg:gap-[200px]">
       <!-- Hero — Figma 1043:1735 -->
       <div
         v-if="hero"
-        class="grid grid-cols-[1fr_130px] items-start gap-4 lg:flex lg:flex-row lg:items-center lg:justify-between lg:gap-[100px] xl:gap-[250px]"
+        class="grid h-[340px] grid-cols-[1fr_151px] items-start gap-[14px] lg:flex lg:h-auto lg:flex-row lg:items-center lg:justify-between lg:gap-[100px] xl:gap-[250px]"
       >
         <div class="flex w-full flex-col gap-12 lg:max-w-[506px]">
           <p
@@ -154,7 +154,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
           :alt="heroImage?.alt ?? ''"
           width="321"
           height="405"
-          class="w-[130px] shrink-0 object-contain lg:w-[321px]"
+          class="w-[151px] shrink-0 object-contain lg:w-[321px]"
           :aria-hidden="heroImage ? undefined : 'true'"
         />
       </div>
@@ -162,7 +162,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
       <!-- Story — Figma 1288:4149 -->
       <div
         v-if="story"
-        class="flex flex-col gap-8 lg:flex-row lg:justify-between lg:gap-[166px]"
+        class="mt-[115px] flex h-[313px] flex-col gap-8 lg:mt-0 lg:h-auto lg:flex-row lg:justify-between lg:gap-[166px]"
       >
         <!--
           Heading — Figma I1319:6508;1186:4909: Poppins SemiBold 40, black/900
@@ -196,7 +196,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
 
       <!-- How we think — Figma 1288:4182 -->
-      <div v-if="howWeThink" class="flex flex-col gap-8 md:gap-12">
+      <div v-if="howWeThink" class="mt-[81px] flex h-[759px] flex-col gap-8 md:gap-12 lg:mt-0 lg:h-auto">
         <div
           class="flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-[348px]"
         >
@@ -239,7 +239,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
 
       <!-- Team — Figma 1288:4194 -->
-      <div v-if="team" class="relative isolate flex flex-col gap-8 md:gap-24">
+      <div v-if="team" class="relative isolate mt-[98px] flex h-[381px] flex-col gap-12 md:gap-24 lg:mt-0 lg:h-auto">
         <!--
           Dune contours 979:1394 — x=37 y=-104, 1160x1000 within the 1248 team
           track, so it bleeds above the header and sits behind the copy. Hidden
@@ -311,5 +311,9 @@ const heroImage = computed(() => hero.value?.image ?? null);
   </section>
 
   <!-- Final CTA — Figma 1319:6658 (shared component 1419:9333) -->
-  <CtaBanner v-if="sections.final_cta" :section="sections.final_cta" />
+  <CtaBanner
+    v-if="sections.final_cta"
+    :section="sections.final_cta"
+    spacing-class="pb-[327px] pt-24 md:pb-[280px]"
+  />
 </template>

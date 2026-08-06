@@ -401,7 +401,7 @@ useSectionReveal(pageRoot)
     <CtaBanner
       v-if="finalCta"
       :section="finalCta"
-      spacing-class="pb-[344px] pt-[58px] md:pb-[224px] md:pt-24"
+      spacing-class="pb-[344px] pt-[58px] md:pb-[286px] md:pt-24"
     />
   </div>
 </template>

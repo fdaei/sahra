@@ -76,12 +76,12 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
     224 (content -> final CTA), 120 (heading row -> grid), 96 (grid -> More).
     They are separate auto-layout levels in the file and stay separate here.
   -->
-  <div class="container-sahra flex flex-col gap-16 pb-32 pt-[160px] md:gap-[120px] md:pt-[184px]">
+  <div class="container-sahra flex flex-col gap-12 pb-0 pt-[160px] md:gap-[120px] md:pb-32 md:pt-[184px]">
     <!-- Heading + filters — Figma 1219:4240: space-between, items-center -->
-    <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
+    <div class="flex flex-col gap-16 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
       <!-- "Main title & tag" 1005:1609 — eyebrow, gap 48, then title over
            subtitle at gap 24. -->
-      <div class="flex max-w-[611px] flex-col gap-12">
+      <div class="flex h-[184px] max-w-[611px] flex-col gap-6 md:h-auto md:gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
         <div class="flex flex-col gap-6">
           <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-lg">{{ heading.title }}</h1>
@@ -100,7 +100,7 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
     </div>
 
     <!-- 1215:4090 — grid and the "More Works" control, gap 96, centred. -->
-    <div class="flex flex-col items-center gap-24">
+    <div class="flex flex-col items-center gap-16 md:gap-24">
     <!-- Grid — 1214:3933 -->
     <p
       v-if="projects.length === 0"
@@ -113,7 +113,7 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
       <li
         v-for="(project, projectIndex) in visibleProjects"
         :key="project.slug"
-        :class="projectIndex >= 4 ? 'max-sm:hidden' : ''"
+        :class="[projectIndex >= 4 ? 'max-sm:hidden' : '', 'max-sm:h-[490px] max-sm:overflow-hidden']"
       >
         <Link :href="project.url" class="group flex flex-col gap-4 rounded-md md:gap-10">
           <div
@@ -161,7 +161,7 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
             -->
             <ul
               v-if="project.services.length > 0"
-              class="flex max-h-0 flex-wrap items-center gap-2 overflow-hidden opacity-0 transition-[max-height,opacity] duration-500 ease-brand group-hover:max-h-16 group-hover:opacity-100 group-focus-visible:max-h-16 group-focus-visible:opacity-100 motion-reduce:max-h-16 motion-reduce:opacity-100"
+              class="flex max-h-0 flex-wrap items-center gap-2 overflow-hidden opacity-0 transition-[max-height,opacity] duration-500 ease-brand group-hover:max-h-16 group-hover:opacity-100 group-focus-visible:max-h-16 group-focus-visible:opacity-100"
             >
               <li
                 v-for="(service, i) in project.services"
@@ -183,7 +183,7 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
 
     <!-- "More Works" — Figma 1215:4065, centred under the grid. -->
     <button
-      v-if="hasMore"
+      v-if="hasMore || projects.length > 4"
       type="button"
       class="inline-flex items-center gap-1 text-body-md font-medium text-neutral-900 md:gap-2 md:text-body-lg
              transition-opacity hover:opacity-70"
@@ -196,5 +196,9 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
   </div>
 
   <!-- Final CTA — Figma 1419:9333 (shared component) -->
-  <CtaBanner v-if="sections.final_cta" :section="sections.final_cta" />
+  <CtaBanner
+    v-if="sections.final_cta"
+    :section="sections.final_cta"
+    spacing-class="pb-[270px] pt-[57px] md:pb-[145px] md:pt-24"
+  />
 </template>

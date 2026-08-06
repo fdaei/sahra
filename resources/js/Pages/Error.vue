@@ -43,7 +43,7 @@ const homeUrl = computed(() => `/${page.props.locale.current}`)
     }"
   />
 
-  <section class="section section-first">
+  <section class="section section-first h-[874px] overflow-hidden md:h-[1024px]">
     <!--
       Figma 1091:3440 — a 560x560 artwork stacked over the copy block at a
       -64 gap, so the horizon overlaps the headline. Copy block is centred at
