@@ -9,19 +9,25 @@ Kept in sync with every implementation phase. Status legend:
 
 ## Pages
 
-| Figma node (desktop / mobile) | Route | Vue page | Controller → Model | Filament resource | Status |
-|---|---|---|---|---|---|
-| `1419:9192` / `1419:9191` | `/{locale}` | `Pages/Home.vue` | `HomeController` → `Page`,`Project`,`Service`,`Post`,`Testimonial`,`Faq`,`Client` | `PageResource` | F3 |
-| `1362:7198` / `1498:10840` | `/{locale}/work` | `Pages/Work/Index.vue` | `ProjectController@index` → `Project` | `ProjectResource` | F3 |
-| `1323:7541` / `1555:10866` | `/{locale}/work/{slug}` | `Pages/Work/Show.vue` | `ProjectController@show` → `Project` | `ProjectResource` | F3 |
-| `1323:7189` / `1626:12562` | `/{locale}/services` | `Pages/Services.vue` | `ServiceController@index` → `Service` | `ServiceResource` | F3 |
-| `908:1576` / `1557:12225` | `/{locale}/about` | `Pages/About.vue` | `AboutController` → `Page`,`TeamMember` | `PageResource`,`TeamMemberResource` | F3 |
-| `1353:7935` / `1530:10875` | `/{locale}/insights` | `Pages/Insights/Index.vue` | `PostController@index` → `Post`,`PostCategory` | `PostResource` | F3 |
-| `1352:7391` / `1543:11175` | `/{locale}/insights/{slug}` | `Pages/Insights/Show.vue` | `PostController@show` → `Post` | `PostResource` | F3 |
-| `1363:8934` / `1494:9544` | `/{locale}/contact` | `Pages/Contact.vue` | `ContactController` → `ContactSubmission` | `ContactSubmissionResource` | F3 |
-| `1031:2101` / `1590:10953` | `/{locale}/privacy-policy` | `Pages/Legal.vue` | `LegalController` → `Page` | `PageResource` | F3 |
-| `1309:4891` / `1590:11500` | `/{locale}/terms` | `Pages/Legal.vue` | `LegalController` → `Page` | `PageResource` | F3 |
-| `1027:2061` / `1567:13563` | fallback | `Pages/NotFound.vue` | — | — | F1 |
+> **Corrected 2026-08-05.** The desktop column previously listed the **Arabic
+> RTL** frames for Projects, Single project, Blog list, Single blog, Contact and
+> Terms — the nodes that `FIGMA-AUDIT.md` §1 reassigned to fa/ar in its
+> 2026-07-28 correction. The LTR frame drives the implementation; the RTL frame
+> is the reference for fa/ar. Both are now listed explicitly.
+
+| Figma node (LTR desktop / mobile) | RTL desktop ref | Route | Vue page | Controller → Model | Filament resource | Status |
+|---|---|---|---|---|---|---|
+| `1419:9192` / `1419:9191` | `1365:9950` | `/{locale}` | `Pages/Home.vue` | `HomeController` → `Page`,`Project`,`Service`,`Post`,`Testimonial`,`Faq`,`Client` | `PageResource` | F3 |
+| `541:1558` / `1498:10840` | `1362:7198` | `/{locale}/work` | `Pages/Work/Index.vue` | `ProjectController@index` → `Project` | `ProjectResource` | F3 |
+| `639:1617` / `1555:10866` | `1323:7541` | `/{locale}/work/{slug}` | `Pages/Work/Show.vue` | `ProjectController@show` → `Project` | `ProjectResource` | F3 |
+| `1323:7189` / `1626:12562` | — | `/{locale}/services` | `Pages/Services.vue` | `ServiceController@index` → `Service` | `ServiceResource` | F3 |
+| `908:1576` / `1557:12225` | `1315:5187` | `/{locale}/about` | `Pages/About.vue` | `AboutController` → `Page`,`TeamMember` | `PageResource`,`TeamMemberResource` | F3 |
+| `569:1175` / `1530:10875` | `1353:7935` | `/{locale}/insights` | `Pages/Insights/Index.vue` | `PostController@index` → `Post`,`PostCategory` | `PostResource` | F3 |
+| `604:1464` / `1543:11175` | `1352:7391` | `/{locale}/insights/{slug}` | `Pages/Insights/Show.vue` | `PostController@show` → `Post` | `PostResource` | F3 |
+| `447:790` / `1494:9544` | `1363:8934` | `/{locale}/contact` | `Pages/Contact.vue` | `ContactController` → `ContactSubmission` | `ContactSubmissionResource` | F3 |
+| `1031:2101` / `1590:10953` | — | `/{locale}/privacy-policy` | `Pages/Legal.vue` | `LegalController` → `Page` | `PageResource` | F3 |
+| `1072:2618` / `1590:11500` | `1309:4891` | `/{locale}/terms` | `Pages/Legal.vue` | `LegalController` → `Page` | `PageResource` | F3 |
+| `1027:2061` / `1567:13563` | `1315:5087` | fallback | `Pages/NotFound.vue` | — | — | F1 |
 
 ## Shared components
 

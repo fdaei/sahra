@@ -1,0 +1,270 @@
+{
+  "node_id": "1419:9192",
+  "name": "home",
+  "page": "1:2 User interface",
+  "viewport": "desktop 1440",
+  "extracted_via": "get_figma_data (framelink MCP), depth=3",
+  "extraction_caveats": [
+    "depth=3 — leaf text nodes below level 3 not enumerated in this pass; drilled per-section during Phase 2",
+    "No get_variable_defs: token names below are the payload's own style/variable names (GLOBAL_VARS keys), which is the same naming Figma exposes.",
+    "No get_motion_context: category F is unverified for every node in this frame."
+  ],
+  "root": {
+    "type": "FRAME",
+    "layoutMode": "NONE",
+    "fill": "#FFFFFF",
+    "note": "sections are absolutely positioned children, not an auto-layout column"
+  },
+  "tokens_seen_in_frame": {
+    "colors": {
+      "primary gold": "#BD933B",
+      "gold/100": "#F9F5EC",
+      "gold/200": "#F2E9D8",
+      "gold/600": "#D7BE89",
+      "gold/700": "#D1B476",
+      "black/100": "#E9E9E9",
+      "black/300": "#BDBCBD",
+      "black/600": "#7B7979",
+      "black/800": "#4F4C4D",
+      "white": "#FFFFFF"
+    },
+    "textStyles": {
+      "EN-Desktop/Label/Medium": { "family": "Poppins", "weight": 500, "size": 12, "align": "LEFT" },
+      "EN-Desktop/Body/Large": { "family": "Poppins", "weight": 400, "size": 16, "align": "LEFT" },
+      "EN-Desktop/Title/Large": { "family": "Poppins", "weight": 500, "size": 22, "align": "CENTER" },
+      "style_c09719a1 (eyebrow)": { "family": "idealist", "weight": 400, "size": 24, "align": "LEFT" },
+      "style_2d437713": { "family": "Poppins", "weight": 600, "size": 24, "align": "CENTER" }
+    }
+  },
+  "sections": [
+    {
+      "node": "1419:9339", "name": "Header", "type": "INSTANCE", "componentId": "176:199",
+      "pos": { "x": 0, "y": 0 },
+      "layout": { "mode": "row", "padding": "24px 96px", "alignItems": "center", "gap": 262, "sizing": "hug/hug" },
+      "fill": "rgba(255, 255, 255, 0.05)",
+      "effects": { "backdropFilter": "blur(15px)" },
+      "children": {
+        "logo frame": { "node": "I1419:9339;159:297", "width": 140, "sizing": "fixed/hug" },
+        "logo image": { "node": "I1419:9339;159:270", "w": 140, "h": 56 },
+        "header objects": { "node": "I1419:9339;176:196", "width": 846, "mode": "row", "justify": "space-between" },
+        "menu": { "node": "I1419:9339;159:453", "mode": "row", "gap": 24, "alignItems": "center" }
+      },
+      "note": "single visual state in the file — no scroll-gated variant (matches CLAUDE.md A10 note)"
+    },
+    {
+      "node": "1419:9193", "name": "hero img", "type": "RECTANGLE",
+      "pos": { "x": 0, "y": 0 }, "dimensions": { "w": 1440, "h": 904 },
+      "fill": { "type": "IMAGE", "imageRef": "6c4dc316e22ea9d3662242d5cd9279c232b42e4d", "scaleMode": "STRETCH", "objectFit": "fill", "needsCropping": true }
+    },
+    {
+      "node": "1419:9194", "name": "hero texts", "pos": { "x": 96, "y": 176 },
+      "layout": { "mode": "column", "gap": 56, "sizing": "fixed/hug", "width": 612 },
+      "children": [
+        {
+          "node": "1419:9195", "name": "hero badge",
+          "layout": { "mode": "row", "padding": 8, "alignItems": "center", "gap": 8, "sizing": "hug/hug" },
+          "fill": "gold/100", "borderRadius": 1000,
+          "children": [
+            { "node": "1419:9196", "name": "obj", "type": "RECTANGLE", "w": 11.31, "h": 11.31, "fill": "gold/700", "borderRadius": 1000, "effects": "boxShadow 2px 2px 12px rgba(189,147,59,0.5), -2px -2px 12px rgba(189,147,59,0.5)" },
+            { "node": "1419:9197", "type": "TEXT", "style": "EN-Desktop/Label/Medium", "fill": "black/800", "text": "Digital Marketing Agency in Muscat" }
+          ]
+        },
+        {
+          "node": "1419:9198", "name": "hero texts", "layout": { "mode": "column", "alignSelf": "stretch", "gap": 56, "sizing": "fill/hug" },
+          "children": [
+            { "node": "1419:9199", "layout": { "mode": "column", "gap": 48, "sizing": "fixed/hug", "width": 731 }, "flag": "width 731 exceeds parent 612 — verify against code, possible design-side overflow" },
+            { "node": "1419:9202", "name": "hero cta", "layout": { "mode": "row", "alignSelf": "stretch", "alignItems": "center", "gap": 10, "sizing": "fill/hug" } }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "1419:9318", "name": "KPI section", "pos": { "x": 202, "y": 850 },
+      "layout": { "mode": "row", "alignItems": "center", "gap": 16, "sizing": "fixed/hug", "width": 1036 },
+      "children_shared_template": {
+        "nodes": ["1419:9319", "1419:9320", "1419:9321"], "componentId": "1183:4734", "componentSet": "1377:8430 KPIs",
+        "layout": { "mode": "column", "padding": "24px 12px", "justifyContent": "center", "alignItems": "center", "gap": 8, "sizing": "fixed/hug", "width": 334.67 },
+        "fill": "#FFFFFF",
+        "stroke": { "type": "GRADIENT_LINEAR", "gradient": "linear-gradient(136deg, rgba(189,147,59,0.3) 0%, rgba(189,147,59,0.1) 50%, rgba(189,147,59,0.3) 100%)", "weight": 1, "align": "OUTSIDE" },
+        "borderRadius": 8
+      }
+    },
+    {
+      "node": "1419:9205", "name": "trust proof", "pos": { "x": 202, "y": 1123 },
+      "layout": { "mode": "column", "alignItems": "stretch", "gap": 32, "sizing": "fixed/hug", "width": 1036 },
+      "children": [
+        { "node": "1419:9206", "type": "TEXT", "style": "EN-Desktop/Title/Large", "text": "Trusted by +50 brands", "mixed_styles": { "ts1": { "fill": "#7B7979 (black/600)" }, "ts2": { "fontSize": 28, "fill": "#393637 (black/900)" } } },
+        { "node": "1419:9207", "name": "logos", "layout": { "mode": "column", "gap": 24, "sizing": "fill/hug" } },
+        { "node": "1419:9208", "name": "logos row", "layout": { "mode": "row", "alignItems": "center", "gap": 48, "sizing": "fill/hug" } }
+      ]
+    },
+    {
+      "node": "1419:9279", "name": "service section", "pos": { "x": 0, "y": 1460 },
+      "layout": { "mode": "column", "padding": 96, "alignItems": "center", "gap": 72, "sizing": "fixed/hug", "width": 1440 },
+      "fill": "#000000",
+      "children": [
+        { "node": "1419:9280", "type": "ELLIPSE", "position": "absolute", "pos": { "x": 186, "y": 813 }, "w": 1068, "h": 330, "fill": "rgba(189,147,59,0.4)", "effects": { "filter": "blur(200px)" } },
+        {
+          "node": "1419:9286", "name": "service (orbit group)", "type": "GROUP", "w": 1101, "h": 520,
+          "children": [
+            { "node": "1419:9287", "type": "TEXT", "pos": { "x": 0, "y": 245 }, "w": 125, "h": 36, "fill": "#FFFFFF", "style": "Poppins SemiBold 24 CENTER", "text": "Marketing" },
+            { "node": "1419:9288", "type": "TEXT", "pos": { "x": 1012, "y": 245 }, "w": 89, "h": 36, "fill": "#FFFFFF", "style": "Poppins SemiBold 24 CENTER", "text": "Growth" },
+            { "node": "1419:9289", "type": "ELLIPSE", "pos": { "x": 409, "y": 107 }, "w": 320, "h": 320, "fill": "none", "stroke": { "gradient": "linear-gradient(145deg, rgba(189,147,59,0.8) 0%, rgba(189,147,59,0.4) 38%, rgba(189,147,59,0.8) 100%)", "weight": 2, "dashes": [3, 3] } },
+            { "node": "1419:9290", "type": "IMAGE-SVG", "pos": { "x": 309, "y": 0 }, "w": 520, "h": 520, "fill": "none", "stroke": { "gradient": "linear-gradient(144deg, rgba(189,147,59,0.8) 0%, rgba(189,147,59,0.4) 34%, rgba(189,147,59,0.8) 100%)", "weight": 2, "dashes": [3, 3] }, "effects": { "boxShadow": "inset 4px 4px 10px 0px rgba(189,147,59,1)" } },
+            { "node": "1419:9292", "type": "LINE", "pos": { "x": 157, "y": 263 }, "w": 824.02, "stroke": "gold/600", "weight": 2, "dashes": [4, 4] },
+            { "node": "1419:9291", "type": "ELLIPSE", "pos": { "x": 404, "y": 257 }, "w": 10, "h": 10, "fill": "radial-gradient(circle at 50% 50%, rgba(189,147,59,0.5) 0%, rgba(189,147,59,0.8) 100%)" },
+            { "node": "1419:9299", "type": "ELLIPSE", "pos": { "x": 725, "y": 257 }, "w": 10, "h": 10, "fill": "radial gold" },
+            { "node": "1419:9300", "type": "ELLIPSE", "pos": { "x": 971, "y": 257 }, "w": 12, "h": 12, "fill": "radial gold" },
+            { "node": "1419:9301", "type": "ELLIPSE", "pos": { "x": 157, "y": 257 }, "w": 12, "h": 12, "fill": "radial gold" },
+            { "node": "1419:9293", "type": "FRAME", "pos": { "x": 490, "y": 245 }, "layout": { "mode": "row", "padding": "4px 8px", "justify": "center", "align": "center", "sizing": "hug/hug" }, "fill": "linear-gradient(155deg, rgba(189,147,59,1) 0%, rgba(255,255,255,1) 100%) over #FFFFFF", "borderRadius": 4 },
+            { "node": "1419:9295", "name": "Service card", "componentId": "1144:2992", "pos": { "x": 638, "y": 321 }, "layout": { "mode": "column", "gap": -8, "sizing": "hug/hug" } },
+            { "node": "1419:9296", "name": "Service card", "componentId": "1144:2992", "pos": { "x": 336, "y": 299 }, "layout": { "mode": "column", "gap": -8 } },
+            { "node": "1419:9297", "name": "Service card", "componentId": "1144:2992", "pos": { "x": 345, "y": 98 }, "layout": { "mode": "column", "gap": -8 } },
+            { "node": "1419:9298", "name": "Service card", "componentId": "1144:2992", "pos": { "x": 647, "y": 176 }, "layout": { "mode": "column", "gap": -8 } }
+          ]
+        }
+      ]
+    },
+    {
+      "node": "1419:9322", "name": "lead magnet", "type": "INSTANCE", "componentId": "1191:5023",
+      "pos": { "x": 96, "y": 2582 },
+      "layout": { "mode": "row", "padding": 64, "justifyContent": "space-between", "alignItems": "flex-end", "sizing": "fixed/hug", "width": 1248 },
+      "fill": "linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 100%) over rgba(35,31,32,0.2) over IMAGE 8e44437b",
+      "borderRadius": 8,
+      "children": {
+        "CTA": { "node": "I1419:9322;1191:5024", "componentId": "1149:4200", "layout": { "mode": "row", "padding": "16px 32px", "alignItems": "center", "gap": 4, "sizing": "hug/hug" }, "fill": "none", "stroke": { "color": "#FFFFFF", "weight": 1 }, "borderRadius": 8, "props": { "icon": false } },
+        "title": { "node": "I1419:9322;1191:5026", "style": "EN-Desktop/Title/Large", "fill": "#FFFFFF", "text": "Is your content really directed or just consistent?" },
+        "body": { "node": "I1419:9322;1191:5027", "style": "EN-Desktop/Body/Large", "fill": "black/100", "text": "Get the Content Direction Checklist and evaluate your brand system." }
+      }
+    },
+    {
+      "node": "1419:9216", "name": "project section", "pos": { "x": 96, "y": 2919 },
+      "layout": { "mode": "column", "alignItems": "stretch", "gap": 96, "sizing": "fixed/hug", "width": 1248 },
+      "children": [
+        { "node": "1419:9217", "name": "project info", "layout": { "mode": "column", "alignSelf": "stretch", "gap": 48, "sizing": "fill/hug" } },
+        { "node": "1419:9218", "name": "small title", "componentId": "1005:1574", "width": 122.31 },
+        { "node": "1419:9222", "name": "project name & img", "layout": { "mode": "row", "alignSelf": "stretch", "justifyContent": "space-between", "alignItems": "center", "sizing": "fill/hug" } },
+        { "node": "1419:9223", "name": "project names", "layout": { "mode": "column", "gap": 32, "sizing": "fixed/hug", "width": 612 } },
+        { "node": "1419:9229", "name": "project img", "type": "RECTANGLE", "w": 530, "h": 663, "borderRadius": 16, "fill": { "type": "IMAGE", "imageRef": "d223cfdceedd798d50e928a67d36c1cfb26a5e09", "scaleMode": "FILL", "objectFit": "cover" } }
+      ]
+    },
+    {
+      "node": "1419:9302", "name": "process section", "pos": { "x": 96, "y": 4077 },
+      "layout": { "mode": "column", "alignItems": "stretch", "gap": 96, "sizing": "fixed/hug", "width": 1248 },
+      "children": [
+        { "node": "1419:9304", "name": "small title", "componentId": "1005:1574", "width": 119.31 },
+        { "node": "1419:9308", "layout": { "mode": "column", "alignSelf": "stretch", "gap": 48, "sizing": "fill/hug" } },
+        { "node": "1419:9309", "name": "process row 1", "layout": { "mode": "row", "alignSelf": "stretch", "alignItems": "center", "gap": 24, "sizing": "fill/hug" } },
+        { "node": "1419:9313", "name": "process row 2", "layout": { "mode": "row", "alignSelf": "stretch", "alignItems": "center", "gap": 24, "sizing": "fill/hug" } }
+      ]
+    },
+    {
+      "node": "1419:9323", "name": "packages", "pos": { "x": 0, "y": 5061 },
+      "layout": { "mode": "column", "padding": "112px 96px", "alignItems": "flex-end", "gap": 72, "sizing": "fixed/hug", "width": 1440 },
+      "fill": "IMAGE 1326b1f9 over #000000",
+      "children": [
+        { "node": "1419:9324", "name": "package", "layout": { "mode": "column", "alignSelf": "stretch", "gap": 48, "sizing": "fill/fixed", "height": 194 } },
+        { "node": "1419:9325", "name": "small title", "componentId": "1005:1574", "width": 132.31 },
+        { "node": "1419:9329", "name": "packages row", "layout": { "mode": "row", "alignSelf": "stretch", "justifyContent": "center", "alignItems": "center", "gap": 24, "sizing": "fill/hug" } },
+        { "node": "1419:9330", "name": "package content", "componentId": "1195:3747", "layout": { "mode": "column", "padding": 32, "alignItems": "center", "gap": 24, "sizing": "fill/hug" }, "fill": "rgba(25,25,25,0.72)", "stroke": { "gradient": "linear-gradient(0deg, rgba(79,76,77,1) 0%, rgba(79,76,77,0.2) 100%)", "weight": 1 }, "borderRadius": 16 },
+        { "node": "1419:9332", "name": "package content", "componentId": "1195:3747", "fill": "rgba(28,28,28,0.72)", "stroke": "same gradient", "borderRadius": 16, "flag": "fill differs from sibling 1419:9330 by 3/255 — likely design-side inconsistency, not a code target" },
+        { "node": "1419:10148", "name": "lead magnet (nested)", "componentId": "1191:5023", "width": 1248, "layout": { "mode": "row", "padding": 64, "justifyContent": "space-between", "alignItems": "flex-end" }, "fill": "rgba(255,255,255,0.07)", "stroke": "gradient 1px", "borderRadius": 8, "cta": { "componentId": "1149:4210", "fill": "gold/700", "borderRadius": 8, "props": { "icon": false } } }
+      ]
+    },
+    {
+      "node": "1419:9230", "name": "Why us section", "pos": { "x": 96, "y": 6581 },
+      "layout": { "mode": "column", "gap": null, "sizing": "fixed/hug", "width": 1248 },
+      "flag": "no gap declared on the section column",
+      "children": [
+        { "node": "1419:9231", "name": "small title", "componentId": "1005:1574", "width": 78.31, "text": "Why us", "eyebrow_style": { "family": "idealist", "size": 24, "fill": "#BD933B" } },
+        { "node": "1419:9232", "name": "why us row", "layout": { "mode": "row", "justifyContent": "space-between", "alignItems": "center", "sizing": "fixed/hug", "width": 1243 }, "flag": "1243 vs section 1248 — 5px design-side inconsistency" },
+        { "node": "1419:9233", "name": "title & subtitle", "layout": { "mode": "column", "gap": 40, "sizing": "fixed/hug", "width": 506 } },
+        { "node": "1419:9236", "name": "chosing options", "layout": { "mode": "column", "gap": 48, "sizing": "hug/hug" } }
+      ]
+    },
+    {
+      "node": "1419:9243", "name": "Customer review", "pos": { "x": 96, "y": 7251 },
+      "layout": { "mode": "column", "alignItems": "stretch", "gap": 40, "sizing": "fixed/hug", "width": 1248 },
+      "children": [
+        { "node": "1419:9245", "name": "small title", "componentId": "1005:1574", "width": 168.31 },
+        { "node": "1419:9249", "name": "cards viewport", "layout": { "mode": "none", "sizing": "fill/fixed", "height": 297 } },
+        { "node": "1419:9250", "name": "cards track", "layout": { "mode": "row", "alignItems": "center", "gap": 26 }, "pos": { "x": -602, "y": 26 }, "note": "negative x = marquee/carousel offset in the design" }
+      ]
+    },
+    {
+      "node": "1419:9258", "name": "insights section", "pos": { "x": 96, "y": 7922 },
+      "layout": { "mode": "column", "alignItems": "stretch", "gap": 48, "sizing": "fixed/hug", "width": 1248 },
+      "children": [
+        { "node": "1419:9260", "name": "small title", "componentId": "1005:1574", "width": 81.31 },
+        { "node": "1419:9264", "name": "insight cards", "layout": { "mode": "row", "alignSelf": "stretch", "alignItems": "center", "gap": 24, "sizing": "fill/fixed", "height": 424 } },
+        { "node": "1419:9265", "name": "Big insight", "componentId": "1210:3791", "layout": { "mode": "column", "alignSelf": "stretch", "padding": 16, "gap": 10, "sizing": "fill/fill" }, "fill": "gold/100", "stroke": { "color": "gold/200", "weight": 1 }, "effects": { "boxShadow": "4px 4px 12px 0px rgba(0,0,0,0.05)" }, "borderRadius": 8 },
+        { "node": "1419:9266", "name": "small cards column", "layout": { "mode": "column", "gap": 24, "sizing": "fill/hug" } }
+      ]
+    },
+    {
+      "node": "1419:9272", "name": "faq", "pos": { "x": 96, "y": 8788 },
+      "layout": { "mode": "column", "gap": 48, "sizing": "fixed/hug", "width": 1248 },
+      "children": [
+        { "node": "1419:9273", "name": "small title", "componentId": "1005:1574", "width": 52.31, "text": "FAQ" },
+        { "node": "1419:9274", "name": "faq content", "layout": { "mode": "row", "alignSelf": "stretch", "gap": 32, "sizing": "fill/hug" } },
+        { "node": "1419:9275", "name": "title & subtitle", "layout": { "mode": "column", "alignSelf": "stretch", "justifyContent": "space-between", "sizing": "fixed/fill", "width": 497 } },
+        { "node": "1419:9278", "name": "FAQ section", "componentId": "442:663", "layout": { "mode": "column", "gap": 24, "sizing": "fill/hug" } }
+      ]
+    },
+    {
+      "node": "1419:9334", "name": "text", "pos": { "x": 243, "y": 9183 },
+      "layout": { "mode": "row", "alignItems": "center", "gap": 4, "sizing": "hug/hug" }
+    },
+    {
+      "node": "1419:9333", "name": "final CTA card", "type": "INSTANCE", "componentId": "1214:3858",
+      "pos": { "x": 96, "y": 9586 },
+      "layout": { "mode": "column", "padding": 56, "justifyContent": "center", "gap": 8, "sizing": "fixed/hug", "width": 1248 },
+      "fill": "IMAGE 7f5f502e",
+      "borderRadius": 16,
+      "children": [
+        { "node": "I1419:9333;1214:3878", "type": "TEXT", "style": "idealist 24 (eyebrow)", "fill": "#BD933B", "text": "Start with clarity" },
+        { "node": "I1419:9333;1210:3831", "name": "content", "layout": { "mode": "column", "justifyContent": "center", "gap": 40, "sizing": "fixed/hug", "width": 715 } },
+        { "node": "I1419:9333;1210:3841", "type": "TEXT", "style": { "family": "Poppins", "weight": 500, "size": 18 }, "fill": "black/100", "text": "Branding · Content Production · Social Media Support · Marketing Design" }
+      ]
+    },
+    {
+      "node": "1419:9317", "name": "Footer", "type": "INSTANCE", "componentId": "1083:2839",
+      "pos": { "x": 0, "y": 10390 },
+      "layout": { "mode": "column", "padding": "48px 96px", "alignItems": "stretch", "gap": -56, "sizing": "fixed/hug", "width": 1440 },
+      "stroke": { "color": "black/100", "weight": "1px 0px 0px" },
+      "effects": { "boxShadow": "0px -5px 10px 0px rgba(0,0,0,0.05)" },
+      "borderRadius": 16,
+      "flag": "gap -56px is a negative auto-layout gap (overlap) — verify the code reproduces the overlap, not a positive gap",
+      "children": [
+        { "node": "I1419:9317;1083:2837", "layout": { "mode": "column", "alignSelf": "stretch", "gap": 40, "sizing": "fill/hug" } },
+        { "node": "I1419:9317;1083:2789", "layout": { "mode": "row", "alignSelf": "stretch", "padding": "24px 0px", "justifyContent": "space-between", "alignItems": "center" }, "stroke": { "color": "black/300", "weight": "1px 0px 0px" } },
+        { "node": "I1419:9317;1065:2315", "name": "Group (watermark)", "position": "absolute", "pos": { "x": 99, "y": 264 }, "w": 1248, "h": 304.46 }
+      ]
+    }
+  ],
+  "component_sets_referenced": {
+    "1319:7077": "small title", "1368:11727": "Big insight", "1144:2991": "Service card",
+    "1390:9178": "Footer", "1377:8430": "KPIs", "1191:5022": "lead magnet",
+    "173:144": "CTA", "1195:3748": "package content", "1319:6676": "final CTA card",
+    "1305:5252": "Header"
+  },
+  "section_order_by_y": [
+    ["1419:9339", "Header", 0],
+    ["1419:9193", "hero img", 0],
+    ["1419:9194", "hero texts", 176],
+    ["1419:9318", "KPI section", 850],
+    ["1419:9205", "trust proof", 1123],
+    ["1419:9279", "service section", 1460],
+    ["1419:9322", "lead magnet", 2582],
+    ["1419:9216", "project section", 2919],
+    ["1419:9302", "process section", 4077],
+    ["1419:9323", "packages", 5061],
+    ["1419:9230", "Why us", 6581],
+    ["1419:9243", "Customer review", 7251],
+    ["1419:9258", "insights", 7922],
+    ["1419:9272", "faq", 8788],
+    ["1419:9334", "text", 9183],
+    ["1419:9333", "final CTA card", 9586],
+    ["1419:9317", "Footer", 10390]
+  ]
+}

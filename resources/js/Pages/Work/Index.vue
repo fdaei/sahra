@@ -71,12 +71,17 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
 <template>
   <SeoHead :meta="seo" />
 
-  <div class="container-sahra flex flex-col gap-16 pb-24 pt-[136px] md:gap-24 md:pt-[192px]">
-    <!-- Heading + filters — Figma "Main title & tag" beside 542:871 -->
-    <div class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between">
+  <!--
+    Page column 1726:11741 sits at (96, 184) and nests three intervals:
+    224 (content -> final CTA), 120 (heading row -> grid), 96 (grid -> More).
+    They are separate auto-layout levels in the file and stay separate here.
+  -->
+  <div class="container-sahra flex flex-col gap-16 pb-56 pt-[136px] md:gap-[120px] md:pt-[184px]">
+    <!-- Heading + filters — Figma 1219:4240: space-between, items-center -->
+    <div class="flex flex-col gap-10 lg:flex-row lg:items-center lg:justify-between">
       <!-- "Main title & tag" 1005:1609 — eyebrow, gap 48, then title over
            subtitle at gap 24. -->
-      <div class="flex max-w-[612px] flex-col gap-12">
+      <div class="flex max-w-[611px] flex-col gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
         <div class="flex flex-col gap-6">
           <h1 class="text-display-md md:text-display-lg">{{ heading.title }}</h1>
@@ -94,6 +99,8 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
       />
     </div>
 
+    <!-- 1215:4090 — grid and the "More Works" control, gap 96, centred. -->
+    <div class="flex flex-col items-center gap-24">
     <!-- Grid — 1214:3933 -->
     <p
       v-if="projects.length === 0"
@@ -102,7 +109,7 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
       {{ t('common.empty_projects') }}
     </p>
 
-    <ul v-else class="grid gap-x-6 gap-y-24 sm:grid-cols-2">
+    <ul v-else class="grid w-full gap-x-6 gap-y-24 sm:grid-cols-2">
       <li v-for="project in visibleProjects" :key="project.slug">
         <Link :href="project.url" class="group flex flex-col gap-10 rounded-md">
           <div
@@ -174,13 +181,14 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
     <button
       v-if="hasMore"
       type="button"
-      class="mx-auto inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900
+      class="inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900
              transition-opacity hover:opacity-70"
       @click="shown += PAGE_SIZE"
     >
       {{ t('common.load_more') }}
       <ChevronDown class="size-6 shrink-0" aria-hidden="true" />
     </button>
+    </div>
   </div>
 
   <!-- Final CTA — Figma 1419:9333 (shared component) -->

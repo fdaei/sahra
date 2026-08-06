@@ -129,13 +129,13 @@ const insightsSubtitle = computed(() => {
  | two identical halves. A half must also be wider than the viewport or the
  | row visibly runs out mid-loop — the design shows 7 cards, but the seeded
  | data can hold as few as 1, so each half repeats the source list until it
- | covers a wide desktop (card 328 + gap 24 = 352 per item).
+ | covers a wide desktop (card 328 + gap 26 = 354 per item).
  */
 const testimonialTrack = computed(() => {
   const source = props.testimonials;
   if (source.length === 0) return [];
 
-  const perHalf = Math.max(1, Math.ceil(2560 / 352 / source.length));
+  const perHalf = Math.max(1, Math.ceil(2560 / 354 / source.length));
   const half = Array.from({ length: perHalf }, () => source).flat();
 
   return [...half, ...half];
@@ -182,6 +182,13 @@ useSectionReveal();
   >
     <!-- hero texts: x=96 y=176, gap-14 (space56) — Figma 1419:9194 -->
     <!-- A1: the three direct children (badge / texts / CTAs) stagger in on load. -->
+    <!--
+      The background is full-bleed, but the text block is placed at x=96 inside
+      the 1440 frame — so it has to be measured from a centred frame, not from
+      the viewport edge, or past 1440 it drifts left of every `.container-sahra`
+      section below it (240px adrift at 1920). Same defect as AppHeader HD-01.
+    -->
+    <div class="mx-auto w-full max-w-frame">
     <div
       ref="heroStack"
       class="relative z-10 flex w-[731px] max-w-[calc(100%-3rem)] flex-col gap-14 px-6 pb-11 pt-[120px] md:ms-24 md:px-0 md:pb-0 md:pt-[176px]"
@@ -265,6 +272,7 @@ useSectionReveal();
           {{ hero.secondaryCta.label }}
         </a>
       </div>
+    </div>
     </div>
   </section>
 
@@ -394,26 +402,35 @@ useSectionReveal();
       >
         {{ whyUs.eyebrow }}
       </div>
-      <div class="mt-8 grid gap-8 lg:grid-cols-2">
-        <div>
+      <!--
+        Row 1419:9232: space-between, items-center, title column fixed 506.
+        Cards 1419:9236 are a column (gap 48) of rows (gap 40) — a 2×2 grid
+        whose two axes differ, so both gap-x and gap-y are explicit.
+      -->
+      <div
+        class="mt-8 grid gap-8 lg:grid-cols-[506px_1fr] lg:items-center lg:justify-between"
+      >
+        <!-- title & subtitle 1419:9233 — column, gap 40 -->
+        <div class="flex flex-col gap-10">
           <h2
-            class="text-display-sm"
+            class="text-display-md"
             :style="{ color: whyUs.colors.title || undefined }"
           >
             {{ whyUs.title }}
           </h2>
+          <!-- Subtitle 1419:9235 — Poppins Medium 18, black/700 -->
           <p
-            class="mt-6 text-body-lg text-neutral-600"
+            class="text-title-sm font-medium text-neutral-700"
             :style="{ color: whyUs.colors.subtitle || undefined }"
           >
             {{ whyUs.subtitle }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-4" data-reveal-group>
+        <div class="grid grid-cols-2 gap-x-10 gap-y-12" data-reveal-group>
           <div
             v-for="(item, i) in whyUs.items"
             :key="i"
-            class="will-reveal flex min-h-[184px] flex-col items-start gap-4 rounded-sm border border-gold-200 bg-gold-100 p-8 shadow-[0_4px_5px_rgba(0,0,0,0.05)]"
+            class="will-reveal flex flex-col items-start gap-4 rounded-sm border border-gold-200 bg-gold-100 p-8 shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
             data-reveal
           >
             <component
@@ -423,7 +440,8 @@ useSectionReveal();
             />
             <div class="flex flex-col gap-2">
               <h3 class="text-title-md text-neutral-900">{{ item.title }}</h3>
-              <p class="text-body-lg text-neutral-600">
+              <!-- Description I1419:9238;398:528 is a fixed 212 in the file. -->
+              <p class="max-w-[212px] text-body-lg text-neutral-600">
                 {{ item.description }}
               </p>
             </div>
@@ -442,12 +460,28 @@ useSectionReveal();
       >
         {{ reviews.eyebrow }}
       </div>
-      <h2
-        class="max-w-xl text-display-sm"
-        :style="{ color: reviews.colors.title || undefined }"
+      <!--
+        title & subtitle 1419:9246 — row, gap 132, title column fixed 505.
+        Structurally identical to the Insights row 1419:9261 below.
+      -->
+      <div
+        class="mt-12 grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
       >
-        {{ reviews.title }}
-      </h2>
+        <h2
+          class="text-display-md"
+          :style="{ color: reviews.colors.title || undefined }"
+        >
+          {{ reviews.title }}
+        </h2>
+        <!-- Subtitle 1419:9248 — Poppins Medium 18, black/700, w 612 -->
+        <p
+          v-if="reviews.subtitle"
+          class="max-w-[612px] text-title-sm font-medium text-neutral-700"
+          :style="{ color: reviews.colors.subtitle || undefined }"
+        >
+          {{ reviews.subtitle }}
+        </p>
+      </div>
     </div>
 
     <!--
@@ -456,14 +490,19 @@ useSectionReveal();
       as the client rail, at the 40s the audit specifies; hovering pauses it so
       a card can be read (and its 414:864 hover state inspected).
     -->
-    <div class="marquee-mask mt-11 overflow-hidden pb-4">
+    <div class="marquee-mask mt-10 h-[297px] overflow-hidden">
       <!-- No padding on the track: it is `width: max-content`, so any inline
-           padding would be carried into the -50% shift and the loop would drift. -->
-      <div class="marquee-track gap-6" style="--marquee-duration: 40s">
+           padding would be carried into the -50% shift and the loop would drift.
+           Viewport 1419:9249 is 297 tall for a 246 card — the surplus is shadow
+           room, so the track centres rather than sitting flush. -->
+      <div
+        class="marquee-track h-full items-center gap-[26px]"
+        style="--marquee-duration: 40s"
+      >
         <div
           v-for="(t, i) in testimonialTrack"
           :key="i"
-          class="testimonial-card flex h-[228px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial"
+          class="testimonial-card flex h-[246px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial"
           :aria-hidden="i >= testimonials.length ? 'true' : undefined"
         >
           <p class="text-body-md leading-normal text-neutral-800">
@@ -524,7 +563,7 @@ useSectionReveal();
         <a
           v-if="posts[0]"
           :href="posts[0].url"
-          class="group will-reveal grid overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-card md:grid-cols-[279px_1fr]"
+          class="group will-reveal grid overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-card md:grid-cols-[279px_270px] md:justify-between"
           data-reveal
         >
           <div class="h-[260px] overflow-hidden rounded-sm md:h-[392px]">
@@ -535,19 +574,24 @@ useSectionReveal();
               class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.04]"
             />
           </div>
-          <div class="flex min-w-0 flex-col py-0 ps-6">
+          <!--
+            Content column I1419:9265;1210:3789 distributes with
+            space-between over a fixed 270 — not fixed margins, which would
+            stop matching the frame as soon as an excerpt changes length.
+          -->
+          <div class="flex min-w-0 flex-col justify-between">
             <div class="flex items-center gap-2 text-body-md text-neutral-700">
               <CalendarDays class="size-6 text-gold" :stroke-width="1.5" />
               <span>{{ posts[0].publishedAt }}</span>
             </div>
-            <h3 class="mt-14 text-title-md font-semibold text-gold">
+            <h3 class="text-title-md font-semibold text-gold">
               {{ posts[0].title }}
             </h3>
-            <p class="mt-8 text-body-md text-neutral-700">
+            <p class="text-body-md text-neutral-700">
               {{ posts[0].excerpt }}
             </p>
             <span
-              class="mt-auto ms-auto flex size-12 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper"
+              class="ms-auto flex size-12 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper"
             >
               <ArrowUpRight class="size-8" :stroke-width="1.25" />
             </span>
@@ -584,46 +628,65 @@ useSectionReveal();
 
   <!-- FAQ — Figma 1419:9272 -->
   <section v-if="faqSection" class="section">
-    <div class="container-sahra grid gap-12 lg:grid-cols-2">
-      <div>
-        <div
-          class="eyebrow"
-          :style="{ color: faqSection.colors.eyebrow || undefined }"
-        >
-          {{ faqSection.eyebrow }}
-        </div>
-        <h2
-          class="text-display-sm"
-          :style="{ color: faqSection.colors.title || undefined }"
-        >
-          {{ faqSection.title }}
-        </h2>
+    <!--
+      Section 1419:9272 is a column [eyebrow, content] at gap 48; the content
+      row 1419:9274 is gap 32 with a fixed 497 left column. The eyebrow spans
+      the full track above the row — it is not a cell inside it.
+    -->
+    <div class="container-sahra">
+      <div
+        class="eyebrow"
+        :style="{ color: faqSection.colors.eyebrow || undefined }"
+      >
+        {{ faqSection.eyebrow }}
       </div>
 
-      <div class="flex flex-col gap-6" data-reveal-group>
-        <details
-          v-for="(faq, i) in faqs"
-          :key="i"
-          class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-8"
-          data-reveal
-        >
-          <summary
-            class="flex cursor-pointer list-none items-center justify-between gap-4 text-title-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden"
+      <div class="mt-12 grid gap-8 lg:grid-cols-[497px_1fr]">
+        <!-- 1419:9275 — fills the row height, title top / subtitle bottom. -->
+        <div class="flex flex-col justify-between gap-8">
+          <h2
+            class="text-display-md"
+            :style="{ color: faqSection.colors.title || undefined }"
           >
-            {{ faq.question }}
-            <span class="relative size-6 shrink-0 text-neutral-700">
-              <Plus
-                class="absolute inset-0 size-6 group-open:hidden"
-                :stroke-width="1.5"
-              />
-              <Minus
-                class="absolute inset-0 hidden size-6 group-open:block"
-                :stroke-width="1.5"
-              />
-            </span>
-          </summary>
-          <p class="mt-4 text-body-lg text-neutral-700">{{ faq.answer }}</p>
-        </details>
+            {{ faqSection.title }}
+          </h2>
+          <!-- Subtitle 1419:9277 — Poppins Medium 18, black/700 -->
+          <p
+            v-if="faqSection.subtitle"
+            class="text-title-sm font-medium text-neutral-700"
+            :style="{ color: faqSection.colors.subtitle || undefined }"
+          >
+            {{ faqSection.subtitle }}
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-6" data-reveal-group>
+          <!-- First box is the `open` variant 438:561; the rest are 438:563. -->
+          <details
+            v-for="(faq, i) in faqs"
+            :key="i"
+            :open="i === 0"
+            class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-8"
+            data-reveal
+          >
+            <summary
+              class="flex cursor-pointer list-none items-center justify-between gap-4 text-title-sm font-medium text-neutral-900 [&::-webkit-details-marker]:hidden"
+            >
+              {{ faq.question }}
+              <span class="relative size-6 shrink-0 text-neutral-700">
+                <Plus
+                  class="absolute inset-0 size-6 group-open:hidden"
+                  :stroke-width="1.5"
+                />
+                <Minus
+                  class="absolute inset-0 hidden size-6 group-open:block"
+                  :stroke-width="1.5"
+                />
+              </span>
+            </summary>
+            <p class="mt-4 text-body-lg text-neutral-700">{{ faq.answer }}</p>
+          </details>
+        </div>
       </div>
     </div>
   </section>

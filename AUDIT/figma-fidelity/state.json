@@ -1,0 +1,161 @@
+{
+  "file_key": "HuuGewZFHRm2ekVUFPDQhR",
+  "root_node": "1:2",
+  "phase": "fixed-frames-1-2; extract remaining 31 frames",
+  "iteration": 1,
+  "inputs": {
+    "CODE_ROOT": "resources/js",
+    "STACK": "Laravel 12 + Inertia 2 + Vue 3 (TypeScript) + Tailwind",
+    "LOCALES": ["en", "fa", "ar"],
+    "BREAKPOINTS": {
+      "xs": 480, "sm": 640, "md": 768, "lg": 1024,
+      "xl": 1280, "2xl": 1440, "3xl": 1600
+    }
+  },
+  "capability_gap": {
+    "connected_server": "framelink-style figma MCP",
+    "available_tools": ["get_figma_data", "download_figma_images"],
+    "unavailable_tools": [
+      "get_metadata", "get_variable_defs", "get_design_context",
+      "get_motion_context", "search_design_system", "get_code_connect_map",
+      "get_screenshot", "download_assets", "list_shader_effects", "list_shader_fills"
+    ],
+    "consequences": [
+      "Category F (animation & motion) cannot be read from Figma -> every motion finding is 'unverified', never 'pass'.",
+      "No Code Connect map -> all node->file matches are match_confidence 'inferred'.",
+      "No get_screenshot -> Phase 4 visual side-by-side comparison is replaced by re-running Phase 2 against the spec.",
+      "Variables are read from the payload's styles/boundVariables where present rather than get_variable_defs."
+    ],
+    "user_decision": "proceed degraded (confirmed 2026-08-05)"
+  },
+  "frames": [
+    { "node_id": "1419:9192", "name": "Home (LTR desktop)", "code_file": "resources/js/Pages/Home.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "audited",
+      "sections_verified": ["1419:9230 Why us", "1419:9272 FAQ", "1419:9258 Insights", "1419:9243 Customer review", "1419:9318 KPI", "1419:9205 Trust proof", "1419:9334 (empty frame — resolved)", "section order (16/16)"],
+      "sections_extracted_not_drilled": ["1419:9199/9200/9201 hero type", "1419:9279 services orbit", "1419:9322 lead magnet", "1419:9216 projects", "1419:9302 process", "1419:9323 packages", "1419:9333 final CTA", "1419:9339 header", "1419:9317 footer"],
+      "findings_count": { "critical": 0, "high": 18, "medium": 13, "low": 2, "unverified": 6 } },
+    { "node_id": "541:1558", "name": "Projects (LTR desktop)", "code_file": "resources/js/Pages/Work/Index.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "audited",
+      "sections_verified": ["1726:11741 page column", "1726:11735", "1219:4240 info row", "1214:3933 grid", "1215:4090", "541:1559 header (identical to Home)"],
+      "sections_extracted_not_drilled": ["1005:1609 heading type", "542:871 filter chips"],
+      "card_907_1423": "RESOLVED — drilled 1214:3933 + 553:921 to leaf level. 16/16 properties pass, zero findings. Highest-fidelity component in the audit so far.",
+      "findings_count": { "critical": 0, "high": 4, "medium": 1, "low": 1, "unverified": 2 } },
+    { "node_id": "639:1617", "name": "Single project (LTR desktop)", "code_file": "resources/js/Pages/Work/Show.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "audited-partial",
+      "sections_verified": ["1361:7175 / 1361:7124 / 1361:7103 / 1361:7102 column chain", "1083:2745 arc rings", "641:1679 header", "1033:2288 wrapper", "pt-184 confirmed"],
+      "sections_extracted_not_drilled": ["ALL nine content sections inside 1361:7102 — intro 1294:4813, banner 646:1754, challenge 1294:4818, goals, strategy, deliverables, showcase 1294:4995, results 1349:8209, before/after 1361:7094. Returned no children at depth 4; needs a targeted drill on 1361:7102."],
+      "findings_count": { "critical": 0, "high": 3, "medium": 2, "low": 2, "unverified": 3 } },
+    { "node_id": "1323:7189", "name": "Services (LTR desktop)", "code_file": "resources/js/Pages/Services.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "908:1576", "name": "About (LTR desktop)", "code_file": "resources/js/Pages/About.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "569:1175", "name": "Blog list (LTR desktop)", "code_file": "resources/js/Pages/Insights/Index.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "604:1464", "name": "Single blog (LTR desktop)", "code_file": "resources/js/Pages/Insights/Show.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "447:790", "name": "Contact (LTR desktop)", "code_file": "resources/js/Pages/Contact.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1072:2618", "name": "Terms (LTR desktop)", "code_file": "resources/js/Pages/Legal.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1031:2101", "name": "Privacy Policy (desktop)", "code_file": "resources/js/Pages/Legal.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1027:2061", "name": "404 (LTR desktop)", "code_file": "resources/js/Pages/NotFound.vue", "viewport": "desktop", "match_confidence": "inferred", "status": "pending" },
+
+    { "node_id": "1419:9191", "name": "Home (mobile 402)", "code_file": "resources/js/Pages/Home.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1498:10840", "name": "Projects (mobile 402)", "code_file": "resources/js/Pages/Work/Index.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1555:10866", "name": "Single project (mobile 402)", "code_file": "resources/js/Pages/Work/Show.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1626:12562", "name": "Services (mobile 402)", "code_file": "resources/js/Pages/Services.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1557:12225", "name": "About (mobile 402)", "code_file": "resources/js/Pages/About.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1530:10875", "name": "Blog list (mobile 402)", "code_file": "resources/js/Pages/Insights/Index.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1543:11175", "name": "Single blog (mobile 402)", "code_file": "resources/js/Pages/Insights/Show.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1494:9544", "name": "Contact (mobile 402)", "code_file": "resources/js/Pages/Contact.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1590:11500", "name": "Terms (mobile 402)", "code_file": "resources/js/Pages/Legal.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1590:10953", "name": "Privacy Policy (mobile 402)", "code_file": "resources/js/Pages/Legal.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1567:13563", "name": "404 (mobile 402)", "code_file": "resources/js/Pages/NotFound.vue", "viewport": "mobile", "match_confidence": "inferred", "status": "pending" },
+
+    { "node_id": "1365:9950", "name": "Home (RTL desktop)", "code_file": "resources/js/Pages/Home.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1362:7198", "name": "Projects (RTL desktop)", "code_file": "resources/js/Pages/Work/Index.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1323:7541", "name": "Single project (RTL desktop)", "code_file": "resources/js/Pages/Work/Show.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1315:5187", "name": "About (RTL desktop)", "code_file": "resources/js/Pages/About.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1353:7935", "name": "Blog list (RTL desktop)", "code_file": "resources/js/Pages/Insights/Index.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1352:7391", "name": "Single blog (RTL desktop)", "code_file": "resources/js/Pages/Insights/Show.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1363:8934", "name": "Contact (RTL desktop)", "code_file": "resources/js/Pages/Contact.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1309:4891", "name": "Terms (RTL desktop)", "code_file": "resources/js/Pages/Legal.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" },
+    { "node_id": "1315:5087", "name": "404 (RTL desktop)", "code_file": "resources/js/Pages/NotFound.vue", "viewport": "desktop-rtl", "match_confidence": "inferred", "status": "pending" }
+  ],
+  "findings": [
+    {
+      "id": "DOC-001",
+      "frame": "n/a (documentation)",
+      "node": "n/a",
+      "property": "node -> page mapping",
+      "figma": "LTR desktop drivers per FIGMA-AUDIT.md 2026-07-28 correction: 541:1558, 639:1617, 569:1175, 604:1464, 447:790, 1072:2618",
+      "code": "docs/TRACEABILITY.md:15-23 still lists the Arabic RTL frames (1362:7198, 1323:7541, 1353:7935, 1352:7391, 1363:8934, 1309:4891) as the desktop nodes",
+      "severity": "medium",
+      "file_line": "docs/TRACEABILITY.md:15",
+      "fix": "Update the desktop column to the corrected LTR nodes and add an RTL-reference column, so the traceability map agrees with FIGMA-AUDIT.md section 1.",
+      "status": "open"
+    }
+  ],
+  "fixed": [
+    { "id": "H-01", "node": "1419:9233", "change": "title->subtitle gap 24 -> 40 (flex flex-col gap-10)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-02", "node": "1419:9234", "change": "text-display-sm -> text-display-md (36/500 -> 40/600)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-03", "node": "1419:9235", "change": "text-body-lg text-neutral-600 -> text-title-sm font-medium text-neutral-700", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-04", "node": "1419:9233", "change": "lg:grid-cols-2 -> lg:grid-cols-[506px_1fr] lg:items-center lg:justify-between", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-05", "node": "1419:9236", "change": "gap-4 -> gap-x-10 gap-y-12 (40 column / 48 row)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-07", "node": "1419:9274", "change": "FAQ row gap 48 -> 32 (gap-8)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-08", "node": "1419:9275", "change": "lg:grid-cols-2 -> lg:grid-cols-[497px_1fr]", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-09", "node": "1419:9272", "change": "eyebrow lifted out of the grid; grid now mt-12 (section gap 48)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-10", "node": "1419:9277", "change": "FAQ subtitle node rendered (was absent)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-11", "node": "1419:9276", "change": "text-display-sm -> text-display-md", "file": "resources/js/Pages/Home.vue" },
+    { "id": "H-12", "node": "1419:9275", "change": "flex flex-col justify-between on the left FAQ column", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-02", "node": "EL-b5fd3dfe", "change": "why-us card shadow blur 5px -> 10px", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-03", "node": "EL-b5fd3dfe", "change": "removed code-invented min-h-[184px]", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-04", "node": "I1419:9238;398:528", "change": "added max-w-[212px] to the card description", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-05", "node": "I1419:9265;1210:3789", "change": "mt-14/mt-8/mt-auto margins -> justify-between", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-06", "node": "I1419:9265;1210:3790", "change": "md:grid-cols-[279px_1fr]+ps-6 -> md:grid-cols-[279px_270px] md:justify-between", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-07", "node": "I1419:9278;438:620", "change": ":open=\"i === 0\" — first FAQ box is the `open` variant", "file": "resources/js/Pages/Home.vue" },
+    { "id": "M-08", "node": "n/a", "change": "TRACEABILITY.md desktop column corrected to the LTR frames; RTL reference column added", "file": "docs/TRACEABILITY.md" },
+    { "id": "R-01", "node": "1419:9246", "change": "title & subtitle row restored as lg:grid-cols-[505px_1fr] lg:gap-[132px]", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-02", "node": "1419:9248", "change": "reviews subtitle node rendered (was absent)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-03", "node": "1419:9247", "change": "text-display-sm -> text-display-md", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-04", "node": "1419:9247", "change": "dropped max-w-xl (576) — width now carried by the 505 column", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-05", "node": "1419:9244", "change": "eyebrow -> title gap 0 -> 48 (mt-12)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-06", "node": "EL-82980ba1", "change": "testimonial card h-[228px] -> h-[246px]", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-07", "node": "1419:9243", "change": "mt-11 (44, off-token) -> mt-10 (40)", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-08", "node": "1419:9250", "change": "track gap-6 (24) -> gap-[26px]; perHalf math updated 352 -> 354", "file": "resources/js/Pages/Home.vue" },
+    { "id": "R-09", "node": "414:862", "change": "shadow-testimonial blur 2.931px -> 5.861px", "file": "tailwind.config.js" },
+    { "id": "R-10", "node": "1419:9249", "change": "marquee viewport h-[297px], track centred; pb-4 removed", "file": "resources/js/Pages/Home.vue" },
+    { "id": "P-01", "node": "1726:11741", "change": "pb-24 (96) -> pb-56 (224)", "file": "resources/js/Pages/Work/Index.vue" },
+    { "id": "P-02", "node": "1726:11735", "change": "flattened gap split: container md:gap-[120px], grid+More wrapped in gap-24 (96)", "file": "resources/js/Pages/Work/Index.vue" },
+    { "id": "P-03", "node": "1726:11741", "change": "md:pt-[192px] -> md:pt-[184px]", "file": "resources/js/Pages/Work/Index.vue" },
+    { "id": "P-04", "node": "1219:4240", "change": "lg:items-start -> lg:items-center", "file": "resources/js/Pages/Work/Index.vue" },
+    { "id": "P-05", "node": "1005:1609", "change": "max-w-[612px] -> max-w-[611px]", "file": "resources/js/Pages/Work/Index.vue" },
+    { "id": "SP-01", "node": "1361:7102", "change": "removed lg:gap-[224px] so section gap stays 144 (md:gap-[144px]) — the 224 belongs to the outer level", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "SP-02", "node": "1361:7124", "change": "pb-32 (128) -> pb-56 (224) for content -> final CTA", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "SP-03", "node": "1083:2745", "change": "arc rings top-[1000px] -> top-[974px]", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "SP-04", "node": "1083:2745", "change": "arc rings 1476x1597 -> 1473x1563", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "SP-01b", "node": "1361:7093", "change": "sections 1-7 wrapped in a nested md:gap-[200px] div; outer column stays md:gap-[144px]", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "SP-08", "node": "1361:7100/7097", "change": "before/after image shadow-card (4/4/12) -> shadow-[0_4px_10px_rgba(0,0,0,0.05)]", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "SP-09", "node": "1361:7100/7097", "change": "before/after image h-[306px] added", "file": "resources/js/Pages/Work/Show.vue" },
+    { "id": "HD-01", "node": "1419:9339", "severity": "critical", "change": "header inner row given mx-auto w-full max-w-frame — CTA now lands on the 96px gutter instead of floating mid-header past 1440", "file": "resources/js/Layouts/AppHeader.vue", "source": "user-reported from the running site" },
+    { "id": "HD-02", "node": "1419:9194", "severity": "critical", "change": "hero text block wrapped in mx-auto w-full max-w-frame — was 240px adrift from every container-sahra section at 1920", "file": "resources/js/Pages/Home.vue", "source": "found by sweeping for the HD-01 shape" }
+  ],
+  "systemic_check_added": {
+    "name": "frame-cap sweep",
+    "rule": "Sub-1440 is unspecified_in_design, but super-1440 IS specified by the 1440 frame + max-w-frame token. Any block whose children are fixed-width and sum to the frame must also be capped and centred — otherwise every measurement audits as correct at 1440 and drifts above it.",
+    "swept": { "correct": ["AppFooter", "LeadMagnet", "ProcessSection", "ProjectsShowcase", "CtaBanner", "ServicesOrbit", "PackagesSection"], "fixed": ["AppHeader", "Home hero"] },
+    "note": "This class of defect is invisible to a payload-vs-code value comparison at the audited breakpoint. Apply to every remaining frame."
+  },
+  "auditor_errors_corrected": [
+    { "id": "SP-07", "what": "Reported the Work/Show.vue comment citing '1361:7093 gap 200' as stale, on the grounds that no such node or value appeared in my extraction. Both exist — the node sits below the depth I read. Finding WITHDRAWN and the comment restored in expanded form.", "lesson": "A node absent at depth N is `unverified`, not absent. Applied the protocol's own rule only after asserting." },
+    { "id": "SP-01", "what": "First fix set every section gap to 144. The real chain is 200 for sections 1-7 and 144 only for before/after and next-case-study. Corrected with a nested wrapper.", "lesson": "Same root cause — fixed on partial depth instead of drilling to the leaf first." }
+  ],
+  "deferred": [
+    { "id": "H-06", "node": "I1419:9238;398:727", "severity": "high", "reason": "Fix requires exporting 4 custom Figma vectors (398:723/724/725/726) and replacing the lucide substitutes. That adds asset files, needs docs/ASSET-MANIFEST.md updated so `sahra:verify-assets` stays meaningful, and the lucide substitution may have been a deliberate call. Asset work + doc change is beyond a visual fix; needs a decision." },
+    { "id": "M-01", "node": "1419:9230", "severity": "medium", "reason": "Figma declares gap 0 between the why-us eyebrow and the section body; code has 32. Conforming to 0 would butt the eyebrow against the heading. Design-side question — left at 32 pending an answer." },
+    { "id": "R-11", "node": "1419:9249", "severity": "medium", "reason": "Design clips the testimonial rail at the 1248 track; code runs it full-bleed. Plausibly a deliberate responsive decision, so not silently conformed." },
+    { "id": "R-12", "node": "1419:9249", "severity": "medium", "reason": "`.marquee-mask` on the testimonial rail has no Figma counterpart (the `shade` node 1419:9215 belongs to the client-logo rail). Code element with no design counterpart — reported, not deleted." },
+    { "id": "P-06", "node": "1215:4072", "severity": "low", "reason": "Whether the final CTA needs re-nesting depends on how CtaBanner.vue establishes its own track; that component has not been read yet." },
+    { "id": "L-01/R-13", "node": "I1419:9263;1005:1580, EL-82980ba1", "severity": "low", "reason": "Fixed-vs-max-width and a 0.0116px stroke rounding. No visible difference at any audited breakpoint; no change recommended." }
+  ],
+  "unspecified_in_design": [],
+  "verification": {
+    "iteration_1": {
+      "method": "value-level re-check against spec + npm run typecheck + npm run build (get_screenshot unavailable, so no visual diff)",
+      "typecheck": "clean",
+      "build": "clean (7.11s)",
+      "note": "The remaining lg:grid-cols-2 at Home.vue:554 is the Insights card grid, which Figma does specify as two equal 612 columns — correct, not a leftover."
+    }
+  }
+}

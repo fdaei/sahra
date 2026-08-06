@@ -153,8 +153,8 @@ export default {
       boxShadow: {
         // Figma: shadow-[4px_4px_12px_0px_rgba(0,0,0,0.05)] on project cards
         card: '4px 4px 12px 0px rgba(0, 0, 0, 0.05)',
-        // Figma: drop-shadow on testimonial card
-        testimonial: '1.954px 1.954px 2.931px rgba(0, 0, 0, 0.05)',
+        // Figma 414:862: 1.9536679983px offsets, 5.861003876px blur, no spread
+        testimonial: '1.954px 1.954px 5.861px rgba(0, 0, 0, 0.05)',
         // Figma: 3.321px blur on case-study banner
         banner: '3.321px 3.321px 9.962px rgba(0, 0, 0, 0.05)',
       },

@@ -50,8 +50,16 @@ function isActive(url: string): boolean {
 
 <template>
   <header class="fixed inset-inline-0 top-0 z-header backdrop-blur-header bg-white/5">
+    <!--
+      The Figma header 1419:9339 is `hug` sizing inside a 1440 frame:
+      96 + logo 140 + gap 262 + objects 846 + 96 = 1440 exactly. Without a
+      frame cap the row starts at the viewport edge, so past 1440 the 1248 of
+      fixed content ends early and the CTA floats mid-header instead of
+      landing on the 96px gutter. Same `mx-auto w-full max-w-frame` the rest
+      of the site gets from `.container-sahra`.
+    -->
     <div
-      class="flex items-center px-5 py-6 lg:px-24"
+      class="mx-auto flex w-full max-w-frame items-center px-5 py-6 lg:px-24"
       :class="minimal ? 'justify-between' : 'lg:gap-[262px]'"
     >
       <Link

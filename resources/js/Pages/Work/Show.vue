@@ -85,26 +85,38 @@ useSectionReveal(pageRoot)
 
   <div ref="pageRoot" class="relative overflow-x-clip">
     <!--
-      Figma 1083:2745 / 1323:7542 — the 1476×1597 concentric rings begin
-      off-canvas at x=-617 and y≈1000 on the desktop frame. Logical `start`
+      Figma 1083:2745 / 1323:7542 — the 1473×1563 concentric rings begin
+      off-canvas at x=-617, y=974.12 on the desktop frame. Logical `start`
       mirrors the composition for fa/ar without duplicating the asset.
+      The max-md offsets are derived: no mobile frame places this layer.
     -->
     <div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
       <div class="relative mx-auto h-full w-full max-w-frame">
         <img
           :src="projectArcRings"
           alt=""
-          width="1476"
-          height="1597"
-          class="absolute start-[-617px] top-[1000px] w-[1476px] max-w-none max-md:start-[-760px] max-md:top-[820px]"
+          width="1473"
+          height="1563"
+          class="absolute start-[-617px] top-[974px] w-[1473px] max-w-none max-md:start-[-760px] max-md:top-[820px]"
         />
       </div>
     </div>
 
-    <!-- Page column: gap 200 between major blocks (1361:7093), top inset 184. -->
+    <!--
+      Page column. The file nests three intervals and they are not
+      interchangeable: 1361:7175 and 1361:7124 carry 224, while the sections
+      themselves (1361:7102 / 1361:7103) sit at 144. Content starts at y=184.
+      The trailing 224 is the gap to the final CTA card, hence pb-56.
+    -->
     <div
-      class="container-sahra relative z-10 flex flex-col gap-24 pb-32 pt-[136px] md:gap-[144px] md:pt-[184px] lg:gap-[224px]"
+      class="container-sahra relative z-10 flex flex-col gap-24 pb-56 pt-[136px] md:gap-[144px] md:pt-[184px]"
     >
+    <!--
+      1361:7093 — the major-block stack, gap 200. Everything from the intro
+      through the results sits at this interval; only before/after and the
+      next-case-study link drop to the outer 144.
+    -->
+    <div class="flex flex-col gap-24 md:gap-[200px]">
     <!-- Intro + banner — Figma 1361:7087 (column, gap 80) -->
     <div ref="intro" class="flex flex-col gap-14 md:gap-20">
       <div class="flex flex-col gap-10 lg:flex-row lg:justify-between lg:gap-[342px]">
@@ -322,12 +334,14 @@ useSectionReveal(pageRoot)
         </li>
       </ul>
 
+      <!-- Summary 1349:8207 — Poppins Medium 24, black/800 -->
       <p v-if="project.resultsSummary" class="whitespace-pre-line text-[24px] font-medium text-neutral-800">
         {{ project.resultsSummary }}
       </p>
     </section>
+    </div>
 
-    <!-- Before / after — 1361:7094 -->
+    <!-- Before / after — 1361:7094: row gap 24, columns 612, images 306 tall -->
     <section
       v-if="project.beforeAfter.before || project.beforeAfter.after"
       class="will-reveal grid gap-6 sm:grid-cols-2"
@@ -340,7 +354,7 @@ useSectionReveal(pageRoot)
         <img
           :src="project.beforeAfter.before.src"
           :alt="project.beforeAfter.before.alt"
-          class="w-full rounded-sm object-cover shadow-card"
+          class="h-[306px] w-full rounded-sm object-cover shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
         />
       </figure>
       <figure v-if="project.beforeAfter.after" class="flex flex-col gap-6">
@@ -350,7 +364,7 @@ useSectionReveal(pageRoot)
         <img
           :src="project.beforeAfter.after.src"
           :alt="project.beforeAfter.after.alt"
-          class="w-full rounded-sm object-cover shadow-card"
+          class="h-[306px] w-full rounded-sm object-cover shadow-[0_4px_10px_rgba(0,0,0,0.05)]"
         />
       </figure>
     </section>
