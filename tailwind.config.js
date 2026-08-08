@@ -3,12 +3,25 @@ import typography from '@tailwindcss/typography'
 import logical from 'tailwindcss-logical'
 
 /**
- * Design tokens are extracted verbatim from Figma variables.
- * Source: file HuuGewZFHRm2ekVUFPDQhR, page "User interface" (1:2).
- * Read via Figma MCP `get_variable_defs` on nodes 1419:9192, 1362:7198, 1557:12225.
+ * Design tokens for file HuuGewZFHRm2ekVUFPDQhR, page "User interface" (1:2).
  *
- * Do not hand-edit values here — if the design changes, re-read the variables
- * and regenerate. Every value below maps 1:1 to a named Figma variable.
+ * PROVENANCE — read this before trusting a value.
+ *
+ * The file binds almost nothing to named Figma variables. A `get_figma_data`
+ * sweep of page 1:2 (2026-08-07, AUDIT/figma-final/report.md) surfaced exactly
+ * four named variables in the whole page:
+ *
+ *   black/100 #E9E9E9 · black/200 #D3D2D2 · gold/100 #F9F5EC · Color/White #FFFFFF
+ *
+ * Those four are verified 1:1 against `neutral.100`, `neutral.200`, `gold.100`
+ * and `paper` below. Every other value here was transcribed from raw node
+ * fills, not read from a variable, and is therefore UNVERIFIED against a
+ * design token. Treat it as the implementation's best record of the design,
+ * not as authoritative.
+ *
+ * The audit ran against the Framelink Figma MCP, which has no
+ * `get_variable_defs`. If the Dev Mode MCP is reconnected, re-read the
+ * variable collections and reconcile this file against them.
  *
  * @type {import('tailwindcss').Config}
  */
@@ -39,11 +52,15 @@ export default {
       colors: {
         // Figma: "primary black" / "primary white" / "primary gold"
         ink: '#231F20',
-        paper: '#FFFFFF',
+        paper: '#FFFFFF', // verified — Figma variable `Color/White`
         gold: {
           DEFAULT: '#BD933B', // primary gold
-          100: '#F9F5EC',
+          // Warm page tint behind the featured insight card (Blog list frames).
+          50: '#FBF9F5',
+          100: '#F9F5EC', // verified — Figma variable `gold/100`
           200: '#F2E9D8',
+          // Package-card price rule. Was inlined as `text-[#ecdfc5]`.
+          300: '#ECDFC5',
           400: '#E5D4B1',
           500: '#DEC99D',
           600: '#D7BE89',
@@ -53,9 +70,11 @@ export default {
         },
         // Figma: black/50 … black/1000
         neutral: {
+          // Testimonial-card default chip. Was inlined as `bg-[#f8f7f8]`.
+          25: '#F8F7F8',
           50: '#F4F3F4',
-          100: '#E9E9E9',
-          200: '#D3D2D2',
+          100: '#E9E9E9', // verified — Figma variable `black/100`
+          200: '#D3D2D2', // verified — Figma variable `black/200`
           300: '#BDBCBD',
           500: '#918F90',
           600: '#7B7979',
@@ -66,7 +85,12 @@ export default {
         },
       },
 
-      // Figma spacing variables: space4 … space112
+      /*
+       | Spacing scale. Transcribed from observed auto-layout padding and gap
+       | values on page 1:2 — the file exposes no named `space*` variables.
+       | Merged over Tailwind's defaults, so 2.5/5/20 (10/20/80px) remain
+       | available for the handful of nodes that use them.
+       */
       spacing: {
         1: '4px',
         2: '8px',
@@ -83,7 +107,7 @@ export default {
         28: '112px',
       },
 
-      // Figma radius variables
+      // Radii observed on page 1:2 nodes; no named radius variables exist.
       borderRadius: {
         xs: '4px',
         sm: '8px',
@@ -165,7 +189,14 @@ export default {
       },
 
       transitionTimingFunction: {
-        // Centralised so motion.ts and CSS agree (audit gap G3)
+        /*
+         | CSS-side brand ease. NOTE: this is NOT the same curve as
+         | `MOTION.ease.brand` in lib/motion.ts, which is GSAP's `power3.out`
+         | (a cubic ease-out with no exact bezier equivalent). The two are
+         | visually close but numerically different; see the INFO item in
+         | AUDIT/figma-final/report.md §6. Figma stores no easing for the
+         | scroll effects, so neither can currently be validated against it.
+         */
         brand: 'cubic-bezier(0.22, 1, 0.36, 1)',
       },
 

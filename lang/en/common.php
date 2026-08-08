@@ -29,6 +29,8 @@ return [
     'start_conversation'  => 'Start a Conversation',
     'lets_talk'           => "Let's Talk",
 
+    'projects'            => 'Projects',
+
     'empty_projects'      => 'No projects to show yet.',
     'empty_posts'         => 'No articles published yet.',
     'empty_results'       => 'Nothing matched your filters.',

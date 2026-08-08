@@ -289,10 +289,10 @@ useSectionReveal(pageRoot)
       <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.showcase') }}
       </h2>
-      <div class="absolute start-[67px] top-[79px] flex gap-16 text-[14px] leading-normal md:hidden" aria-label="Content types">
-        <span class="font-medium text-ink underline">Post</span>
-        <span class="text-neutral-700">Story</span>
-        <span class="text-neutral-700">Logo</span>
+      <div class="absolute start-[67px] top-[79px] flex gap-16 text-[14px] leading-normal md:hidden" :aria-label="t('work.content_types')">
+        <span class="font-medium text-ink underline">{{ t('work.type_post') }}</span>
+        <span class="text-neutral-700">{{ t('work.type_story') }}</span>
+        <span class="text-neutral-700">{{ t('work.type_logo') }}</span>
       </div>
       <ul class="absolute inset-x-0 top-[160px] flex gap-4 overflow-hidden md:static md:mt-12 md:gap-6 sm:grid sm:grid-cols-2 lg:grid-cols-3">
         <li v-for="(image, i) in project.showcase" :key="i" class="w-[262px] shrink-0 sm:w-auto">

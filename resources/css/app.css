@@ -20,6 +20,37 @@
     scroll-behavior: smooth;
   }
 
+  /*
+   | Palette bridge.
+   |
+   | Tailwind utilities cover markup, but a component's <style> block cannot
+   | reach `theme()` reliably, which is how brand hex kept getting inlined
+   | there. These custom properties are resolved from tailwind.config.js at
+   | build time, so that file stays the single source of truth and SFCs use
+   | `var(--color-*)` instead of a literal.
+   |
+   | `--color-gold-rgb` carries bare channels so callers can vary alpha with
+   | `rgb(var(--color-gold-rgb) / 0.3)`.
+   */
+  :root {
+    --color-ink: theme('colors.ink');
+    --color-ink-rgb: 35 31 32;
+    --color-paper: theme('colors.paper');
+    --color-paper-rgb: 255 255 255;
+    --color-gold: theme('colors.gold.DEFAULT');
+    --color-gold-rgb: 189 147 59;
+    --color-gold-500: theme('colors.gold.500');
+    --color-gold-900: theme('colors.gold.900');
+    --color-neutral-200: theme('colors.neutral.200');
+
+    /*
+     | Display stack for <style> blocks. CLAUDE.md forbids hardcoding
+     | `Idealist, serif` — Idealist is Latin-only, so fa/ar must fall through
+     | to the Arabic display face rather than a generic serif.
+     */
+    --font-display: theme('fontFamily.display');
+  }
+
   /* Respect the OS preference for both CSS and GSAP (see lib/motion.ts). */
   @media (prefers-reduced-motion: reduce) {
     html {
@@ -131,12 +162,12 @@
   .edge-gold {
     border: 1px solid transparent;
     background:
-      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(var(--color-paper), var(--color-paper)) padding-box,
       linear-gradient(
           136deg,
-          rgba(189, 147, 59, 0.3) 0%,
-          rgba(189, 147, 59, 0.1) 50%,
-          rgba(189, 147, 59, 0.3) 100%
+          rgb(var(--color-gold-rgb) / 0.3) 0%,
+          rgb(var(--color-gold-rgb) / 0.1) 50%,
+          rgb(var(--color-gold-rgb) / 0.3) 100%
         )
         border-box;
   }
@@ -176,8 +207,8 @@
     width: 8.49px;
     height: 8.49px;
     box-shadow:
-      2px 2px 12px 0 rgba(189, 147, 59, 0.5),
-      -2px -2px 12px 0 rgba(189, 147, 59, 0.5);
+      2px 2px 12px 0 rgb(var(--color-gold-rgb) / 0.5),
+      -2px -2px 12px 0 rgb(var(--color-gold-rgb) / 0.5);
   }
 
   @media (min-width: 768px) {
@@ -197,12 +228,12 @@
    | stored in the file: CHANGE_TO variant 414:864 "en-hover" via
    | SMART_ANIMATE / EASE_OUT / 0.3s.
    |
-   | Default is the light chip (#F8F7F8 on a black/200 hairline); hover swaps
+   | Default is the light chip (neutral-25 on a black/200 hairline); hover swaps
    | to primary black carrying a top-to-bottom gradient that is transparent
    | until 50% then gold at 30%, and lifts every text layer to white.
    */
   .testimonial-card {
-    @apply border-neutral-200 bg-[#f8f7f8];
+    @apply border-neutral-200 bg-neutral-25;
     transition:
       background-color 0.3s ease-out,
       background-image 0.3s ease-out,
@@ -215,7 +246,7 @@
     background-image: linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0) 50%,
-      rgba(189, 147, 59, 0.3) 100%
+      rgb(var(--color-gold-rgb) / 0.3) 100%
     );
   }
 
@@ -263,7 +294,14 @@
     animation-play-state: paused;
   }
 
-  /* Edge fade for marquees — Figma "shade" 1419:9215. */
+  /*
+   | Edge fade for marquees — Figma "shade" 1419:9215.
+   |
+   | The #000 stops below are mask alpha, not palette: in a mask-image, black
+   | means "fully opaque" and transparent means "cut away". They are
+   | deliberately not tokenised — swapping in a brand colour here would change
+   | nothing visually and would misrepresent them as design values.
+   */
   .marquee-mask {
     -webkit-mask-image: linear-gradient(
       to right,

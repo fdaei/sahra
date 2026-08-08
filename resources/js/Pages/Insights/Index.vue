@@ -120,7 +120,7 @@ const restRows = computed(() => props.posts.data.slice(2));
     <Link
       v-if="featured"
       :href="featured.url"
-      class="group flex flex-col gap-4 rounded-lg md:gap-8 md:bg-[#FBF9F5] md:p-4 lg:flex-row lg:items-center"
+      class="group flex flex-col gap-4 rounded-lg md:gap-8 md:bg-gold-50 md:p-4 lg:flex-row lg:items-center"
     >
       <img
         v-if="featured.image"

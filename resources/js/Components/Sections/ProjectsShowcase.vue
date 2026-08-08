@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { ArrowUpRight, Building2 } from "lucide-vue-next";
+import { useTranslations } from "@/Composables/useTranslations";
 import type { ProjectSummary } from "@/types";
+
+const { t } = useTranslations();
 
 interface SectionContent {
   eyebrow: string;
@@ -132,7 +135,7 @@ onBeforeUnmount(() => {
           <div
             class="order-1 flex min-w-0 flex-col lg:order-1"
             role="tablist"
-            aria-label="Projects"
+            :aria-label="t('common.projects')"
           >
             <article
               v-for="(project, index) in projects"
@@ -176,7 +179,7 @@ onBeforeUnmount(() => {
                     :href="project.url"
                     class="hidden shrink-0 items-center gap-2 text-body-lg font-medium text-neutral-900 hover:text-gold sm:flex"
                   >
-                    View Case Study
+                    {{ t("work.view_case_study") }}
                     <ArrowUpRight class="size-5" :stroke-width="1.5" />
                   </a>
                 </span>
@@ -215,7 +218,7 @@ onBeforeUnmount(() => {
                   :href="project.url"
                   class="mt-4 inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900 sm:hidden"
                 >
-                  View Case Study
+                  {{ t("work.view_case_study") }}
                   <ArrowUpRight class="size-5" :stroke-width="1.5" />
                 </a>
               </div>
@@ -275,7 +278,7 @@ onBeforeUnmount(() => {
 }
 
 .project-slide-row.is-active .project-slide-title {
-  color: #231f20;
+  color: var(--color-ink);
   font-size: 40px;
   font-weight: 500;
 }
@@ -283,7 +286,7 @@ onBeforeUnmount(() => {
 .project-slide-rule {
   position: relative;
   height: 1px;
-  background: #d3d2d2;
+  background: var(--color-neutral-200);
   transition: background-color 400ms ease;
 }
 
@@ -293,7 +296,7 @@ onBeforeUnmount(() => {
   inset-inline-start: 50%;
   width: 8px;
   height: 8px;
-  background: #d3d2d2;
+  background: var(--color-neutral-200);
   box-shadow:
     -2px -2px 12px rgb(35 31 32 / 20%),
     2px 2px 12px rgb(35 31 32 / 20%);
@@ -309,7 +312,7 @@ onBeforeUnmount(() => {
 }
 
 .project-slide-row.is-active .project-slide-rule {
-  background: #dec99d;
+  background: var(--color-gold-500);
 }
 
 .project-slide-row:last-child .project-slide-rule {
@@ -317,7 +320,7 @@ onBeforeUnmount(() => {
 }
 
 .project-slide-row.is-active .project-slide-rule span {
-  background: #c49e4f;
+  background: var(--color-gold-900);
   box-shadow:
     -2px -2px 12px rgb(189 147 59 / 50%),
     2px 2px 12px rgb(189 147 59 / 50%);

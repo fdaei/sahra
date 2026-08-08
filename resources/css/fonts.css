@@ -58,7 +58,9 @@
 
 @font-face {
   font-family: 'Doran FaNum';
-  src: url('/fonts/doran/DoranFaNum-Thin.ttf') format('truetype');
+  src:
+    url('/fonts/doran/DoranFaNum-Thin.woff2') format('woff2'),
+    url('/fonts/doran/DoranFaNum-Thin.ttf') format('truetype');
   font-weight: 100;
   font-style: normal;
   font-display: swap;
@@ -66,7 +68,9 @@
 
 @font-face {
   font-family: 'Doran FaNum';
-  src: url('/fonts/doran/DoranFaNum-Light.ttf') format('truetype');
+  src:
+    url('/fonts/doran/DoranFaNum-Light.woff2') format('woff2'),
+    url('/fonts/doran/DoranFaNum-Light.ttf') format('truetype');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -74,7 +78,9 @@
 
 @font-face {
   font-family: 'Doran FaNum';
-  src: url('/fonts/doran/DoranFaNum-Regular.ttf') format('truetype');
+  src:
+    url('/fonts/doran/DoranFaNum-Regular.woff2') format('woff2'),
+    url('/fonts/doran/DoranFaNum-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -82,7 +88,9 @@
 
 @font-face {
   font-family: 'Doran FaNum';
-  src: url('/fonts/doran/DoranFaNum-Medium.ttf') format('truetype');
+  src:
+    url('/fonts/doran/DoranFaNum-Medium.woff2') format('woff2'),
+    url('/fonts/doran/DoranFaNum-Medium.ttf') format('truetype');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
@@ -90,7 +98,9 @@
 
 @font-face {
   font-family: 'Doran FaNum';
-  src: url('/fonts/doran/DoranFaNum-Bold.ttf') format('truetype');
+  src:
+    url('/fonts/doran/DoranFaNum-Bold.woff2') format('woff2'),
+    url('/fonts/doran/DoranFaNum-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -98,7 +108,9 @@
 
 @font-face {
   font-family: 'Doran FaNum';
-  src: url('/fonts/doran/DoranFaNum-ExtraBold.ttf') format('truetype');
+  src:
+    url('/fonts/doran/DoranFaNum-ExtraBold.woff2') format('woff2'),
+    url('/fonts/doran/DoranFaNum-ExtraBold.ttf') format('truetype');
   font-weight: 800;
   font-style: normal;
   font-display: swap;
@@ -115,7 +127,9 @@
 
 @font-face {
   font-family: 'Idealist';
-  src: url('/fonts/idealist/Idealist-Models.ttf') format('truetype');
+  src:
+    url('/fonts/idealist/Idealist-Models.woff2') format('woff2'),
+    url('/fonts/idealist/Idealist-Models.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

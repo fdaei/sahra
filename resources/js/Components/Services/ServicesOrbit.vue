@@ -3,7 +3,10 @@ import { computed, ref } from 'vue'
 import orbitInner from '~img/decor/service-orbit-inner.svg'
 import orbitOuter from '~img/decor/service-orbit-outer.svg'
 import { useScrubRotate } from '@/Composables/useMotion'
+import { useTranslations } from '@/Composables/useTranslations'
 import type { ServiceItem } from '@/types'
+
+const { t } = useTranslations()
 
 interface ServiceSection {
   eyebrow: string
@@ -22,18 +25,25 @@ const serviceFor = (services: ServiceItem[], needle: string): ServiceItem | unde
 const serviceLabel = (services: ServiceItem[], needle: string, fallback: string) =>
   serviceFor(services, needle)?.title ?? fallback
 
-/** The four orbiting pills, in the order Figma positions them. */
+/*
+ | The four orbiting pills, in the order Figma positions them.
+ |
+ | The label is authored content; the third tuple member is the translation key
+ | used when no service row matches the needle for the active locale. It must
+ | stay a key rather than a literal — a hardcoded English fallback would put
+ | Latin text inside the fa/ar orbit.
+ */
 const pills = computed(() =>
   (
     [
-      ['social', 'social', 'Social Media support'],
-      ['branding', 'brand', 'Branding'],
-      ['content', 'content', 'Content Production'],
-      ['design', 'design', 'Marketing Design'],
+      ['social', 'social', 'services.pill_social'],
+      ['branding', 'brand', 'services.pill_branding'],
+      ['content', 'content', 'services.pill_content'],
+      ['design', 'design', 'services.pill_design'],
     ] as const
-  ).map(([modifier, needle, fallback]) => ({
+  ).map(([modifier, needle, fallbackKey]) => ({
     modifier,
-    label: serviceLabel(props.services, needle, fallback),
+    label: serviceLabel(props.services, needle, t(fallbackKey)),
     image: serviceFor(props.services, needle)?.image ?? null,
   })),
 )
@@ -58,7 +68,7 @@ useScrubRotate(innerRing)
       <div class="flex flex-col gap-12">
         <div class="service-eyebrow">
           <span aria-hidden="true" />
-          {{ section.eyebrow || 'Our Services' }}
+          {{ section.eyebrow || t('services.eyebrow') }}
         </div>
 
         <div class="grid gap-8 lg:grid-cols-[506px_1fr] lg:gap-[130px]">
@@ -71,7 +81,7 @@ useScrubRotate(innerRing)
         </div>
       </div>
 
-      <div class="orbit-stage mt-[72px]" aria-label="Marketing services connected to brand growth">
+      <div class="orbit-stage mt-[72px]" :aria-label="t('services.orbit_label')">
         <div class="orbit-glow" aria-hidden="true" />
         <div class="orbit-line" aria-hidden="true" />
         <!--
@@ -88,10 +98,10 @@ useScrubRotate(innerRing)
         <span class="orbit-endpoint orbit-endpoint--middle-b" aria-hidden="true" />
         <span class="orbit-endpoint orbit-endpoint--end" aria-hidden="true" />
 
-        <strong class="orbit-axis orbit-axis--marketing">Marketing</strong>
-        <strong class="orbit-axis orbit-axis--growth">Growth</strong>
+        <strong class="orbit-axis orbit-axis--marketing">{{ t('services.axis_marketing') }}</strong>
+        <strong class="orbit-axis orbit-axis--growth">{{ t('services.axis_growth') }}</strong>
 
-        <span class="orbit-core">Clear Brand Presence</span>
+        <span class="orbit-core">{{ t('services.core') }}</span>
 
         <!--
           Service card 1419:9295-9298. Each carries an ON_HOVER interaction
@@ -129,8 +139,8 @@ useScrubRotate(innerRing)
   align-items: center;
   gap: 4px;
   width: fit-content;
-  color: #bd933b;
-  font-family: Idealist, 'Doran FaNum', Vazirmatn, serif;
+  color: var(--color-gold);
+  font-family: var(--font-display);
   font-size: 24px;
   line-height: 1;
 }
@@ -139,8 +149,8 @@ useScrubRotate(innerRing)
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: #bd933b;
-  box-shadow: -2px -2px 12px rgb(189 147 59 / 50%), 2px 2px 12px rgb(189 147 59 / 50%);
+  background: var(--color-gold);
+  box-shadow: -2px -2px 12px rgb(var(--color-gold-rgb) / 50%), 2px 2px 12px rgb(var(--color-gold-rgb) / 50%);
 }
 
 .orbit-stage {
@@ -159,7 +169,7 @@ useScrubRotate(innerRing)
   height: 330px;
   transform: translateX(-50%);
   border-radius: 50%;
-  background: rgb(189 147 59 / 20%);
+  background: rgb(var(--color-gold-rgb) / 20%);
   filter: blur(112px);
 }
 
@@ -168,7 +178,7 @@ useScrubRotate(innerRing)
   top: 263px;
   left: 157px;
   width: 824px;
-  border-top: 2px dotted #bd933b;
+  border-top: 2px dotted var(--color-gold);
 }
 
 .orbit-circle {
@@ -193,7 +203,7 @@ useScrubRotate(innerRing)
   top: 245px;
   font-size: 24px;
   line-height: 36px;
-  color: white;
+  color: var(--color-paper);
 }
 
 .orbit-axis--marketing { left: 0; }
@@ -205,8 +215,8 @@ useScrubRotate(innerRing)
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #bd933b;
-  box-shadow: 0 0 8px rgb(189 147 59 / 55%);
+  background: var(--color-gold);
+  box-shadow: 0 0 8px rgb(var(--color-gold-rgb) / 55%);
 }
 
 .orbit-endpoint--start { left: 157px; }
@@ -225,12 +235,12 @@ useScrubRotate(innerRing)
   display: block;
   padding: 8px 16px;
   border-radius: 1000px;
-  background: linear-gradient(rgb(255 255 255 / 20%), rgb(255 255 255 / 20%)),
-    rgb(35 31 32 / 50%);
+  background: linear-gradient(rgb(var(--color-paper-rgb) / 20%), rgb(var(--color-paper-rgb) / 20%)),
+    rgb(var(--color-ink-rgb) / 50%);
   font-size: 18px;
   font-weight: 500;
   line-height: 27px;
-  color: white;
+  color: var(--color-paper);
 }
 
 /*
@@ -248,7 +258,7 @@ useScrubRotate(innerRing)
   height: 116px;
   overflow: hidden;
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-paper);
   opacity: 0;
   transform: translate(-50%, -12px) scale(0.96);
   transform-origin: top center;
@@ -285,9 +295,9 @@ useScrubRotate(innerRing)
   top: 245px;
   padding: 4px 8px;
   border-radius: 4px;
-  background: linear-gradient(150deg, #bd933b 20%, #fff 145%);
-  color: #231f20;
-  font-family: Idealist, 'Doran FaNum', Vazirmatn, serif;
+  background: linear-gradient(150deg, var(--color-gold) 20%, var(--color-paper) 145%);
+  color: var(--color-ink);
+  font-family: var(--font-display);
   font-size: 18px;
   line-height: 20px;
 }

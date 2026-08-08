@@ -29,6 +29,8 @@ return [
     'start_conversation'  => 'ابدأ محادثة',
     'lets_talk'           => 'لنتحدث',
 
+    'projects'            => 'المشاريع',
+
     'empty_projects'      => 'لا توجد مشاريع لعرضها بعد.',
     'empty_posts'         => 'لم يتم نشر أي مقالات بعد.',
     'empty_results'       => 'لا توجد نتائج مطابقة للفلاتر.',

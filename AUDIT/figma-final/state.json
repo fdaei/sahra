@@ -1,0 +1,134 @@
+{
+  "fileKey": "HuuGewZFHRm2ekVUFPDQhR",
+  "page": "1:2",
+  "pageName": "User interface",
+  "startedAt": "2026-08-07T19:25:29Z",
+  "toolingConstraint": {
+    "expectedServer": "Figma Dev Mode MCP (get_design_context, get_variable_defs, get_motion_context, get_screenshot, download_assets)",
+    "actualServer": "Framelink figma-developer-mcp (get_figma_data, download_figma_images)",
+    "consequence": "Motion, screenshot/visual-diff and variable-definition checks are NOT PERFORMABLE in this session. They are recorded BLOCKED, never PASS.",
+    "callsMade": 1,
+    "callBudgetNote": "Single get_figma_data on 1:2 at depth=2 returned the whole page inventory + GLOBAL_VARS + ELEMENTS + COMPONENTS. All Figma values in this audit derive from that one call."
+  },
+  "evidence": {
+    "headerComponentSet": {
+      "id": "1305:5252",
+      "name": "Header",
+      "variants": {
+        "176:199": "Property 1=En",
+        "1305:5253": "Property 1=AR"
+      }
+    },
+    "footerComponentSet": {
+      "id": "1390:9178",
+      "name": "Footer",
+      "variants": {
+        "1083:2839": "Property 1=ltr",
+        "1390:9179": "Property 1=rtl",
+        "1665:12666": "Property 1=en movile"
+      }
+    },
+    "leadMagnetComponentSet": {
+      "id": "1191:5022",
+      "name": "lead magnet",
+      "variants": {
+        "1191:5023": "Property 1=ltr big page",
+        "1391:10690": "Property 1=rtl big page"
+      }
+    },
+    "namedVariablesFoundOnPage": {
+      "black/100": "#E9E9E9",
+      "black/200": "#D3D2D2",
+      "gold/100": "#F9F5EC",
+      "Color/White": "#FFFFFF"
+    },
+    "headerLayoutToken": {
+      "ref": "layout_bcb81f92",
+      "mode": "row",
+      "padding": "24px 96px",
+      "gap": "262px",
+      "alignItems": "center",
+      "fill": "rgba(255, 255, 255, 0.05)",
+      "effect": "backdropFilter: blur(15px)"
+    }
+  },
+  "frames": [
+    { "nodeId": "1419:9192", "name": "home", "dims": "1440x10821", "direction": "LTR (Header 176:199 En)", "maps": "route home -> resources/js/Pages/Home.vue", "status": "PARTIAL", "checks": { "A_geometry": "PARTIAL", "B_typography": "BLOCKED", "C_tokens": "PARTIAL", "D_assets": "BLOCKED", "E_states": "BLOCKED", "F_responsive": "BLOCKED", "G_motion": "BLOCKED", "H_rtl_i18n": "PARTIAL" } },
+    { "nodeId": "1419:9191", "name": "iPhone 16 & 17 Pro - 1", "dims": "402x10607", "direction": "mobile", "maps": "home mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1362:7198", "name": "projects", "dims": "1440x4640", "direction": "UNRESOLVED at depth=2", "maps": "route work.index -> Pages/Work/Index.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1498:10840", "name": "iPhone 16 & 17 Pro - 3", "dims": "402x3442", "direction": "mobile", "maps": "work.index mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1323:7541", "name": "single project", "dims": "1440x7629", "direction": "UNRESOLVED at depth=2", "maps": "route work.show -> Pages/Work/Show.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1555:10866", "name": "iPhone 16 & 17 Pro - 7", "dims": "402x3833", "direction": "mobile", "maps": "work.show mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1323:7189", "name": "Services", "dims": "1440x5858", "direction": "LTR (Header 176:199 En, Footer 1083:2839 ltr)", "maps": "route services -> Pages/Services.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1626:12562", "name": "iPhone 16 & 17 Pro - 12", "dims": "402x6710", "direction": "mobile", "maps": "services mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "908:1576", "name": "About", "dims": "1440x4109", "direction": "LTR (Header 176:199 En)", "maps": "route about -> Pages/About.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1315:5187", "name": "About", "dims": "1440x4040", "direction": "likely AR (mirrored clip path; 1315 ID range shared with ar404)", "maps": "about (ar) — NOT cited by routes/web.php", "status": "PENDING", "checks": {} },
+    { "nodeId": "1557:12225", "name": "iPhone 16 & 17 Pro - 8", "dims": "402x3008", "direction": "mobile", "maps": "about mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1353:7935", "name": "Blog list", "dims": "1440x4619", "direction": "AR (Header 1305:5253 AR)", "maps": "route insights.index CITES THIS — but it is the Arabic frame; LTR equivalent is 569:1175", "status": "FINDING", "checks": {} },
+    { "nodeId": "569:1175", "name": "Blog list", "dims": "1440x4556", "direction": "LTR (Header 176:199 En)", "maps": "insights.index LTR — not cited by routes/web.php", "status": "FINDING", "checks": {} },
+    { "nodeId": "1530:10875", "name": "iPhone 16 & 17 Pro - 4", "dims": "402x3541", "direction": "mobile", "maps": "insights.index mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1352:7391", "name": "single blog", "dims": "1440x5023", "direction": "UNRESOLVED at depth=2", "maps": "route insights.show -> Pages/Insights/Show.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1543:11175", "name": "iPhone 16 & 17 Pro - 5", "dims": "402x3738", "direction": "mobile", "maps": "insights.show mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1363:8934", "name": "Contact us", "dims": "template EL-e188bc51", "direction": "AR (Header 1305:5253 AR, Footer 1390:9179 rtl)", "maps": "route contact CITES THIS — but it is the Arabic frame; LTR equivalent is 447:790", "status": "FINDING", "checks": {} },
+    { "nodeId": "447:790", "name": "Contact us", "dims": "template EL-e188bc51", "direction": "LTR (Header 176:199 En, Footer 1083:2839 ltr)", "maps": "contact LTR — not cited by routes/web.php", "status": "FINDING", "checks": {} },
+    { "nodeId": "1494:9544", "name": "iPhone 16 & 17 Pro - 2", "dims": "402x2553", "direction": "mobile", "maps": "contact mobile", "status": "PENDING", "checks": {} },
+    { "nodeId": "1031:2101", "name": "Privacy Policy", "dims": "1440x3126", "direction": "unresolved", "maps": "route legal.privacy -> Pages/Legal.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1309:4891", "name": "Terms & Conditions", "dims": "template EL-2aac9dae", "direction": "unresolved", "maps": "route legal.terms -> Pages/Legal.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1027:2061", "name": "404", "dims": "template EL-090b2eda", "direction": "LTR", "maps": "Pages/Error.vue", "status": "PENDING", "checks": {} },
+    { "nodeId": "1315:5087", "name": "ar404", "dims": "template EL-090b2eda", "direction": "AR", "maps": "Pages/Error.vue (ar)", "status": "PENDING", "checks": {} },
+    { "nodeId": "1365:9950", "name": "home", "dims": "1440x11081", "direction": "AR (Header 1305:5253 AR, Footer 1390:9179 rtl)", "maps": "home (ar) — not cited by routes/web.php", "status": "PENDING", "checks": {} },
+    { "nodeId": "1567:13563", "name": "iPhone 16 & 17 Pro - 9", "dims": "template EL-2c03d91e", "direction": "mobile", "maps": "ORPHAN — no mapped route", "status": "ORPHAN", "checks": {} },
+    { "nodeId": "1590:10953", "name": "iPhone 16 & 17 Pro - 10", "dims": "template EL-1f14c61b", "direction": "mobile", "maps": "ORPHAN — no mapped route", "status": "ORPHAN", "checks": {} },
+    { "nodeId": "1590:11500", "name": "iPhone 16 & 17 Pro - 11", "dims": "template EL-1f14c61b", "direction": "mobile", "maps": "ORPHAN — no mapped route", "status": "ORPHAN", "checks": {} },
+    { "nodeId": "1659:11517", "name": "iPhone 16 & 17 Pro - 13", "dims": "template EL-2c03d91e", "direction": "mobile", "maps": "ORPHAN — no mapped route", "status": "ORPHAN", "checks": {} },
+    { "nodeId": "1659:11783", "name": "iPhone 16 & 17 Pro - 14", "dims": "template EL-2c03d91e", "direction": "mobile", "maps": "ORPHAN — no mapped route", "status": "ORPHAN", "checks": {} },
+    { "nodeId": "230:473", "name": "home", "dims": "1440x10669", "direction": "LTR", "maps": "superseded by 1419:9192", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "541:1558", "name": "projects", "dims": "1440x4656", "direction": "LTR", "maps": "superseded by 1362:7198", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "604:1464", "name": "single blog", "dims": "1440x5082", "direction": "unresolved", "maps": "superseded by 1352:7391", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "639:1617", "name": "single project", "dims": "1440x7481", "direction": "LTR", "maps": "superseded by 1323:7541", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "908:1520", "name": "Services", "dims": "1440x5872", "direction": "unresolved", "maps": "superseded by 1323:7189", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "1072:2618", "name": "Terms & Conditions", "dims": "hug", "direction": "unresolved", "maps": "superseded by 1309:4891", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "1303:4392", "name": "Terms & Conditions", "dims": "template EL-2aac9dae", "direction": "unresolved", "maps": "superseded by 1309:4891", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "1352:6535", "name": "single blog", "dims": "template EL-090b2eda", "direction": "unresolved", "maps": "variant/scratch", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "1352:6588", "name": "single blog", "dims": "template EL-090b2eda", "direction": "unresolved", "maps": "variant/scratch", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "1289:4196", "name": "single blog", "dims": "template EL-090b2eda", "direction": "unresolved", "maps": "variant/scratch", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "1294:4402", "name": "single blog", "dims": "template EL-090b2eda", "direction": "unresolved", "maps": "variant/scratch", "status": "SUPERSEDED", "checks": {} },
+    { "nodeId": "172:119", "name": "Components", "dims": "21756x709", "direction": "n/a", "maps": "design system canvas — not a page", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1127:2985", "name": "Header", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:2996", "name": "Footer", "dims": "1536x2615", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:3120", "name": "Buttons", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:3244", "name": "Header", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:3368", "name": "Blog", "dims": "1536x3125", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:3492", "name": "Works", "dims": "1536x4257", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:3616", "name": "FAQ", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:3740", "name": "Members", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1136:4048", "name": "Text", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1142:3094", "name": "Cards", "dims": "1536x14426", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1142:3144", "name": "partners", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1142:3233", "name": "filter & ctegory", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} },
+    { "nodeId": "1146:3068", "name": "Home", "dims": "n/a", "direction": "n/a", "maps": "design system", "status": "NOT_A_PAGE", "checks": {} }
+  ],
+  "rateLimitEvents": 0,
+  "phase5": {
+    "authorisedAt": "2026-08-08",
+    "fixed": [6, 7, 10, 11, "INFO"],
+    "documentedNotChanged": [4, 5],
+    "retracted": [9],
+    "stillOpen": [1, 2, 3, 8],
+    "amendments": {
+      "finding6": "counted 33 by grepping #hex; ~10 were docblocks. Real figure 24 rendered literals.",
+      "finding9": "false positive — left-0/right-0 position fragments of one icon glyph; logical props would scramble it in RTL.",
+      "finding10": "counted 2; grep needed 8+ chars and was single-line anchored. Real figure 9 strings + 5 English fallbacks."
+    },
+    "validation": {
+      "typecheck": "clean",
+      "build": "clean",
+      "phpLint": "10/10 pass",
+      "translationKeyParity": "services 9, work 18, common 25 — no gaps across en/fa/ar",
+      "phpArtisanTest": "NOT RUN — pdo_sqlite absent"
+    },
+    "fontPayload": { "beforeBytes": 903656, "afterBytes": 332784, "reduction": "63%" }
+  },
+  "verdict": "FAIL",
+  "verdictReason": "Motion (matrix G), visual diff and Figma variable definitions are unverifiable with the MCP server actually connected in this session; multiple code-side checks fail outright; frame-to-route traceability is wrong for at least two routes."
+}

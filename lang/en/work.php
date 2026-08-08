@@ -21,6 +21,13 @@ return [
     'before'          => 'Before',
     'after'           => 'After',
     'results'         => 'Results',
+    'view_case_study' => 'View Case Study',
     'next_case_study' => 'Next Case Study',
+
+    // Mobile content-type strip on the showcase section (Figma 1294:4995).
+    'content_types'   => 'Content types',
+    'type_post'       => 'Post',
+    'type_story'      => 'Story',
+    'type_logo'       => 'Logo',
 
 ];

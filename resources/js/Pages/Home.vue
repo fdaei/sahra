@@ -157,6 +157,33 @@ useSectionReveal();
 </script>
 
 <template>
+  <!--
+    ============================================================
+    VERTICAL RHYTHM — `lg:` margin offsets on the sections below
+    ============================================================
+
+    Frame 1419:9192 positions every section absolutely. The section components
+    are shared with 6 other pages, so their own padding is left alone and the
+    correction is applied here, at the call site, as a margin.
+
+    Each value is the INCREMENTAL shift for that section: a margin moves the
+    section and everything after it, so shift[i] = d[i] - d[i-1] where d is the
+    section's measured offset from its Figma y. Verified at 1440: all 14 nodes
+    land on their Figma y exactly (0px), see AUDIT/figma-final/report.md §12.
+
+    Two things to know before editing:
+
+    1. Negative margins here consume the PRECEDING section's bottom padding
+       (112px at lg). Every value is smaller than that, so nothing collides.
+       Keep it that way — a negative margin larger than 112 overlaps content.
+    2. These are tuned against the CURRENTLY SEEDED copy. Section heights are
+       content-dependent, so a materially longer heading or excerpt re-opens
+       the drift. Re-run the harness rather than eyeballing it.
+
+    The KPI band is *designed* to overlap the hero: Figma puts it at y=850
+    while the hero image is 1440x904. Hence `lg:-mt-[54px] lg:pt-0` — it needs
+    no top padding, it sits on the hero.
+  -->
   <SeoHead :meta="seo" />
 
   <!--
@@ -236,7 +263,7 @@ useSectionReveal();
                 ? { color: hero.colors.content, backgroundImage: 'none' }
                 : {
                     backgroundImage:
-                      'linear-gradient(90deg, #ffffff 0%, #bd933b 27%, #bd933b 65%, #ffffff 100%)',
+                      'linear-gradient(90deg, var(--color-paper) 0%, var(--color-gold) 27%, var(--color-gold) 65%, var(--color-paper) 100%)',
                   }
             "
             >{{ hero.content }}</span
@@ -291,7 +318,7 @@ useSectionReveal();
     Card 1419:9319: column, padding 24/12, gap 8, radius 8, fill #FFFFFF,
     1px OUTSIDE gradient stroke (see `.edge-gold`).
   -->
-  <section v-if="kpi" class="relative z-20 -mt-[117px] py-0 md:mt-0 md:py-24 lg:py-28">
+  <section v-if="kpi" class="relative z-20 -mt-[117px] py-0 md:mt-0 md:py-24 lg:-mt-[54px] lg:py-28 lg:pt-0">
     <div
       class="container-sahra grid grid-cols-3 gap-2 text-center md:container-narrow md:gap-4"
       data-reveal-group
@@ -332,7 +359,7 @@ useSectionReveal();
     128×128 centred box at 80px wide. `shade` 1419:9215 is a 90deg
     white→transparent→white overlay (`.marquee-mask`).
   -->
-  <section class="section h-[317px] pb-0 pt-[115px] md:h-auto md:pb-24 md:pt-0 lg:pb-28">
+  <section class="section h-[317px] pb-0 pt-[115px] md:h-auto md:pb-24 md:pt-0 lg:mt-[19px] lg:pb-28">
     <div class="container-narrow flex flex-col gap-8">
       <h2 class="text-center text-[16px] font-medium leading-normal text-neutral-600 md:text-[22px]">
         {{ sections.trust_proof?.title }}
@@ -373,28 +400,30 @@ useSectionReveal();
   <!-- Services orbit — Figma 1419:9279 -->
   <ServicesOrbit
     v-if="sections.services_cloud"
+    class="lg:mt-[23px]"
     :section="sections.services_cloud"
     :services="services"
   />
 
   <!-- Content Direction Checklist — Figma 1419:9322 -->
-  <LeadMagnet v-if="sections.lead_magnet" class="max-md:h-[207px] max-md:overflow-hidden max-md:opacity-0" :section="sections.lead_magnet" />
+  <LeadMagnet v-if="sections.lead_magnet" class="max-md:h-[207px] max-md:overflow-hidden max-md:opacity-0 lg:mt-[48px]" :section="sections.lead_magnet" />
 
   <!-- Projects showcase — Figma 1419:9216 -->
   <ProjectsShowcase
     v-if="sections.projects_showcase"
+    class="lg:-mt-[64px]"
     :section="sections.projects_showcase"
     :projects="projects"
   />
 
   <!-- Process — Figma 1419:9302 -->
-  <ProcessSection v-if="process" :section="process" />
+  <ProcessSection v-if="process" class="lg:mt-[7px]" :section="process" />
 
   <!-- Packages — Figma 1419:9323 -->
-  <PackagesSection v-if="packages" :section="packages" />
+  <PackagesSection v-if="packages" class="lg:mt-[126px]" :section="packages" />
 
   <!-- Why us — Figma 1419:9230 -->
-  <section v-if="whyUs" class="h-[1094px] pt-[193px] md:h-auto md:py-24 lg:py-28">
+  <section v-if="whyUs" class="h-[1094px] pt-[193px] md:h-auto md:py-24 lg:mt-[92px] lg:py-28">
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -452,7 +481,7 @@ useSectionReveal();
   </section>
 
   <!-- Reviews — Figma 1419:9243 -->
-  <section v-if="reviews" class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:py-28">
+  <section v-if="reviews" class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[100px] lg:py-28">
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -526,7 +555,7 @@ useSectionReveal();
   </section>
 
   <!-- Insights — Figma 1419:9258 -->
-  <section v-if="insights" class="py-14 md:py-24 lg:py-28">
+  <section v-if="insights" class="py-14 md:py-24 lg:-mt-[10px] lg:py-28">
     <div class="container-sahra flex flex-col gap-10 md:gap-12">
       <div class="flex flex-col gap-8 md:gap-12">
         <div
@@ -627,7 +656,7 @@ useSectionReveal();
   </section>
 
   <!-- FAQ — Figma 1419:9272 -->
-  <section v-if="faqSection" class="h-[891px] py-14 md:h-auto md:py-24 lg:py-28">
+  <section v-if="faqSection" class="h-[891px] py-14 md:h-auto md:py-24 lg:-mt-[98px] lg:py-28">
     <!--
       Section 1419:9272 is a column [eyebrow, content] at gap 48; the content
       row 1419:9274 is gap 32 with a fixed 497 left column. The eyebrow spans
@@ -694,6 +723,7 @@ useSectionReveal();
   <!-- Final CTA — Figma 1419:9333 (shared component) -->
   <CtaBanner
     v-if="sections.final_cta"
+    class="lg:mb-[61px] lg:mt-[82px]"
     :section="sections.final_cta"
     spacing-class="pb-[182px] pt-24 md:pb-[260px]"
   />

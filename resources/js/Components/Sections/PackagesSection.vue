@@ -87,7 +87,7 @@ defineProps<{
               <span class="latin-nums text-[32px] leading-none">{{
                 item.value
               }}</span>
-              <span class="text-title-sm leading-none text-[#ecdfc5]">{{
+              <span class="text-title-sm leading-none text-gold-300">{{
                 item.suffix
               }}</span>
             </p>
@@ -155,7 +155,7 @@ defineProps<{
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  color: #bd933b;
+  color: var(--color-gold);
   font-family: Idealist, 'Doran FaNum', Vazirmatn, serif;
   font-size: 24px;
   line-height: 1;
@@ -166,7 +166,7 @@ defineProps<{
   height: 8px;
   flex: none;
   border-radius: 9999px;
-  background: #bd933b;
+  background: var(--color-gold);
   box-shadow:
     -2px -2px 12px rgb(189 147 59 / 50%),
     2px 2px 12px rgb(189 147 59 / 50%);

@@ -39,7 +39,13 @@ createInertiaApp({
   },
 
   progress: {
-    color: '#BD933B', // Figma "primary gold"
+    /*
+     | Inertia interpolates this straight into an injected <style> block
+     | (background / box-shadow / border-color), so a custom property resolves
+     | normally and the palette stays defined in one place — see the :root
+     | block in resources/css/app.css.
+     */
+    color: 'var(--color-gold)',
     showSpinner: false,
   },
 })
