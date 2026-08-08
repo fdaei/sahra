@@ -26,6 +26,29 @@ final class SetLocale
     {
         $locale = $this->resolve($request);
 
+        self::apply($request, $locale);
+
+        $config = config("locales.supported.{$locale}");
+
+        $response = $next($request);
+
+        // Helps CDNs and browsers cache per-language variants correctly.
+        $response->headers->set('Content-Language', $config['html_lang']);
+
+        return $response;
+    }
+
+    /**
+     * Configure the application for a locale.
+     *
+     * Split out of handle() because a 404 on an already-prefixed path
+     * (/ar/nonexistent) never reaches this middleware — the {locale} group
+     * fails to match, so RedirectToLocalisedRoute throws instead. Without
+     * this, the Inertia error page rendered in the default language and LTR
+     * on an Arabic URL. RedirectToLocalisedRoute calls it before throwing.
+     */
+    public static function apply(Request $request, string $locale): void
+    {
         App::setLocale($locale);
 
         $config = config("locales.supported.{$locale}");
@@ -41,13 +64,6 @@ final class SetLocale
         $request->attributes->set('locale_direction', $config['direction']);
         $request->attributes->set('locale_font', $config['font']);
         $request->attributes->set('locale_html_lang', $config['html_lang']);
-
-        $response = $next($request);
-
-        // Helps CDNs and browsers cache per-language variants correctly.
-        $response->headers->set('Content-Language', $config['html_lang']);
-
-        return $response;
     }
 
     /**

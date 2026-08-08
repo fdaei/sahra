@@ -22,7 +22,7 @@ return [
 
     'custom' => [
         'contact' => [
-            'reachable' => 'Please provide a phone number or an email address so we can reply.',
+            'reachable' => 'Please provide a phone number so we can reply.',
             'too_fast' => 'That was submitted a little too quickly. Please try again.',
         ],
     ],

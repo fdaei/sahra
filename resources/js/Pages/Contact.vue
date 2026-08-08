@@ -221,10 +221,14 @@ function submit(): void {
                       type="text"
                       :placeholder="t('forms.contact.name_placeholder')"
                       class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
+                      :aria-invalid="form.errors.name ? 'true' : undefined"
+                      :aria-describedby="form.errors.name ? 'name-error' : undefined"
                     />
                   </div>
                   <p
                     v-if="form.errors.name"
+                    id="name-error"
+                    role="alert"
                     class="mt-1 text-label-md text-red-600"
                   >
                     {{ form.errors.name }}
@@ -251,8 +255,18 @@ function submit(): void {
                       type="text"
                       :placeholder="t('forms.contact.brand_placeholder')"
                       class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
+                      :aria-invalid="form.errors.brand_name ? 'true' : undefined"
+                      :aria-describedby="form.errors.brand_name ? 'brand-error' : undefined"
                     />
                   </div>
+                  <p
+                    v-if="form.errors.brand_name"
+                    id="brand-error"
+                    role="alert"
+                    class="mt-1 text-label-md text-red-600"
+                  >
+                    {{ form.errors.brand_name }}
+                  </p>
                 </div>
               </div>
 
@@ -282,10 +296,14 @@ function submit(): void {
                       type="tel"
                       placeholder="+968"
                       class="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-body-md shadow-none focus:ring-0"
+                      :aria-invalid="form.errors.phone ? 'true' : undefined"
+                      :aria-describedby="form.errors.phone ? 'phone-error' : undefined"
                     />
                   </div>
                   <p
                     v-if="form.errors.phone"
+                    id="phone-error"
+                    role="alert"
                     class="mt-1 text-label-md text-red-600"
                   >
                     {{ form.errors.phone }}
@@ -343,7 +361,18 @@ function submit(): void {
                   rows="4"
                   :placeholder="t('forms.contact.message_placeholder')"
                   class="min-h-[80px] w-full flex-1 resize-none rounded-sm border border-gold-200 bg-paper/80 px-4 py-3 text-body-md focus:border-ink"
+                  :aria-invalid="form.errors.message ? 'true' : undefined"
+                  :aria-describedby="form.errors.message ? 'message-error' : undefined"
                 />
+                <!-- message is validated (max:5000) but had no error outlet, so an over-long message failed silently. -->
+                <p
+                  v-if="form.errors.message"
+                  id="message-error"
+                  role="alert"
+                  class="mt-1 text-label-md text-red-600"
+                >
+                  {{ form.errors.message }}
+                </p>
               </div>
 
               <button

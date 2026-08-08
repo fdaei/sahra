@@ -59,6 +59,14 @@ final class ContactSubmissionRequest extends FormRequest
     public function withValidator(Validator $validator): void
     {
         $validator->after(function (Validator $validator): void {
+            /*
+             | The public form (Figma 447:790) renders no email input — only
+             | Name / Brand / Phone / Services / Message — so in practice this
+             | reduces to "phone is required". The email branch is kept because
+             | the rule set still accepts an email from non-form callers, but
+             | validation.custom.contact.reachable must not promise the visitor
+             | an email field they cannot see.
+             */
             if (blank($this->input('phone')) && blank($this->input('email'))) {
                 $validator->errors()->add(
                     'phone',

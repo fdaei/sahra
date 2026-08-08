@@ -275,7 +275,7 @@ useSectionReveal();
 
         <!-- Subtitle — Figma 1419:9201: Poppins Medium 18, black/700, w 612 -->
         <p
-          class="w-full max-w-[612px] text-[16px] font-medium leading-[1.4] text-neutral-700 md:text-[18px]"
+          class="w-full max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-[18px]"
           :style="{ color: hero.colors.subtitle || undefined }"
         >
           {{ hero.subtitle }}
@@ -345,7 +345,7 @@ useSectionReveal();
           </p>
         </div>
         <div class="flex flex-col items-center gap-1">
-          <p class="text-[10px] font-medium leading-tight text-gold md:text-title-sm">{{ item.title }}</p>
+          <p class="text-[10px] font-medium leading-normal text-gold md:text-title-sm">{{ item.title }}</p>
           <p class="hidden text-body-md text-neutral-700 md:block">{{ item.description }}</p>
         </div>
       </div>
@@ -442,7 +442,7 @@ useSectionReveal();
         <!-- title & subtitle 1419:9233 — column, gap 40 -->
         <div class="flex flex-col gap-6 md:gap-10">
           <h2
-            class="text-[26px] font-semibold leading-tight md:text-display-md"
+            class="text-[26px] font-semibold leading-normal md:text-display-md"
             :style="{ color: whyUs.colors.title || undefined }"
           >
             {{ whyUs.title }}
@@ -497,7 +497,7 @@ useSectionReveal();
         class="mt-8 grid items-start gap-6 md:mt-12 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
       >
         <h2
-          class="text-[26px] font-semibold leading-tight md:text-display-md"
+          class="text-[26px] font-semibold leading-normal md:text-display-md"
           :style="{ color: reviews.colors.title || undefined }"
         >
           {{ reviews.title }}
@@ -568,7 +568,7 @@ useSectionReveal();
           class="grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
         >
           <h2
-            class="text-[26px] font-semibold leading-tight text-neutral-900 md:text-display-md md:leading-normal"
+            class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-md"
             :style="{ color: insights.colors.title || undefined }"
           >
             {{ insights.title }}
@@ -674,7 +674,7 @@ useSectionReveal();
         <!-- 1419:9275 — fills the row height, title top / subtitle bottom. -->
         <div class="flex flex-col justify-between gap-8">
           <h2
-            class="text-[26px] font-semibold leading-tight md:text-display-md"
+            class="text-[26px] font-semibold leading-normal md:text-display-md"
             :style="{ color: faqSection.colors.title || undefined }"
           >
             {{ faqSection.title }}

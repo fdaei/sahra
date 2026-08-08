@@ -28,12 +28,6 @@ function close(): void {
 onClickOutside(root, close)
 onKeyStroke('Escape', close)
 
-/** Full-page visit so <html lang/dir> and the font stack are re-rendered. */
-function switchTo(url: string): void {
-  close()
-  window.location.href = url
-}
-
 function isCurrent(code: LocaleCode): boolean {
   return code === page.props.locale.current
 }
@@ -54,27 +48,35 @@ function isCurrent(code: LocaleCode): boolean {
       <ChevronDown class="size-5 transition-transform [details[open]_&]:rotate-180" aria-hidden="true" />
     </summary>
 
+    <!--
+      Real <a href> links, not buttons driving window.location: these are
+      navigations, so they must be middle-clickable, open-in-new-tab-able and
+      visible to crawlers. A plain anchor also gives the full page load this
+      needs (Inertia's <Link> would not re-render <html lang/dir>).
+
+      No listbox/option roles — this is a disclosure of links, not a select.
+      role="option" also requires option elements to be direct children of the
+      listbox, which the <li> wrappers broke.
+    -->
     <ul
       class="absolute inset-inline-end-0 top-full z-menu mt-2 min-w-44 overflow-hidden
              rounded-sm border border-neutral-100 bg-paper py-1 shadow-card"
-      role="listbox"
     >
       <li v-for="option in page.props.locale.supported" :key="option.code">
-        <button
-          type="button"
-          role="option"
-          :aria-selected="isCurrent(option.code)"
+        <a
+          :href="page.props.alternates[option.code]"
           :lang="option.code"
           :dir="option.direction"
+          :aria-current="isCurrent(option.code) ? 'true' : undefined"
           class="flex w-full items-center justify-between gap-3 px-4 py-3 text-start
                  text-body-md transition-colors hover:bg-gold-100
                  focus-visible:bg-gold-100 focus-visible:outline-none"
           :class="isCurrent(option.code) ? 'text-gold' : 'text-neutral-800'"
-          @click="switchTo(page.props.alternates[option.code])"
+          @click="close"
         >
           <span>{{ option.native }}</span>
           <Check v-if="isCurrent(option.code)" class="size-4 shrink-0" aria-hidden="true" />
-        </button>
+        </a>
       </li>
     </ul>
   </details>

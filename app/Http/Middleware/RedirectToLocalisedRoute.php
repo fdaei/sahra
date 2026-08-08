@@ -31,6 +31,14 @@ final class RedirectToLocalisedRoute
         $first = $request->segment(1);
 
         if (is_string($first) && in_array($first, $supported, true)) {
+            /*
+             | Genuine 404 on an already-localised path. SetLocale never ran —
+             | the {locale} group failed to match — so apply the locale here or
+             | the Inertia error page renders in the default language and LTR
+             | on an /ar or /fa URL, losing direction and chrome.
+             */
+            SetLocale::apply($request, $first);
+
             throw new NotFoundHttpException;
         }
 

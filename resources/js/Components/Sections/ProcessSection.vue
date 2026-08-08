@@ -45,7 +45,7 @@ const iconKey = (item: ProcessItem, index: number): string =>
           class="grid gap-6 md:grid-cols-[minmax(0,505px)_minmax(0,612px)] md:justify-between"
         >
           <h2
-            class="max-w-[505px] text-[26px] font-semibold leading-tight text-neutral-900 md:text-display-md"
+            class="max-w-[505px] text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-md"
           >
             {{ section.title }}
           </h2>
@@ -126,7 +126,7 @@ const iconKey = (item: ProcessItem, index: number): string =>
                 </span>
               </span>
 
-              <h3 class="min-w-0 text-[16px] font-medium leading-tight text-neutral-900 md:text-title-lg">
+              <h3 class="min-w-0 text-[16px] font-medium leading-normal text-neutral-900 md:text-title-lg">
                 {{ item.title }}
               </h3>
             </div>

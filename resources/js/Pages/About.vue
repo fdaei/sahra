@@ -135,7 +135,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
               >
               <span
                 v-if="hero.content"
-                class="mt-2 block text-[22px] font-medium leading-[1.2] tracking-[-0.02em] text-neutral-900 md:text-[40px]"
+                class="mt-2 block text-[22px] font-medium leading-normal tracking-[-0.02em] text-neutral-900 md:text-[40px]"
                 :style="{ color: hero.colors.content || undefined }"
                 >{{ hero.content }}</span
               >
@@ -172,7 +172,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
           none and the inherited body ink is black/1000, one step too dark.
         -->
         <h2
-          class="text-[22px] font-semibold leading-[1.2] text-neutral-900 md:text-display-md lg:max-w-[472px] lg:shrink-0"
+          class="text-[22px] font-semibold leading-normal text-neutral-900 md:text-display-md lg:max-w-[472px] lg:shrink-0"
           :style="{ color: story.colors.title || undefined }"
         >
           {{ story.title }}

@@ -289,7 +289,8 @@ useSectionReveal(pageRoot)
       <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
         {{ t('work.showcase') }}
       </h2>
-      <div class="absolute start-[67px] top-[79px] flex gap-16 text-[14px] leading-normal md:hidden" :aria-label="t('work.content_types')">
+      <!-- role="group" so the label is actually exposed — aria-label on a bare div is ignored by AT. -->
+      <div class="absolute start-[67px] top-[79px] flex gap-16 text-[14px] leading-normal md:hidden" role="group" :aria-label="t('work.content_types')">
         <span class="font-medium text-ink underline">{{ t('work.type_post') }}</span>
         <span class="text-neutral-700">{{ t('work.type_story') }}</span>
         <span class="text-neutral-700">{{ t('work.type_logo') }}</span>

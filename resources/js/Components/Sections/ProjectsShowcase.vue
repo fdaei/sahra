@@ -115,13 +115,13 @@ onBeforeUnmount(() => {
           >
             <h2
               id="projects-showcase-title"
-              class="max-w-[506px] text-[26px] font-semibold leading-[1.2] text-neutral-900 lg:text-[40px]"
+              class="max-w-[506px] text-[26px] font-semibold leading-normal text-neutral-900 lg:text-[40px]"
             >
               {{ section.title }}
             </h2>
             <p
               v-if="section.subtitle"
-              class="max-w-[612px] text-[16px] font-medium leading-[1.45] text-neutral-700 lg:text-[18px]"
+              class="max-w-[612px] text-[16px] font-medium leading-[1.5] text-neutral-700 lg:text-[18px]"
             >
               {{ section.subtitle }}
             </p>
@@ -154,7 +154,7 @@ onBeforeUnmount(() => {
                     role="tab"
                     :id="`project-tab-${index}`"
                     :aria-selected="activeIndex === index"
-                    :aria-controls="`project-panel-${index}`"
+                    aria-controls="project-panel"
                     :tabindex="activeIndex === index ? 0 : -1"
                     @click="selectProject(index)"
                     @focus="selectProject(index)"
@@ -168,7 +168,7 @@ onBeforeUnmount(() => {
                     "
                   >
                     <span
-                      class="project-slide-title min-w-0 text-[26px] font-normal leading-tight text-neutral-500 transition-[color,font-size] duration-500 ease-brand lg:text-[32px]"
+                      class="project-slide-title min-w-0 text-[26px] font-normal leading-[1.5] text-neutral-500 transition-[color,font-size] duration-500 ease-brand lg:text-[32px]"
                     >
                       {{ project.title }}
                     </span>
@@ -205,7 +205,7 @@ onBeforeUnmount(() => {
                         {{ project.industry }}
                       </span>
                       <span
-                        class="mt-4 block max-w-[600px] text-body-lg leading-relaxed text-neutral-800"
+                        class="mt-4 block max-w-[600px] text-body-lg text-neutral-800"
                       >
                         {{ project.excerpt }}
                       </span>
@@ -232,10 +232,17 @@ onBeforeUnmount(() => {
           <div
             class="order-2 aspect-[362/453] w-full overflow-hidden rounded-lg bg-neutral-50 lg:order-2 lg:aspect-[530/663]"
           >
+            <!--
+              One shared panel, not one per tab: the design cross-fades a
+              single image well rather than stacking four. The id must
+              therefore be stable — keying it to activeIndex left every
+              inactive tab's aria-controls pointing at a node that does not
+              exist. aria-labelledby still tracks the active tab.
+            -->
             <Transition name="project-image" mode="out-in">
               <a
                 v-if="activeProject"
-                :id="`project-panel-${activeIndex}`"
+                id="project-panel"
                 :key="activeProject.slug"
                 :href="activeProject.url"
                 role="tabpanel"

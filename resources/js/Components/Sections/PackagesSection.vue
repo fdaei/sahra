@@ -44,7 +44,7 @@ defineProps<{
           class="grid gap-6 lg:grid-cols-[506px_minmax(0,612px)] lg:justify-between lg:gap-[130px]"
         >
           <h2
-            class="max-w-[506px] text-[26px] font-semibold leading-tight text-paper md:text-display-md"
+            class="max-w-[506px] text-[26px] font-semibold leading-normal text-paper md:text-display-md"
           >
             {{ section.title }}
           </h2>

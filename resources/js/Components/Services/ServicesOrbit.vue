@@ -72,16 +72,21 @@ useScrubRotate(innerRing)
         </div>
 
         <div class="grid gap-8 lg:grid-cols-[506px_1fr] lg:gap-[130px]">
-          <h2 class="max-w-[506px] text-[30px] font-semibold leading-[1.48] text-white md:text-[36px] lg:text-[40px] lg:leading-[1.5]">
+          <h2 class="max-w-[506px] text-[30px] font-semibold leading-normal text-white md:text-[36px] lg:text-[40px] lg:leading-[1.5]">
             {{ section.title }}
           </h2>
-          <p class="max-w-[612px] text-[15px] font-medium leading-[1.55] text-neutral-200 md:text-[18px]">
+          <p class="max-w-[612px] text-[15px] font-medium leading-normal text-neutral-200 md:text-[18px]">
             {{ section.description }}
           </p>
         </div>
       </div>
 
-      <div class="orbit-stage mt-[72px]" :aria-label="t('services.orbit_label')">
+      <!--
+        role="group" so the label is exposed — aria-label on a bare div is
+        ignored by AT. Not role="img": the pills inside carry real service
+        names and must stay in the accessibility tree.
+      -->
+      <div class="orbit-stage mt-[72px]" role="group" :aria-label="t('services.orbit_label')">
         <div class="orbit-glow" aria-hidden="true" />
         <div class="orbit-line" aria-hidden="true" />
         <!--
