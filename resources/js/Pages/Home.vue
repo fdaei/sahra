@@ -141,6 +141,26 @@ const testimonialTrack = computed(() => {
   return [...half, ...half];
 });
 
+/*
+ | Hero CTA fill (Figma 1419:9202 en / 1365:9960 ar).
+ |
+ | Both frames list Explore Projects first, but they disagree on which button
+ | is solid: LTR fills the first, RTL fills the second. So the solid style
+ | follows the direction, not the primary/secondary role — revert this to a
+ | fixed `primary === solid` if the RTL frame is ever corrected.
+ */
+const heroCtaSolid =
+  "flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:px-8 md:py-4 md:text-title-md";
+const heroCtaOutline =
+  "flex items-center gap-1 rounded-sm border border-ink bg-paper px-6 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-4 md:text-title-md";
+
+function heroCtaClass(role: "primary" | "secondary"): string {
+  const solid =
+    page.props.locale.direction === "rtl" ? "secondary" : "primary";
+
+  return role === solid ? heroCtaSolid : heroCtaOutline;
+}
+
 const whyUsIcons = [BadgeCheck, PanelsTopLeft, Gem, ClipboardCheck];
 const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
 
@@ -201,12 +221,19 @@ useSectionReveal();
   <section
     v-if="hero"
     class="relative min-h-[765px] overflow-hidden md:min-h-[904px]"
-    style="
-      background-image: url(&quot;/images/sahra/hero-brand-preview.png&quot;);
-      background-size: cover;
-      background-position: bottom;
-    "
   >
+    <!--
+      The artwork is a *directional* composition, not a texture: the dune
+      curve and orbit ring occupy one half and the copy sits in the empty
+      half. The RTL frame (ar home 1365:11275) is the same asset mirrored, so
+      the clear half follows the text — unflipped it collides with the copy.
+      Hence its own layer rather than a background on the section: flipping
+      the section would flip the hero text with it.
+    -->
+    <div
+      class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview.png')] bg-cover bg-bottom rtl:-scale-x-100"
+      aria-hidden="true"
+    ></div>
     <!-- hero texts: x=96 y=176, gap-14 (space56) — Figma 1419:9194 -->
     <!-- A1: the three direct children (badge / texts / CTAs) stagger in on load. -->
     <!--
@@ -218,7 +245,7 @@ useSectionReveal();
     <div class="mx-auto w-full max-w-frame">
     <div
       ref="heroStack"
-      class="relative z-10 flex w-[731px] max-w-[calc(100%-2.5rem)] flex-col gap-8 px-5 pb-10 pt-36 md:ms-24 md:max-w-[calc(100%-3rem)] md:gap-14 md:px-0 md:pb-0 md:pt-[176px]"
+      class="relative z-10 flex w-[731px] max-w-full flex-col gap-16 px-5 pb-10 pt-36 md:ms-24 md:max-w-[calc(100%-3rem)] md:gap-14 md:px-0 md:pb-0 md:pt-[176px]"
     >
       <!--
         hero badge — Figma 1419:9195: row, padding 8, gap 8, radius 1000,
@@ -282,19 +309,25 @@ useSectionReveal();
         </p>
       </div>
 
-      <!-- hero cta: gap-[10px] — Figma 1419:9202 -->
+      <!--
+        hero cta: gap-[10px] — Figma 1419:9202 (en) / 1365:9960 (ar).
+        Reading order is identical in both frames — Explore Projects first —
+        but the RTL frame paints the *second* button solid, so the emphasis
+        lands on "start a conversation". Hence heroCtaClass rather than fixed
+        classes: the order is shared, only the fill swaps.
+      -->
       <div class="flex flex-wrap items-center gap-[10px]">
         <a
           v-if="hero.primaryCta"
           :href="hero.primaryCta.url"
-          class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:px-8 md:py-4 md:text-title-md"
+          :class="heroCtaClass('primary')"
         >
           {{ hero.primaryCta.label }}
         </a>
         <a
           v-if="hero.secondaryCta"
           :href="hero.secondaryCta.url"
-          class="flex items-center gap-1 rounded-sm border border-ink bg-paper px-6 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-4 md:text-title-md"
+          :class="heroCtaClass('secondary')"
         >
           {{ hero.secondaryCta.label }}
         </a>

@@ -41,13 +41,19 @@ withDefaults(
           width="1024"
           height="1024"
           class="pointer-events-none absolute inset-inline-0 bottom-[-90px] h-auto
-                 w-[102.73%] max-w-none object-cover max-lg:inset-0 max-lg:size-full
-                 max-lg:object-cover max-lg:object-bottom"
+                 w-[102.73%] max-w-none object-cover rtl:-scale-x-100 max-lg:inset-0
+                 max-lg:size-full max-lg:object-cover max-lg:object-bottom"
           :aria-hidden="section.image?.alt ? undefined : 'true'"
           decoding="async"
         />
+        <!--
+          The scrim is directional — it darkens the half the copy sits on so
+          the heading stays legible over the gold streaks. Both it and the
+          artwork mirror under RTL (ar home 1365:10080), or the dark end lands
+          under the button and the text sits on the bright half.
+        -->
         <div
-          class="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(35,31,32,.2),rgba(35,31,32,.2)),linear-gradient(90deg,rgba(0,0,0,.88)_0%,rgba(0,0,0,.3)_58%,rgba(0,0,0,.08)_100%)]"
+          class="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(35,31,32,.2),rgba(35,31,32,.2)),linear-gradient(90deg,rgba(0,0,0,.88)_0%,rgba(0,0,0,.3)_58%,rgba(0,0,0,.08)_100%)] rtl:bg-[linear-gradient(270deg,rgba(35,31,32,.2),rgba(35,31,32,.2)),linear-gradient(270deg,rgba(0,0,0,.88)_0%,rgba(0,0,0,.3)_58%,rgba(0,0,0,.08)_100%)]"
           aria-hidden="true"
         />
 

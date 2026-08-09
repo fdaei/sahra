@@ -26,6 +26,16 @@ use Illuminate\Database\Seeder;
  */
 final class SiteSettingsSeeder extends Seeder
 {
+    /**
+     * Per-locale social labels, keyed by platform — populated by socialLinks()
+     * and consumed by footerMenu(). The SocialLink table itself holds one
+     * `label` column, so the translated forms have to reach the menu item
+     * translations directly.
+     *
+     * @var array<string, array<string, string>>
+     */
+    private array $socialLabels = [];
+
     public function run(): void
     {
         $this->settings();
@@ -42,7 +52,7 @@ final class SiteSettingsSeeder extends Seeder
         $values = [
             'site_name' => [
                 'translatable' => true,
-                'value' => ['en' => 'Sahra', 'fa' => 'صحرا', 'ar' => 'صحراء'],
+                'value' => ['en' => 'Sahra', 'fa' => 'صحرا', 'ar' => 'صحرا'],
             ],
             'tagline' => [
                 'translatable' => true,
@@ -80,7 +90,7 @@ final class SiteSettingsSeeder extends Seeder
                 'value' => [
                     'en' => 'Sahra — Digital Marketing Agency in Muscat',
                     'fa' => 'صحرا — آژانس بازاریابی دیجیتال در مسقط',
-                    'ar' => 'صحراء — وكالة تسويق رقمي في مسقط',
+                    'ar' => 'صحرا — وكالة تسويق رقمي في مسقط',
                 ],
             ],
             'seo_default_description' => [
@@ -88,13 +98,13 @@ final class SiteSettingsSeeder extends Seeder
                 'value' => [
                     'en' => 'Sahra helps businesses in Oman create stronger brand presence through strategy, content, branding, video, and digital marketing.',
                     'fa' => 'صحرا به کسب‌وکارها در عمان کمک می‌کند تا از طریق استراتژی، محتوا، برندینگ و بازاریابی دیجیتال حضور برند قوی‌تری بسازند.',
-                    'ar' => 'تساعد صحراء الشركات في عُمان على بناء حضور أقوى لعلامتها التجارية من خلال الاستراتيجية والمحتوى والهوية والتسويق الرقمي.',
+                    'ar' => 'تساعد صحرا الشركات في عُمان على بناء حضور أقوى لعلامتها التجارية من خلال الاستراتيجية والمحتوى والهوية والتسويق الرقمي.',
                 ],
             ],
             'seo_default_image' => ['translatable' => false, 'value' => null],
             'seo_organization_name' => [
                 'translatable' => true,
-                'value' => ['en' => 'Sahra', 'fa' => 'صحرا', 'ar' => 'صحراء'],
+                'value' => ['en' => 'Sahra', 'fa' => 'صحرا', 'ar' => 'صحرا'],
             ],
         ];
 
@@ -114,19 +124,24 @@ final class SiteSettingsSeeder extends Seeder
 
     private function socialLinks(): void
     {
+        // Order and membership are the footer frames' own: Instagram, LinkedIn,
+        // YouTube, WhatsApp (en 1419:9317 / ar 1365:10075). Neither lists X —
+        // it was invented here, so it is dropped rather than left inactive, or
+        // the footer column keeps rendering it (that query has no is_active
+        // filter). Labels carry their own per-locale spelling: the frames
+        // transliterate them, they are not left in Latin script.
         $links = [
-            ['instagram', 'Instagram', 'https://instagram.com/sahramarketing', 'instagram', 1],
-            ['linkedin', 'LinkedIn', 'https://linkedin.com/company/sahramarketing', 'linkedin', 2],
-            ['whatsapp', 'WhatsApp', 'https://wa.me/96777811213', 'message-circle', 3],
-            ['x', 'X', 'https://x.com/sahramarketing', 'twitter', 4],
-            ['youtube', 'YouTube', 'https://youtube.com/@sahramarketing', 'youtube', 5],
+            ['instagram', ['en' => 'Instagram', 'fa' => 'اینستاگرام', 'ar' => 'إنستغرام'], 'https://instagram.com/sahramarketing', 'instagram', 1],
+            ['linkedin', ['en' => 'LinkedIn', 'fa' => 'لینکدین', 'ar' => 'لينكدإن'], 'https://linkedin.com/company/sahramarketing', 'linkedin', 2],
+            ['youtube', ['en' => 'YouTube', 'fa' => 'یوتیوب', 'ar' => 'يوتيوب'], 'https://youtube.com/@sahramarketing', 'youtube', 3],
+            ['whatsapp', ['en' => 'WhatsApp', 'fa' => 'واتساپ', 'ar' => 'واتساب'], 'https://wa.me/96777811213', 'message-circle', 4],
         ];
 
-        foreach ($links as [$platform, $label, $url, $icon, $order]) {
+        foreach ($links as [$platform, $labels, $url, $icon, $order]) {
             SocialLink::updateOrCreate(
                 ['platform' => $platform],
                 [
-                    'label' => $label,
+                    'label' => $labels['en'],
                     'url' => $url,
                     'icon' => $icon,
                     'sort_order' => $order,
@@ -134,6 +149,15 @@ final class SiteSettingsSeeder extends Seeder
                 ],
             );
         }
+
+        SocialLink::query()
+            ->whereNotIn('platform', array_column($links, 0))
+            ->delete();
+
+        $this->socialLabels = collect($links)
+            ->keyBy(fn (array $link): string => $link[0])
+            ->map(fn (array $link): array => $link[1])
+            ->all();
     }
 
     /**
@@ -149,12 +173,16 @@ final class SiteSettingsSeeder extends Seeder
 
         $menu->items()->delete();
 
+        // Arabic labels are the header frame's own strings (ar home 1365:10094):
+        // fully vocalised, and possessive where the en frame is bare — خَدَمَاتُنَا
+        // / رُؤَانَا, not الخدمات / رؤى. The vocalisation is deliberate and scoped
+        // to this menu: the footer frame 1365:10075 sets the same links plain.
         $items = [
-            ['home', ['en' => 'Home', 'fa' => 'خانه', 'ar' => 'الرئيسية'], false],
-            ['work.index', ['en' => 'Work', 'fa' => 'نمونه‌کارها', 'ar' => 'أعمالنا'], false],
-            ['services', ['en' => 'Service', 'fa' => 'خدمات', 'ar' => 'الخدمات'], false],
-            ['insights.index', ['en' => 'Insight', 'fa' => 'بینش', 'ar' => 'رؤى'], false],
-            ['about', ['en' => 'About', 'fa' => 'درباره ما', 'ar' => 'من نحن'], false],
+            ['home', ['en' => 'Home', 'fa' => 'خانه', 'ar' => 'الرَّئِيسِيَّةُ'], false],
+            ['work.index', ['en' => 'Work', 'fa' => 'نمونه‌کارها', 'ar' => 'أَعْمَالُنَا'], false],
+            ['services', ['en' => 'Service', 'fa' => 'خدمات', 'ar' => 'خَدَمَاتُنَا'], false],
+            ['insights.index', ['en' => 'Insight', 'fa' => 'بینش', 'ar' => 'رُؤَانَا'], false],
+            ['about', ['en' => 'About', 'fa' => 'درباره ما', 'ar' => 'مَن نَحْنُ'], false],
             ['contact', ['en' => "Let's Talk", 'fa' => 'گفتگو کنیم', 'ar' => 'لنتحدث'], true],
         ];
 
@@ -195,14 +223,16 @@ final class SiteSettingsSeeder extends Seeder
                 'children' => [
                     ['home', ['en' => 'Home', 'fa' => 'خانه', 'ar' => 'الرئيسية']],
                     ['services', ['en' => 'Services', 'fa' => 'خدمات', 'ar' => 'الخدمات']],
-                    ['work.index', ['en' => 'Work', 'fa' => 'نمونه‌کارها', 'ar' => 'أعمالنا']],
-                    ['insights.index', ['en' => 'Insight', 'fa' => 'بینش', 'ar' => 'رؤى']],
+                    // Footer frame 1365:10075 — plain (unvocalised) forms, and
+                    // its own wording: المشاريع / الرؤى / تواصل معنا.
+                    ['work.index', ['en' => 'Work', 'fa' => 'نمونه‌کارها', 'ar' => 'المشاريع']],
+                    ['insights.index', ['en' => 'Insight', 'fa' => 'بینش', 'ar' => 'الرؤى']],
                     ['about', ['en' => 'About', 'fa' => 'درباره ما', 'ar' => 'من نحن']],
-                    ['contact', ['en' => 'Contact', 'fa' => 'تماس', 'ar' => 'اتصل بنا']],
+                    ['contact', ['en' => 'Contact', 'fa' => 'تماس', 'ar' => 'تواصل معنا']],
                 ],
             ],
             [
-                'labels' => ['en' => 'Social Links', 'fa' => 'شبکه‌های اجتماعی', 'ar' => 'وسائل التواصل'],
+                'labels' => ['en' => 'Social Links', 'fa' => 'شبکه‌های اجتماعی', 'ar' => 'روابط التواصل'],
                 'children' => [],
                 'social' => true,
             ],
@@ -234,11 +264,14 @@ final class SiteSettingsSeeder extends Seeder
                             'is_active' => true,
                         ]);
 
-                        $child->setTranslations([
-                            'en' => ['label' => $link->label],
-                            'fa' => ['label' => $link->label],
-                            'ar' => ['label' => $link->label],
-                        ]);
+                        $labels = $this->socialLabels[$link->platform]
+                            ?? ['en' => $link->label, 'fa' => $link->label, 'ar' => $link->label];
+
+                        $child->setTranslations(
+                            collect($labels)
+                                ->map(fn (string $label): array => ['label' => $label])
+                                ->all(),
+                        );
                     });
 
                 continue;

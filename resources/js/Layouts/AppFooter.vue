@@ -54,11 +54,12 @@ function columnHeading(index: number, fallback: string): string {
         >
         <!-- Brand -->
         <div class="flex max-w-[402px] flex-col items-start gap-4 md:gap-8">
+          <!-- Figma 1083:2762 — wordmark over rule, 87×28, no gold mark. -->
           <BrandLogo
-            variant="full"
-            :height="25"
+            variant="footer"
+            :height="28"
             :label="settings.siteName"
-            class="h-[25px] w-[87px]"
+            class="h-[28px] w-[87px]"
           />
           <p class="text-[12px] font-normal leading-normal text-neutral-600 md:text-[16px]">
             {{ settings.description }}

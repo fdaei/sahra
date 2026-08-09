@@ -282,11 +282,12 @@ useScrubRotate(innerRing)
   position: absolute;
   top: 100%;
   z-index: -1;
-  /* Auto margins against both logical insets centre the fixed-width panel on
-     the anchor in either direction; translateX(-50%) would have pushed it the
-     wrong way once inset-inline-start resolved to `right` under RTL. */
-  inset-inline: 0;
-  margin-inline: auto;
+  /* Deliberately physical: `left: 50%` + `translateX(-50%)` is one centring
+     operation on a zero-width anchor and lands identically under either
+     direction. The logical `inset-inline-start: 50%` this replaces resolved to
+     `right` under RTL while the transform kept pulling left, throwing the
+     panel a full half-width off the pill. */
+  left: 50%;
   margin-top: -8px;
   width: 216px;
   height: 116px;
@@ -294,7 +295,7 @@ useScrubRotate(innerRing)
   border-radius: 8px;
   background: var(--color-paper);
   opacity: 0;
-  transform: translateY(-12px) scale(0.96);
+  transform: translate(-50%, -12px) scale(0.96);
   transform-origin: top center;
   transition:
     opacity 0.3s ease-out,
@@ -310,7 +311,7 @@ useScrubRotate(innerRing)
 .service-pill:hover .service-pill__preview,
 .service-pill:focus-within .service-pill__preview {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate(-50%, 0) scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -325,9 +326,14 @@ useScrubRotate(innerRing)
 .service-pill--content { inset-inline-start: 441.5px; top: 299px; }
 .service-pill--design { inset-inline-start: 732px; top: 321px; }
 
-/* 569.5px is the midpoint of the axis line, which the frame centres the core
-   on — not the ring centre (550.5px); the two are deliberately offset. */
-.orbit-anchor--core { inset-inline-start: 569.5px; top: 245px; }
+/*
+ | This label is an identity/status label, not one endpoint of the directional
+ | Marketing → Growth axis.  It must therefore stay at the visual centre in
+ | every locale. `inset-inline-start` mirrors in RTL and shifted Persian/Arabic
+ | away from centre; physical 50% is intentional here because centring is not
+ | direction-dependent. The zero-width anchor centres its overflowing pill.
+ */
+.orbit-anchor--core { left: 50%; top: 245px; }
 
 .orbit-core {
   white-space: nowrap;

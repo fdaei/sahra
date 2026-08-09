@@ -60,12 +60,24 @@ const basePath = computed(() => `/${page.props.locale.current}/work`)
  */
 const PAGE_SIZE = 6
 const shown = ref(PAGE_SIZE)
+// The desktop reference starts with six cards, while the mobile design shows
+// four.  Keep the desktop payload/layout intact and let the same control
+// reveal the mobile-only overflow on its first activation.
+const showMobileOverflow = ref(false)
 
 const visibleProjects = computed(() => props.projects.slice(0, shown.value))
 const hasMore = computed(() => props.projects.length > shown.value)
 
 // Switching filters re-renders a different set; start it back at page one.
-watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
+watch(() => props.activeFilter, () => {
+  shown.value = PAGE_SIZE
+  showMobileOverflow.value = false
+})
+
+function loadMore(): void {
+  showMobileOverflow.value = true
+  shown.value += PAGE_SIZE
+}
 </script>
 
 <template>
@@ -113,7 +125,10 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
       <li
         v-for="(project, projectIndex) in visibleProjects"
         :key="project.slug"
-        :class="[projectIndex >= 4 ? 'max-sm:hidden' : '', 'max-sm:h-[490px] max-sm:overflow-hidden']"
+        :class="[
+          !showMobileOverflow && projectIndex >= 4 ? 'max-sm:hidden' : '',
+          'max-sm:h-[490px] max-sm:overflow-hidden',
+        ]"
       >
         <Link :href="project.url" class="group flex flex-col gap-4 rounded-md md:gap-10">
           <div
@@ -183,11 +198,11 @@ watch(() => props.activeFilter, () => (shown.value = PAGE_SIZE))
 
     <!-- "More Works" — Figma 1215:4065, centred under the grid. -->
     <button
-      v-if="hasMore || projects.length > 4"
+      v-if="hasMore || (!showMobileOverflow && projects.length > 4)"
       type="button"
       class="inline-flex items-center gap-1 text-body-md font-medium text-neutral-900 md:gap-2 md:text-body-lg
              transition-opacity hover:opacity-70"
-      @click="shown += PAGE_SIZE"
+      @click="loadMore"
     >
       {{ t('common.load_more') }}
       <ChevronDown class="size-4 shrink-0 md:size-6" aria-hidden="true" />

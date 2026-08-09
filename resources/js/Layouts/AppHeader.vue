@@ -87,7 +87,7 @@ function isActive(url: string): boolean {
                 :href="item.url"
                 :target="item.target"
                 class="flex items-center justify-center px-1 py-1 text-title-sm transition-colors"
-                :class="isActive(item.url) ? 'font-medium text-ink' : 'text-neutral-800 hover:text-ink'"
+                :class="isActive(item.url) ? 'font-medium text-ink' : 'font-medium text-neutral-800 hover:text-ink'"
                 :aria-current="isActive(item.url) ? 'page' : undefined"
               >
                 {{ item.label }}

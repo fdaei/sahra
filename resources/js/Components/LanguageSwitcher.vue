@@ -2,7 +2,9 @@
 /**
  * Language switcher.
  *
- * Figma: header shows a globe + "EN" + chevron (1419:9339 region).
+ * Figma: header shows a globe + the *native* language name + chevron —
+ * "English" on 1419:9339 (en), "العربية" on 1365:10094 (ar). Not the ISO
+ * code: rendering `locale.current` printed "AR"/"FA" instead.
  *
  * Each option links to the *same page* in the target language, using the
  * hreflang alternates computed server-side by App\Support\LocaleAlternates —
@@ -12,7 +14,7 @@
  * Uses a native <details> element: keyboard accessible and closable with Esc
  * without any JS state, then enhanced with click-outside + Esc handling.
  */
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { Globe, ChevronDown, Check } from 'lucide-vue-next'
@@ -31,6 +33,13 @@ onKeyStroke('Escape', close)
 function isCurrent(code: LocaleCode): boolean {
   return code === page.props.locale.current
 }
+
+/** Falls back to the code so a locale missing from `supported` still labels. */
+const currentLabel = computed(
+  () =>
+    page.props.locale.supported.find((o) => isCurrent(o.code))?.native
+    ?? page.props.locale.current.toUpperCase(),
+)
 </script>
 
 <template>
@@ -43,7 +52,7 @@ function isCurrent(code: LocaleCode): boolean {
     >
       <span class="flex items-center gap-1">
         <Globe class="size-5" aria-hidden="true" />
-        <span class="uppercase">{{ page.props.locale.current }}</span>
+        <span>{{ currentLabel }}</span>
       </span>
       <ChevronDown class="size-5 transition-transform [details[open]_&]:rotate-180" aria-hidden="true" />
     </summary>

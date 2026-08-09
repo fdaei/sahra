@@ -54,7 +54,7 @@ final class ContentSeeder extends Seeder
             $member->setTranslations([
                 'en' => ['name' => $enName, 'role' => $enRole, 'photo_alt' => "{$enName}, {$enRole} at Sahra"],
                 'fa' => ['name' => $faName, 'role' => $faRole, 'photo_alt' => "{$faName}، {$faRole} در صحرا"],
-                'ar' => ['name' => $arName, 'role' => $arRole, 'photo_alt' => "{$arName}، {$arRole} في صحراء"],
+                'ar' => ['name' => $arName, 'role' => $arRole, 'photo_alt' => "{$arName}، {$arRole} في صحرا"],
             ]);
         }
     }
@@ -86,7 +86,7 @@ final class ContentSeeder extends Seeder
             'ar' => [
                 'author_name' => 'سارة أميري',
                 'author_role' => 'مديرة All Digital',
-                'quote' => 'ساعدتنا صحراء في تحويل تسويقنا المبعثر إلى نظام واضح ومنظم. لأول مرة يبدو المحتوى والحملات ورسائل العلامة متوائمة عبر الإنترنت وفي المتجر.',
+                'quote' => 'ساعدتنا صحرا في تحويل تسويقنا المبعثر إلى نظام واضح ومنظم. لأول مرة يبدو المحتوى والحملات ورسائل العلامة متوائمة عبر الإنترنت وفي المتجر.',
                 'avatar_alt' => 'صورة سارة أميري',
             ],
         ]);
