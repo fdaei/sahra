@@ -14,9 +14,13 @@
  * the dotted variant (Frame 95772) is present but hidden in the file, so
  * this one carries no leading disc.
  */
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { usePage } from '@inertiajs/vue3'
 import { ArrowRight } from 'lucide-vue-next'
 import { useParallax } from '@/Composables/useMotion'
+import type { SharedProps } from '@/types'
+
+const page = usePage<SharedProps>()
 
 /*
  | A11 — the gold horizon behind the card drifts against the scroll. The layer
@@ -26,6 +30,22 @@ import { useParallax } from '@/Composables/useMotion'
 const glow = ref<HTMLElement | null>(null)
 
 useParallax(glow, 20)
+
+/*
+ | The horizon is directional, not symmetric: the sun and dune crest sit on the
+ | trailing edge so they stay clear of the copy. The RTL frames (1365:11595)
+ | therefore carry a horizontally mirrored bitmap of the same artwork, which the
+ | LTR-only build was never picking up — in fa/ar the crest landed *under* the
+ | text. Both exports ship as files rather than one being a CSS flip of the
+ | other: GSAP owns `transform` on this layer and folds any `transform`/`scale`
+ | we set into its own matrix, so a CSS mirror would not survive the teardown
+ | and re-init that `lib/motion.ts` runs on every Inertia navigation.
+ */
+const horizonSrc = computed(() =>
+  page.props.locale.direction === 'rtl'
+    ? '/images/sahra/dark-gold-horizon-bg-rtl.png'
+    : '/images/sahra/dark-gold-horizon-bg.png',
+)
 
 defineProps<{
   spacingClass?: string
@@ -49,7 +69,7 @@ defineProps<{
       >
         <img
           ref="glow"
-          src="/images/sahra/dark-gold-horizon-bg.png"
+          :src="horizonSrc"
           alt=""
           width="1672"
           height="941"
