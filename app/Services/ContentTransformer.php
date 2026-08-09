@@ -132,6 +132,16 @@ final class ContentTransformer
     public static function service(Service $service): array
     {
         return [
+            /*
+             | Locale-independent identity. `slug` is per-locale, so the front
+             | end cannot use it to recognise a specific service — the orbit
+             | (ServicesOrbit.vue) needs to know *which* service a payload is
+             | regardless of the language it is being read in. The fallback
+             | locale's slug is the stable name; withTranslations() always
+             | eager-loads that row alongside the active one, so this stays a
+             | zero-query read.
+             */
+            'key' => (string) $service->getTranslation('slug', config('locales.fallback')),
             'slug' => (string) $service->getTranslation('slug'),
             'title' => (string) $service->getTranslation('title'),
             'description' => (string) $service->getTranslation('description'),

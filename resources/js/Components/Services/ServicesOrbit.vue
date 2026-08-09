@@ -19,8 +19,14 @@ const props = defineProps<{
   services: ServiceItem[]
 }>()
 
+/*
+ | Matched on `key` (the fallback-locale slug), never on `title`. The title is
+ | translated, so an English needle matched nothing under fa/ar: every pill fell
+ | back to its lang-file label and — worse — lost `image`, which is why the
+ | hover preview only ever appeared on the English page.
+ */
 const serviceFor = (services: ServiceItem[], needle: string): ServiceItem | undefined =>
-  services.find((service) => service.title.toLowerCase().includes(needle))
+  services.find((service) => service.key.toLowerCase().includes(needle))
 
 const serviceLabel = (services: ServiceItem[], needle: string, fallback: string) =>
   serviceFor(services, needle)?.title ?? fallback
@@ -106,7 +112,9 @@ useScrubRotate(innerRing)
         <strong class="orbit-axis orbit-axis--marketing">{{ t('services.axis_marketing') }}</strong>
         <strong class="orbit-axis orbit-axis--growth">{{ t('services.axis_growth') }}</strong>
 
-        <span class="orbit-core">{{ t('services.core') }}</span>
+        <span class="orbit-anchor orbit-anchor--core">
+          <span class="orbit-core">{{ t('services.core') }}</span>
+        </span>
 
         <!--
           Service card 1419:9295-9298. Each carries an ON_HOVER interaction
@@ -119,7 +127,7 @@ useScrubRotate(innerRing)
         <div
           v-for="pill in pills"
           :key="pill.modifier"
-          class="service-pill"
+          class="orbit-anchor service-pill"
           :class="`service-pill--${pill.modifier}`"
         >
           <span class="service-pill__label">{{ pill.label }}</span>
@@ -178,10 +186,17 @@ useScrubRotate(innerRing)
   filter: blur(112px);
 }
 
+/*
+ | Everything inside the stage is placed with logical insets, not left/right.
+ | The composition is a directional diagram — it runs Marketing -> Growth along
+ | the axis — so under fa/ar the whole orbit mirrors and the progression reads
+ | right-to-left with the rest of the page. The offsets below are the LTR Figma
+ | frame's; the browser mirrors them.
+ */
 .orbit-line {
   position: absolute;
   top: 263px;
-  left: 157px;
+  inset-inline-start: 157px;
   width: 824px;
   border-top: 2px dotted var(--color-gold);
 }
@@ -211,8 +226,8 @@ useScrubRotate(innerRing)
   color: var(--color-paper);
 }
 
-.orbit-axis--marketing { left: 0; }
-.orbit-axis--growth { right: 0; }
+.orbit-axis--marketing { inset-inline-start: 0; }
+.orbit-axis--growth { inset-inline-end: 0; }
 
 .orbit-endpoint {
   position: absolute;
@@ -224,20 +239,30 @@ useScrubRotate(innerRing)
   box-shadow: 0 0 8px rgb(var(--color-gold-rgb) / 55%);
 }
 
-.orbit-endpoint--start { left: 157px; }
-.orbit-endpoint--middle-a { left: 404px; width: 10px; height: 10px; }
-.orbit-endpoint--middle-b { left: 725px; width: 10px; height: 10px; }
-.orbit-endpoint--end { left: 971px; }
+.orbit-endpoint--start { inset-inline-start: 157px; }
+.orbit-endpoint--middle-a { inset-inline-start: 404px; width: 10px; height: 10px; }
+.orbit-endpoint--middle-b { inset-inline-start: 725px; width: 10px; height: 10px; }
+.orbit-endpoint--end { inset-inline-start: 971px; }
 
-.service-pill,
-.orbit-core {
+/*
+ | A zero-width point that its content overflows equally on both sides, so the
+ | label is *centred* on the orbit coordinate rather than starting at it. The
+ | pills were anchored by their leading edge, which is fine for the English
+ | labels the frame was drawn with but let the longer fa/ar ones grow outwards
+ | until they crossed the outer ring. Centring is also direction-agnostic —
+ | no translateX to flip under RTL.
+ */
+.orbit-anchor {
   position: absolute;
   z-index: 2;
-  white-space: nowrap;
+  display: flex;
+  width: 0;
+  justify-content: center;
 }
 
 .service-pill__label {
   display: block;
+  white-space: nowrap;
   padding: 8px 16px;
   border-radius: 1000px;
   background: linear-gradient(rgb(var(--color-paper-rgb) / 20%), rgb(var(--color-paper-rgb) / 20%)),
@@ -255,9 +280,13 @@ useScrubRotate(innerRing)
  */
 .service-pill__preview {
   position: absolute;
-  inset-inline-start: 50%;
   top: 100%;
   z-index: -1;
+  /* Auto margins against both logical insets centre the fixed-width panel on
+     the anchor in either direction; translateX(-50%) would have pushed it the
+     wrong way once inset-inline-start resolved to `right` under RTL. */
+  inset-inline: 0;
+  margin-inline: auto;
   margin-top: -8px;
   width: 216px;
   height: 116px;
@@ -265,7 +294,7 @@ useScrubRotate(innerRing)
   border-radius: 8px;
   background: var(--color-paper);
   opacity: 0;
-  transform: translate(-50%, -12px) scale(0.96);
+  transform: translateY(-12px) scale(0.96);
   transform-origin: top center;
   transition:
     opacity 0.3s ease-out,
@@ -281,7 +310,7 @@ useScrubRotate(innerRing)
 .service-pill:hover .service-pill__preview,
 .service-pill:focus-within .service-pill__preview {
   opacity: 1;
-  transform: translate(-50%, 0) scale(1);
+  transform: translateY(0) scale(1);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -290,14 +319,18 @@ useScrubRotate(innerRing)
   }
 }
 
-.service-pill--social { left: 345px; top: 98px; }
-.service-pill--branding { left: 647px; top: 176px; }
-.service-pill--content { left: 336px; top: 299px; }
-.service-pill--design { left: 638px; top: 321px; }
+/* Frame coordinates, converted from the pill's leading edge to its centre. */
+.service-pill--social { inset-inline-start: 456.5px; top: 98px; }
+.service-pill--branding { inset-inline-start: 703px; top: 176px; }
+.service-pill--content { inset-inline-start: 441.5px; top: 299px; }
+.service-pill--design { inset-inline-start: 732px; top: 321px; }
+
+/* 569.5px is the midpoint of the axis line, which the frame centres the core
+   on — not the ring centre (550.5px); the two are deliberately offset. */
+.orbit-anchor--core { inset-inline-start: 569.5px; top: 245px; }
 
 .orbit-core {
-  left: 490px;
-  top: 245px;
+  white-space: nowrap;
   padding: 4px 8px;
   border-radius: 4px;
   background: linear-gradient(150deg, var(--color-gold) 20%, var(--color-paper) 145%);
@@ -332,26 +365,28 @@ useScrubRotate(innerRing)
   }
 
   .orbit-line {
-    left: 8%;
-    right: 8%;
+    inset-inline: 8%;
     top: 50%;
     width: auto;
   }
 
   .orbit-axis,
   .orbit-endpoint,
-  .orbit-core {
+  .orbit-anchor--core {
     display: none;
   }
 
+  /* Back to an ordinary grid item: no anchor point, no zero width. */
   .service-pill {
     position: relative;
     inset: auto;
-    white-space: normal;
+    display: block;
+    width: auto;
   }
 
   .service-pill__label {
     display: flex;
+    white-space: normal;
     min-height: 48px;
     align-items: center;
     justify-content: center;

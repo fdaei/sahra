@@ -136,6 +136,8 @@ export interface ResultStat {
 }
 
 export interface ServiceItem {
+  /** Fallback-locale slug — stable across languages, unlike `slug`. */
+  key: string
   slug: string
   title: string
   description: string
