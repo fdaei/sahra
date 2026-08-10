@@ -13,6 +13,7 @@
  * docs/TRACEABILITY.md for the node mapping.
  */
 import { computed } from "vue";
+import { TrendingUp } from "lucide-vue-next";
 import arcRings from "~img/decor/arc-rings.svg";
 /*
  | Dune contours — Figma 979:1394, the texture behind the team header.
@@ -69,6 +70,48 @@ const team = computed(() => props.sections.team);
  | takes precedence.
  */
 const heroImage = computed(() => hero.value?.image ?? null);
+
+/*
+ | Team rows — Figma 1288:4194.
+ |
+ | The frame lays the team out as TWO rows of member cards, and both run PAST
+ | the left and right edges of the 1248 track rather than fitting inside it —
+ | the first and last card of each row are clipped by the frame. That is a
+ | travelling band, not a static grid, which is what this was built as.
+ |
+ | Row 1 travels toward the inline end, row 2 toward the inline start, so the
+ | block reads as one slow counter-rotating unit.
+ |
+ | Construction matches the Home marquees: a row is rendered TWICE and the
+ | track translates exactly -50%, so the second copy lands where the first
+ | began. That also means one half has to be wider than the viewport or the row
+ | visibly runs out mid-loop — and the seeded team can hold as few as two
+ | people — so each half repeats the source list until it covers a wide
+ | desktop. Card 228 + gap 26 = 254 per item at lg.
+ */
+const TEAM_ITEM_WIDTH = 254;
+const TEAM_TRACK_COVER = 2560;
+
+const teamRows = computed(() => {
+  const members = props.team;
+  if (members.length === 0) return [];
+
+  const split = Math.ceil(members.length / 2);
+
+  return [members.slice(0, split), members.slice(split)]
+    .filter((row) => row.length > 0)
+    .map((row) => {
+      const repeats = Math.max(
+        1,
+        Math.ceil(TEAM_TRACK_COVER / TEAM_ITEM_WIDTH / row.length),
+      );
+      const half = Array.from({ length: repeats }, () => row).flat();
+
+      // `uniqueCount` marks where the repeats begin, so screen readers
+      // announce each colleague once instead of N times.
+      return { items: [...half, ...half], uniqueCount: row.length };
+    });
+});
 </script>
 
 <template>
@@ -221,12 +264,26 @@ const heroImage = computed(() => hero.value?.image ?? null);
             :key="i"
             class="flex flex-col gap-4 rounded-sm border border-gold-400 px-6 py-6 md:gap-6 md:border-x-0 md:border-b-0 md:border-t-[3px] md:bg-neutral-50/30 md:py-12"
           >
+            <!--
+              Goal card icon — Figma 1061:2072. The default
+              `/icons/sahra/goal.svg` was a Figma export of lucide `trending-up`
+              with gold baked into its stroke; the component carries the same
+              glyph and takes its colour from the class, per brief §12. A CMS
+              icon still wins where an editor has set one.
+            -->
             <img
-              :src="item.icon || '/icons/sahra/goal.svg'"
+              v-if="item.icon"
+              :src="item.icon"
               alt=""
               width="32"
               height="32"
               class="size-5 md:size-8"
+            />
+            <TrendingUp
+              v-else
+              class="size-5 shrink-0 text-gold md:size-8"
+              :stroke-width="2"
+              aria-hidden="true"
             />
             <div class="flex flex-col gap-2">
               <h3 class="text-[16px] font-medium text-neutral-900 md:text-title-xl">{{ item.title }}</h3>
@@ -239,7 +296,7 @@ const heroImage = computed(() => hero.value?.image ?? null);
       </div>
 
       <!-- Team — Figma 1288:4194 -->
-      <div v-if="team" class="relative isolate mt-[98px] flex h-[381px] flex-col gap-12 md:gap-24 lg:mt-0 lg:h-auto">
+      <div v-if="team" class="relative isolate mt-[98px] flex flex-col gap-12 md:gap-24 lg:mt-0">
         <!--
           Dune contours 979:1394 — x=37 y=-104, 1160x1000 within the 1248 team
           track, so it bleeds above the header and sits behind the copy. Hidden
@@ -272,39 +329,62 @@ const heroImage = computed(() => hero.value?.image ?? null);
           </p>
         </div>
 
-        <!-- member card — Figma 992:2644 -->
-        <div
-          class="relative z-10 flex gap-4 overflow-hidden md:grid md:grid-cols-3 md:gap-6 lg:grid-cols-5 lg:gap-[26px]"
-        >
-          <figure
-            v-for="(member, i) in props.team"
-            :key="i"
-            class="flex w-[174px] shrink-0 flex-col gap-2 overflow-hidden rounded-sm border border-neutral-200 bg-paper/60 md:w-auto"
+        <!--
+          member card — Figma 992:2644, laid out as two counter-travelling
+          rows (see `teamRows`). Each row is its own clipped viewport; the
+          `.marquee-mask` edge fade means a card is never chopped in half at
+          the boundary, and hovering the row pauses it so a name can be read.
+        -->
+        <div class="relative z-10 flex flex-col gap-4 md:gap-6 lg:gap-[26px]">
+          <div
+            v-for="(row, rowIndex) in teamRows"
+            :key="rowIndex"
+            class="marquee-mask overflow-hidden"
           >
             <!--
-              The Figma source portraits are colour. Keep the resting state
-              desaturated and reveal the original colour when the portrait is
-              hovered or keyboard-focused.
+              Row 1 runs toward the inline end, row 2 toward the inline start.
+              `marquee-track--reverse` flips the base animation and is itself
+              re-flipped under RTL, so the two rows stay mirror images of each
+              other in every locale rather than both sliding the same way.
             -->
-            <img
-              v-if="member.image"
-              :src="member.image.src"
-              :srcset="member.image.srcset"
-              :alt="member.image.alt"
-              :width="member.image.width"
-              :height="member.image.height"
-              class="aspect-square w-full rounded-sm object-cover grayscale transition-[filter] duration-300 hover:grayscale-0 focus-visible:grayscale-0 motion-reduce:transition-none"
-            />
             <div
-              v-else
-              class="aspect-square w-full rounded-sm bg-neutral-100"
-            />
+              class="marquee-track gap-4 md:gap-6 lg:gap-[26px]"
+              :class="rowIndex % 2 === 0 ? 'marquee-track--reverse' : ''"
+              :style="{ '--marquee-duration': rowIndex % 2 === 0 ? '60s' : '68s' }"
+            >
+              <figure
+                v-for="(member, i) in row.items"
+                :key="i"
+                class="flex w-[174px] shrink-0 flex-col gap-2 overflow-hidden rounded-sm border border-neutral-200 bg-paper/60 lg:w-[228px]"
+                :aria-hidden="i >= row.uniqueCount ? 'true' : undefined"
+              >
+                <!--
+                  The Figma source portraits are colour. Keep the resting state
+                  desaturated and reveal the original colour when the portrait is
+                  hovered or keyboard-focused.
+                -->
+                <div v-if="member.image" class="aspect-square w-full overflow-hidden rounded-sm">
+                  <img
+                    :src="member.image.src"
+                    :srcset="member.image.srcset"
+                    :alt="i >= row.uniqueCount ? '' : member.image.alt"
+                    :width="member.image.width"
+                    :height="member.image.height"
+                    class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand hover:scale-[1.06] hover:grayscale-0 focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"
+                  />
+                </div>
+                <div
+                  v-else
+                  class="aspect-square w-full rounded-sm bg-neutral-100"
+                />
 
-            <figcaption class="flex flex-col gap-1 px-3 py-2 md:px-4">
-              <p class="text-[14px] font-medium text-neutral-900 md:text-title-lg">{{ member.name }}</p>
-              <p class="text-[12px] text-neutral-600 md:text-title-sm">{{ member.role }}</p>
-            </figcaption>
-          </figure>
+                <figcaption class="flex flex-col gap-1 px-3 py-2 md:px-4">
+                  <p class="text-[14px] font-medium text-neutral-900 md:text-title-lg">{{ member.name }}</p>
+                  <p class="text-[12px] text-neutral-600 md:text-title-sm">{{ member.role }}</p>
+                </figcaption>
+              </figure>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import PackageCheckIcon from "@/Components/Icons/PackageCheckIcon.vue";
+
 interface PackageItem {
   id: number;
   value: string;
@@ -29,12 +31,22 @@ defineProps<{
     class="relative isolate h-[1852px] overflow-hidden bg-black py-14 text-paper md:h-auto md:py-24 lg:py-28"
     data-figma-node="1419:9323"
   >
+    <!--
+      Section fill 1419:9323 is a single IMAGE paint anchored to the bottom at
+      its natural aspect ratio over a flat #000000 base, carried at 40% so the
+      dune reads as a texture rather than a photograph. It must not cover the
+      section height: the large black area above it is part of the composition.
+
+      There is deliberately only ONE black layer: the section's own `bg-black`.
+      A second absolutely-positioned black div used to sit under the image,
+      which added no colour but did double the compositing and made the
+      section read heavier than the frame at the seams.
+    -->
     <img
       src="/images/sahra/packages-bg.png"
       alt=""
       class="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-auto w-full opacity-40"
     />
-    <div class="pointer-events-none absolute inset-0 -z-20 bg-black" />
 
     <div class="mx-auto w-full max-w-[1248px] px-5 md:px-10 xl:px-0">
       <div class="flex flex-col gap-8 md:gap-12">
@@ -61,66 +73,66 @@ defineProps<{
         <article
           v-for="item in section.items"
           :key="item.id"
-          class="flex min-w-0 flex-col rounded-lg border border-neutral-800 bg-white/[0.07] p-4 md:p-8"
-          :class="{
-            'border-gold/40 bg-[linear-gradient(135deg,rgba(189,147,59,0.20),rgba(255,255,255,0.07))]':
-              item.badge,
-          }"
+          class="package-card"
+          :class="{ 'package-card--featured': item.badge }"
         >
-          <div class="flex items-center gap-2">
-            <h3 class="text-[22px] font-medium leading-none text-neutral-50 md:text-[28px]">
-              {{ item.title }}
-            </h3>
-            <span
-              v-if="item.badge"
-              class="rounded-round bg-gold/15 px-2 py-1 text-label-md leading-none text-paper"
-            >
-              {{ item.badge }}
-            </span>
-          </div>
-
-          <div class="mt-4 md:mt-6">
-            <p class="text-label-lg leading-none text-neutral-200">
-              {{ item.label }}
-            </p>
-            <p class="mt-2 flex flex-wrap items-baseline gap-1 text-gold">
-              <span class="latin-nums text-[32px] leading-none">{{
-                item.value
-              }}</span>
-              <span class="text-title-sm leading-none text-gold-300">{{
-                item.suffix
-              }}</span>
-            </p>
-            <p class="mt-4 text-body-md leading-normal text-neutral-300">
-              {{ item.description }}
-            </p>
-          </div>
-
-          <div class="my-4 h-px bg-neutral-800 md:my-6" aria-hidden="true" />
-
-          <ul class="flex flex-1 flex-col gap-4 md:gap-6">
-            <li
-              v-for="feature in item.features"
-              :key="feature"
-              class="flex items-center gap-[10px] text-body-lg leading-none text-neutral-100"
-            >
-              <span class="relative size-6 shrink-0" aria-hidden="true">
-                <img
-                  src="/icons/package-check-ring.svg"
-                  alt=""
-                  class="absolute inset-0 size-6"
-                />
-                <img
-                  src="/icons/package-check-mark.svg"
-                  alt=""
-                  class="absolute inset-0 size-6"
-                />
+          <div class="package-card__body">
+            <div class="flex items-center gap-2">
+              <h3 class="text-[22px] font-medium leading-none text-neutral-50 md:text-[28px]">
+                {{ item.title }}
+              </h3>
+              <span
+                v-if="item.badge"
+                class="rounded-round bg-gold/15 px-2 py-1 text-label-md leading-none text-paper"
+              >
+                {{ item.badge }}
               </span>
-              <span>{{ feature }}</span>
-            </li>
-          </ul>
+            </div>
 
-          <div class="my-4 h-px bg-neutral-800 md:my-6" aria-hidden="true" />
+            <div>
+              <p class="text-label-lg leading-none text-neutral-200">
+                {{ item.label }}
+              </p>
+              <p class="mt-2 flex flex-wrap items-baseline gap-1 text-gold">
+                <span class="latin-nums text-[32px] leading-none">{{
+                  item.value
+                }}</span>
+                <span class="text-title-sm leading-none text-gold-300">{{
+                  item.suffix
+                }}</span>
+              </p>
+              <p class="mt-4 text-body-md leading-normal text-neutral-300">
+                {{ item.description }}
+              </p>
+            </div>
+
+            <div class="h-px bg-neutral-800" aria-hidden="true" />
+
+            <ul class="flex flex-1 flex-col gap-4 md:gap-6">
+              <li
+                v-for="feature in item.features"
+                :key="feature"
+                class="flex items-center gap-[10px] text-body-lg leading-none text-neutral-100"
+              >
+                <!--
+                  Check icon leads the label, per the `package checklist`
+                  component set 1381:8863 — whose two variants are literally
+                  named `ltr` and `rtl`, i.e. the icon sits on the reading-start
+                  side and swaps with direction.
+
+                  Nothing here is hard-coded per locale: this is an ordinary
+                  flex row in logical flow, so `dir="rtl"` on <html> moves the
+                  icon to the right on its own. Do not add `flex-row-reverse`
+                  or an `rtl:` variant — that would double-flip it back.
+                -->
+                <PackageCheckIcon />
+                <span class="min-w-0">{{ feature }}</span>
+              </li>
+            </ul>
+
+            <div class="h-px bg-neutral-800" aria-hidden="true" />
+          </div>
+
           <p class="text-center text-body-lg leading-none text-neutral-100">
             {{ item.footer }}
           </p>
@@ -151,6 +163,64 @@ defineProps<{
 </template>
 
 <style scoped>
+/*
+ | Package card — Figma `package content` 1195:3747.
+ |
+ | Geometry is taken verbatim from the frame: padding 32, column, gap 24,
+ | radius 16, 1px #4F4C4D stroke, and the children share the width while the
+ | trailing "Best for …" line hugs and centres (Figma `align-items: center`
+ | with an `align-self: stretch` content frame — the same result as stretching
+ | the body and centring only the footer, which is what the markup does).
+ |
+ | Values are written against the --spaceNN / --radiusLG aliases declared in
+ | app.css so this reads as the design system rather than as loose pixels; the
+ | fallbacks keep it correct if the stylesheet order ever changes.
+ */
+.package-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space24, 24px);
+  padding: var(--space32, 32px);
+  border: 1px solid #4f4c4d;
+  border-radius: var(--radiusLG, 16px);
+  /* Base card: white 7% over black 70% — no gold. */
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.07) 100%),
+    rgba(0, 0, 0, 0.7);
+}
+
+.package-card__body {
+  display: flex;
+  flex: 1 0 0;
+  flex-direction: column;
+  gap: var(--space24, 24px);
+}
+
+/*
+ | Featured ("Most Popular") card.
+ |
+ | The gold is a BOTTOM-UP glow, not a diagonal tint: the 180deg ramp starts
+ | fully transparent above the card (-19.41%) and only reaches gold/40% below
+ | it (118.87%), so the visible band is the tail of the ramp — a soft light
+ | rising off the bottom edge and dissolving well before the title. Both stops
+ | sit outside 0–100% on purpose; clamping them to 0/100 turns it back into
+ | the flat gold wash this replaced.
+ */
+.package-card--featured {
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.07) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0) -19.41%, rgba(189, 147, 59, 0.4) 118.87%),
+    rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 767px) {
+  .package-card {
+    padding: var(--space16, 16px);
+  }
+}
+
 .packages-eyebrow {
   display: inline-flex;
   align-items: center;

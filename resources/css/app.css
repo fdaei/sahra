@@ -40,6 +40,8 @@
     --color-gold: theme('colors.gold.DEFAULT');
     --color-gold-rgb: 189 147 59;
     --color-gold-500: theme('colors.gold.500');
+    /* Axis dash on the services orbit (Figma gold/600). */
+    --color-gold-600: theme('colors.gold.600');
     --color-gold-900: theme('colors.gold.900');
     --color-neutral-200: theme('colors.neutral.200');
 
@@ -49,6 +51,27 @@
      | to the Arabic display face rather than a generic serif.
      */
     --font-display: theme('fontFamily.display');
+
+    /*
+     | Figma design-system aliases.
+     |
+     | The handover spec references tokens by their Figma variable names
+     | (`--primary-gold`, `--space24`, `--space32`, `--radiusLG`). Tailwind
+     | already carries these values under its own names, so these are
+     | *aliases* resolved from the same config — not a second source of
+     | truth. Change the value in tailwind.config.js; these follow.
+     */
+    --primary-gold: theme('colors.gold.DEFAULT');
+    --primary-black: theme('colors.ink');
+    --primary-white: theme('colors.paper');
+    --space8: theme('spacing.2');
+    --space16: theme('spacing.4');
+    --space24: theme('spacing.6');
+    --space32: theme('spacing.8');
+    --space48: theme('spacing.12');
+    --radiusSM: theme('borderRadius.sm');
+    --radiusMD: theme('borderRadius.md');
+    --radiusLG: theme('borderRadius.lg');
   }
 
   /* Respect the OS preference for both CSS and GSAP (see lib/motion.ts). */
@@ -282,11 +305,41 @@
   .marquee-track {
     display: flex;
     width: max-content;
+    /*
+     * Keep the marquee's geometry physical and deterministic. In an RTL
+     * document flex would otherwise lay the duplicated halves out from the
+     * right edge while the keyframes still use physical translateX values,
+     * which can leave the Arabic rows apparently stationary/off-canvas.
+     * Individual card copy restores its document direction below.
+     */
+    direction: ltr;
     animation: marquee-scroll var(--marquee-duration, 28s) linear infinite;
+  }
+
+  :where(html[dir='rtl']) .marquee-track > * {
+    direction: rtl;
   }
 
   :where(html[dir='rtl']) .marquee-track {
     animation-direction: reverse;
+  }
+
+  /*
+   | Opposite-direction variant, for paired rows that must travel against each
+   | other (About "Small Team, Big Standards" — Figma 1288:4194 runs row 1 one
+   | way and row 2 the other).
+   |
+   | The RTL rule below is NOT redundant: without it the base track flips under
+   | fa/ar while this one flips too, and the pair would end up sliding the same
+   | direction again. Re-flipping here keeps the two rows mirror images of each
+   | other in every locale, which is the point of the effect.
+   */
+  .marquee-track--reverse {
+    animation-direction: reverse;
+  }
+
+  :where(html[dir='rtl']) .marquee-track--reverse {
+    animation-direction: normal;
   }
 
   .marquee-mask:hover .marquee-track,
@@ -303,6 +356,14 @@
    | nothing visually and would misrepresent them as design values.
    */
   .marquee-mask {
+    /*
+     * The clipping viewport and the oversized track must share the same
+     * physical origin. If the viewport keeps RTL direction, a reverse track
+     * that starts at translateX(-50%) is positioned wholly outside the mask,
+     * making one of the About team rows disappear. Text direction is restored
+     * on each track child by the RTL rule above.
+     */
+    direction: ltr;
     -webkit-mask-image: linear-gradient(
       to right,
       transparent 0%,

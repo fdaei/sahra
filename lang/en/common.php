@@ -13,7 +13,13 @@ return [
     'read_more'           => 'Read more',
     'read_article'        => 'Read Article',
     'view_all'            => 'View all',
-    'load_more'           => 'More Works',
+    /*
+     | Two distinct controls. They used to share `load_more` (= "More Works"),
+     | which put the word "Works" under the article grid on the Insights page.
+     | Keep them separate — the label names what is being loaded.
+     */
+    'more_works'          => 'More Works',
+    'more_insights'       => 'More Insights',
     'back'                => 'Back',
     'next'                => 'Next',
     'previous'            => 'Previous',

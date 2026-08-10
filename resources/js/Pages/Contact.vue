@@ -8,16 +8,18 @@
  * (`website`, must stay empty) and `form_started_at` (ms timestamp captured
  * on mount, rejected server-side if submitted under 3s).
  */
-import { computed, onMounted } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import {
   BadgeCheck,
   Building2,
   ChevronDown,
+  Check,
   Layers3,
   Mail,
   MapPin,
   MessageCircle,
+  Search,
   UserRound,
 } from "lucide-vue-next";
 import SeoHead from "@/Components/SeoHead.vue";
@@ -46,7 +48,7 @@ interface SectionContent {
   }>;
 }
 
-defineProps<{
+const props = defineProps<{
   sections: Record<string, SectionContent>;
   heading: { eyebrow: string; title: string; description: string };
   services: { id: number; title: string }[];
@@ -105,30 +107,79 @@ const form = useForm({
   form_started_at: 0,
 });
 
-const selectedServiceId = computed({
-  get: () => form.service_ids[0] ?? "",
-  set: (value: number | "") => {
-    form.service_ids = value === "" ? [] : [Number(value)];
-  },
+const countries = computed(() => [
+  { code: "+968", flag: "🇴🇲", name: t("forms.contact.countries.om") },
+  { code: "+98", flag: "🇮🇷", name: t("forms.contact.countries.ir") },
+]);
+const selectedCountry = ref(countries.value[0]);
+const countrySearch = ref("");
+const countryOpen = ref(false);
+const servicesOpen = ref(false);
+const countryPicker = ref<HTMLElement | null>(null);
+const servicesPicker = ref<HTMLElement | null>(null);
+
+const filteredCountries = computed(() => {
+  const query = countrySearch.value.trim().toLocaleLowerCase();
+  if (!query) return countries.value;
+  return countries.value.filter(({ name, code }) =>
+    `${name} ${code}`.toLocaleLowerCase().includes(query),
+  );
 });
+
+const selectedServicesLabel = computed(() => {
+  const selected = props.services
+    .filter(({ id }) => form.service_ids.includes(id))
+    .map(({ title }) => title);
+  return selected.length
+    ? selected.join(", ")
+    : t("forms.contact.services_placeholder");
+});
+
+function chooseCountry(country: (typeof countries.value)[number]): void {
+  selectedCountry.value = country;
+  countryOpen.value = false;
+  countrySearch.value = "";
+}
+
+function toggleService(id: number): void {
+  form.service_ids = form.service_ids.includes(id)
+    ? form.service_ids.filter((serviceId) => serviceId !== id)
+    : [...form.service_ids, id];
+  form.clearErrors("service_ids");
+}
+
+function closePopovers(event: MouseEvent): void {
+  const target = event.target as Node;
+  if (!countryPicker.value?.contains(target)) countryOpen.value = false;
+  if (!servicesPicker.value?.contains(target)) servicesOpen.value = false;
+}
 
 onMounted(() => {
   form.form_started_at = Date.now();
+  document.addEventListener("click", closePopovers);
 });
+onBeforeUnmount(() => document.removeEventListener("click", closePopovers));
 
 function submit(): void {
-  form.post(window.location.pathname, {
-    preserveScroll: true,
-    onSuccess: () =>
-      form.reset(
-        "name",
-        "brand_name",
-        "phone",
-        "email",
-        "message",
-        "service_ids",
-      ),
-  });
+  form
+    .transform((data) => ({
+      ...data,
+      phone: data.phone.trim()
+        ? `${selectedCountry.value.code} ${data.phone.trim()}`
+        : "",
+    }))
+    .post(window.location.pathname, {
+      preserveScroll: true,
+      onSuccess: () =>
+        form.reset(
+          "name",
+          "brand_name",
+          "phone",
+          "email",
+          "message",
+          "service_ids",
+        ),
+    });
 }
 </script>
 
@@ -141,7 +192,9 @@ function submit(): void {
     (457:991, blur 20) beside a 423-wide column (1288:4130) that carries the
     contact-details panel and the social row.
   -->
-  <section class="section min-h-[1945px] pb-32 pt-[136px] md:min-h-0 md:pb-[204px] md:pt-[184px]">
+  <section
+    class="section min-h-[1945px] pb-32 pt-[136px] md:min-h-0 md:pb-[204px] md:pt-[184px]"
+  >
     <div class="container-sahra max-md:px-0">
       <div
         class="relative overflow-hidden rounded-lg bg-neutral-100 lg:min-h-[854px] lg:pe-6"
@@ -161,21 +214,23 @@ function submit(): void {
         >
           <!-- Form panel — Figma 457:991 -->
           <div
-            class="flex flex-col gap-[23px] rounded-lg bg-white/10 p-6 backdrop-blur-[10px]
-                   md:p-12 lg:h-[854px] lg:w-[765px] lg:shrink-0"
+            class="flex flex-col gap-[23px] rounded-lg bg-white/10 p-6 backdrop-blur-[10px] md:p-12 lg:h-[854px] lg:w-[765px] lg:shrink-0"
           >
             <div class="flex flex-col gap-6 md:gap-12">
               <p
-                class="eyebrow text-[16px] before:!size-[6px]
-                       md:text-[24px] md:before:!size-[11.31px]"
+                class="eyebrow text-[16px] before:!size-[6px] md:text-[24px] md:before:!size-[11.31px]"
               >
                 {{ heading.eyebrow }}
               </p>
               <div class="flex flex-col gap-4 md:gap-6">
-                <h1 class="text-[26px] font-semibold md:max-w-[620px] md:text-display-md">
+                <h1
+                  class="text-[26px] font-semibold md:max-w-[620px] md:text-display-md"
+                >
                   {{ heading.title }}
                 </h1>
-                <p class="text-body-lg font-normal text-neutral-700 md:text-title-sm md:font-medium">
+                <p
+                  class="text-body-lg font-normal text-neutral-700 md:text-title-sm md:font-medium"
+                >
                   {{ heading.description }}
                 </p>
               </div>
@@ -208,7 +263,12 @@ function submit(): void {
                     >{{ t("forms.contact.name") }}</label
                   >
                   <div
-                    class="flex items-center gap-2 rounded-sm border border-gold-200 bg-paper/80 px-4 py-3 focus-within:border-ink"
+                    class="flex items-center gap-2 rounded-sm border bg-paper/80 px-4 py-3 transition-colors hover:border-neutral-200 focus-within:border-ink"
+                    :class="
+                      form.errors.name
+                        ? '!border-[#c94a4a] !bg-[#fdf5f5]'
+                        : 'border-gold-200'
+                    "
                   >
                     <UserRound
                       class="size-6 shrink-0 text-neutral-600"
@@ -222,14 +282,16 @@ function submit(): void {
                       :placeholder="t('forms.contact.name_placeholder')"
                       class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
                       :aria-invalid="form.errors.name ? 'true' : undefined"
-                      :aria-describedby="form.errors.name ? 'name-error' : undefined"
+                      :aria-describedby="
+                        form.errors.name ? 'name-error' : undefined
+                      "
                     />
                   </div>
                   <p
                     v-if="form.errors.name"
                     id="name-error"
                     role="alert"
-                    class="mt-1 text-label-md text-red-600"
+                    class="mt-1 text-[10px] leading-none text-[#c94a4a]"
                   >
                     {{ form.errors.name }}
                   </p>
@@ -242,7 +304,12 @@ function submit(): void {
                     >{{ t("forms.contact.brand") }}</label
                   >
                   <div
-                    class="flex items-center gap-2 rounded-sm border border-gold-200 bg-paper/80 px-4 py-3 focus-within:border-ink"
+                    class="flex items-center gap-2 rounded-sm border bg-paper/80 px-4 py-3 transition-colors hover:border-neutral-200 focus-within:border-ink"
+                    :class="
+                      form.errors.brand_name
+                        ? '!border-[#c94a4a] !bg-[#fdf5f5]'
+                        : 'border-gold-200'
+                    "
                   >
                     <BadgeCheck
                       class="size-6 shrink-0 text-neutral-600"
@@ -255,15 +322,19 @@ function submit(): void {
                       type="text"
                       :placeholder="t('forms.contact.brand_placeholder')"
                       class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
-                      :aria-invalid="form.errors.brand_name ? 'true' : undefined"
-                      :aria-describedby="form.errors.brand_name ? 'brand-error' : undefined"
+                      :aria-invalid="
+                        form.errors.brand_name ? 'true' : undefined
+                      "
+                      :aria-describedby="
+                        form.errors.brand_name ? 'brand-error' : undefined
+                      "
                     />
                   </div>
                   <p
                     v-if="form.errors.brand_name"
                     id="brand-error"
                     role="alert"
-                    class="mt-1 text-label-md text-red-600"
+                    class="mt-1 text-[10px] leading-none text-[#c94a4a]"
                   >
                     {{ form.errors.brand_name }}
                   </p>
@@ -271,81 +342,189 @@ function submit(): void {
               </div>
 
               <div class="grid gap-6 sm:grid-cols-2">
-                <div>
+                <div ref="countryPicker" class="relative">
                   <label
                     for="phone"
                     class="mb-2 block text-label-lg text-neutral-800"
                     >{{ t("forms.contact.phone") }}</label
                   >
                   <div
-                    class="flex overflow-hidden rounded-sm border border-gold-200 bg-paper/80 focus-within:border-ink"
+                    class="flex h-12 overflow-hidden rounded-sm border bg-paper/80 transition-colors hover:border-neutral-200 focus-within:border-ink"
+                    :class="
+                      form.errors.phone
+                        ? '!border-[#c94a4a] !bg-[#fdf5f5]'
+                        : 'border-gold-200'
+                    "
                   >
-                    <span
-                      class="flex items-center gap-2 border-e border-gold-200 px-3 text-body-md"
+                    <button
+                      type="button"
+                      class="flex items-center gap-2 border-e border-inherit px-3 text-body-md"
+                      :aria-expanded="countryOpen"
+                      aria-controls="country-options"
+                      @click="countryOpen = !countryOpen"
                     >
-                      <span aria-hidden="true">🇴🇲</span>
+                      <span class="text-lg" aria-hidden="true">{{
+                        selectedCountry.flag
+                      }}</span>
                       <ChevronDown
-                        class="size-4 text-neutral-700"
+                        class="size-4 text-neutral-700 transition-transform"
+                        :class="countryOpen ? 'rotate-180' : ''"
                         :stroke-width="1.5"
                         aria-hidden="true"
                       />
-                    </span>
+                    </button>
+                    <span
+                      class="flex items-center ps-3 text-body-md text-neutral-500"
+                      dir="ltr"
+                      >{{ selectedCountry.code }}</span
+                    >
                     <input
                       id="phone"
                       v-model="form.phone"
                       type="tel"
-                      placeholder="+968"
-                      class="min-w-0 flex-1 border-0 bg-transparent px-4 py-3 text-body-md shadow-none focus:ring-0"
+                      :placeholder="t('forms.contact.phone_placeholder')"
+                      class="min-w-0 flex-1 border-0 bg-transparent px-1 pe-4 py-3 text-body-md shadow-none focus:ring-0"
+                      dir="ltr"
                       :aria-invalid="form.errors.phone ? 'true' : undefined"
-                      :aria-describedby="form.errors.phone ? 'phone-error' : undefined"
+                      :aria-describedby="
+                        form.errors.phone ? 'phone-error' : undefined
+                      "
                     />
+                  </div>
+                  <div
+                    v-if="countryOpen"
+                    id="country-options"
+                    class="absolute z-30 mt-2 w-full overflow-hidden rounded-sm border border-neutral-200 bg-paper/95 shadow-lg backdrop-blur"
+                  >
+                    <label
+                      class="flex h-12 items-center gap-2 border-b border-neutral-200 px-3"
+                    >
+                      <Search
+                        class="size-5 shrink-0 text-neutral-600"
+                        :stroke-width="1.5"
+                        aria-hidden="true"
+                      />
+                      <span class="sr-only">{{
+                        t("forms.contact.country_search")
+                      }}</span>
+                      <input
+                        v-model="countrySearch"
+                        type="search"
+                        :placeholder="t('forms.contact.country_search')"
+                        class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
+                        autofocus
+                      />
+                    </label>
+                    <button
+                      v-for="country in filteredCountries"
+                      :key="country.code"
+                      type="button"
+                      class="flex h-12 w-full items-center gap-2 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
+                      @click="chooseCountry(country)"
+                    >
+                      <span class="text-lg" aria-hidden="true">{{
+                        country.flag
+                      }}</span>
+                      <span>{{ country.name }} ({{ country.code }})</span>
+                    </button>
+                    <p
+                      v-if="filteredCountries.length === 0"
+                      class="px-3 py-4 text-body-md text-neutral-500"
+                    >
+                      {{ t("forms.contact.country_empty") }}
+                    </p>
                   </div>
                   <p
                     v-if="form.errors.phone"
                     id="phone-error"
                     role="alert"
-                    class="mt-1 text-label-md text-red-600"
+                    class="mt-1 text-[10px] leading-none text-[#c94a4a]"
                   >
                     {{ form.errors.phone }}
                   </p>
                 </div>
 
-                <div v-if="services.length > 0">
+                <div
+                  v-if="services.length > 0"
+                  ref="servicesPicker"
+                  class="relative"
+                >
                   <label
                     for="services"
                     class="mb-2 block text-label-lg text-neutral-800"
                     >{{ t("forms.contact.services") }}</label
                   >
-                  <div
-                    class="relative flex items-center rounded-sm border border-gold-200 bg-paper/80 focus-within:border-ink"
+                  <button
+                    id="services"
+                    type="button"
+                    class="relative flex h-12 w-full items-center rounded-sm border bg-paper/80 text-start transition-colors hover:border-neutral-200 focus:border-ink"
+                    :class="
+                      form.errors.service_ids
+                        ? '!border-[#c94a4a] !bg-[#fdf5f5]'
+                        : 'border-gold-200'
+                    "
+                    :aria-expanded="servicesOpen"
+                    aria-controls="service-options"
+                    @click="servicesOpen = !servicesOpen"
                   >
                     <Layers3
                       class="pointer-events-none ms-4 size-6 shrink-0 text-neutral-600"
                       :stroke-width="1.5"
                       aria-hidden="true"
                     />
-                    <select
-                      id="services"
-                      v-model="selectedServiceId"
-                      class="min-w-0 flex-1 appearance-none border-0 bg-transparent px-2 py-3 pe-10 text-body-md text-neutral-600 shadow-none focus:ring-0"
+                    <span
+                      class="min-w-0 flex-1 truncate px-2 pe-10 text-body-md"
+                      :class="
+                        form.service_ids.length
+                          ? 'text-neutral-900'
+                          : 'text-neutral-500'
+                      "
                     >
-                      <option value="">
-                        {{ t("forms.contact.services_placeholder") }}
-                      </option>
-                      <option
-                        v-for="service in services"
-                        :key="service.id"
-                        :value="service.id"
-                      >
-                        {{ service.title }}
-                      </option>
-                    </select>
+                      {{ selectedServicesLabel }}
+                    </span>
                     <ChevronDown
-                      class="pointer-events-none absolute end-4 size-5 text-neutral-700"
+                      class="pointer-events-none absolute end-4 size-5 text-neutral-700 transition-transform"
+                      :class="servicesOpen ? 'rotate-180' : ''"
                       :stroke-width="1.5"
                       aria-hidden="true"
                     />
+                  </button>
+                  <div
+                    v-if="servicesOpen"
+                    id="service-options"
+                    class="absolute z-30 mt-2 w-full overflow-hidden rounded-sm border border-neutral-200 bg-paper/95 shadow-lg backdrop-blur"
+                  >
+                    <label
+                      v-for="service in services"
+                      :key="service.id"
+                      class="flex h-12 cursor-pointer items-center justify-between gap-3 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
+                    >
+                      <span>{{ service.title }}</span>
+                      <input
+                        type="checkbox"
+                        class="peer sr-only"
+                        :checked="form.service_ids.includes(service.id)"
+                        @change="toggleService(service.id)"
+                      />
+                      <span
+                        class="flex size-5 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-neutral-400 peer-checked:border-neutral-700"
+                      >
+                        <Check
+                          v-if="form.service_ids.includes(service.id)"
+                          class="size-4 text-neutral-700"
+                          :stroke-width="2"
+                          aria-hidden="true"
+                        />
+                      </span>
+                    </label>
                   </div>
+                  <p
+                    v-if="form.errors.service_ids"
+                    role="alert"
+                    class="mt-1 text-[10px] leading-none text-[#c94a4a]"
+                  >
+                    {{ form.errors.service_ids }}
+                  </p>
                 </div>
               </div>
 
@@ -360,16 +539,23 @@ function submit(): void {
                   v-model="form.message"
                   rows="4"
                   :placeholder="t('forms.contact.message_placeholder')"
-                  class="min-h-[80px] w-full flex-1 resize-none rounded-sm border border-gold-200 bg-paper/80 px-4 py-3 text-body-md focus:border-ink"
+                  class="min-h-[80px] w-full flex-1 resize-none rounded-sm border bg-paper/80 px-4 py-3 text-body-md transition-colors hover:border-neutral-200 focus:border-ink"
+                  :class="
+                    form.errors.message
+                      ? '!border-[#c94a4a] !bg-[#fdf5f5]'
+                      : 'border-gold-200'
+                  "
                   :aria-invalid="form.errors.message ? 'true' : undefined"
-                  :aria-describedby="form.errors.message ? 'message-error' : undefined"
+                  :aria-describedby="
+                    form.errors.message ? 'message-error' : undefined
+                  "
                 />
                 <!-- message is validated (max:5000) but had no error outlet, so an over-long message failed silently. -->
                 <p
                   v-if="form.errors.message"
                   id="message-error"
                   role="alert"
-                  class="mt-1 text-label-md text-red-600"
+                  class="mt-1 text-[10px] leading-none text-[#c94a4a]"
                 >
                   {{ form.errors.message }}
                 </p>
@@ -378,9 +564,7 @@ function submit(): void {
               <button
                 type="submit"
                 :disabled="form.processing"
-                class="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink
-                       px-6 py-3 text-body-lg text-paper transition-opacity hover:opacity-90
-                       disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
+                class="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-opacity hover:opacity-90 disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
               >
                 {{
                   form.processing
@@ -393,13 +577,11 @@ function submit(): void {
 
           <!-- Details + socials column — Figma 1288:4130 -->
           <div
-            class="mx-5 flex flex-col justify-between gap-14 lg:mx-0 lg:h-[724px]
-                   lg:w-[423px] lg:shrink-0 lg:gap-16"
+            class="mx-5 flex flex-col justify-between gap-14 lg:mx-0 lg:h-[724px] lg:w-[423px] lg:shrink-0 lg:gap-16"
           >
             <!-- Contact details panel — Figma 466:1216 -->
             <div
-              class="flex flex-col gap-8 rounded-lg bg-white/10 p-6 backdrop-blur-[7.5px]
-                     lg:h-[467px] lg:justify-center lg:gap-10 lg:bg-white/30 lg:p-8"
+              class="flex flex-col gap-8 rounded-lg bg-white/10 p-6 backdrop-blur-[7.5px] lg:h-[467px] lg:justify-center lg:gap-10 lg:bg-white/30 lg:p-8"
             >
               <h2 class="text-title-sm font-medium text-neutral-900">
                 {{ t("forms.details.title") }}
@@ -447,8 +629,13 @@ function submit(): void {
             </div>
 
             <!-- Follow block — Figma 1288:4129 -->
-            <div v-if="socialLinks.length > 0" class="flex flex-col gap-6 lg:gap-10">
-              <p class="text-label-lg font-medium text-neutral-800 lg:text-body-lg">
+            <div
+              v-if="socialLinks.length > 0"
+              class="flex flex-col gap-6 lg:gap-10"
+            >
+              <p
+                class="text-label-lg font-medium text-neutral-800 lg:text-body-lg"
+              >
                 {{ t("forms.details.follow") }}
               </p>
 
@@ -459,8 +646,7 @@ function submit(): void {
                     target="_blank"
                     rel="noopener noreferrer"
                     :aria-label="link.label"
-                    class="flex size-12 items-center justify-center text-neutral-700 transition-colors
-                           hover:text-gold lg:size-10"
+                    class="flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold lg:size-10"
                   >
                     <SocialIcon :icon="link.icon" class="size-6" />
                   </a>

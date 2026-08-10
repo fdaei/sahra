@@ -20,7 +20,7 @@
  * The featured card is only present on an unfiltered first page — see
  * PostController@index.
  */
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { ArrowUpRight, CalendarDays, ChevronDown } from "lucide-vue-next";
 import CtaBanner from "@/Components/CtaBanner.vue";
@@ -79,21 +79,26 @@ const basePath = computed(() => `/${page.props.locale.current}/insights`);
  */
 const leadRow = computed(() => props.posts.data.slice(0, 2));
 const restRows = computed(() => props.posts.data.slice(2));
+const visibleRestPosts = ref(2);
+
+function showMoreInsights(): void {
+  visibleRestPosts.value += 3;
+}
 </script>
 
 <template>
   <SeoHead :meta="seo" />
 
   <div
-    class="container-sahra flex flex-col gap-12 pb-32 pt-[160px] md:gap-24 md:pt-[192px]"
+    class="container-sahra flex flex-col gap-16 pb-0 pt-[160px] md:gap-24 md:pb-32 md:pt-[192px]"
   >
     <!-- Heading + filters -->
     <div
-      class="flex flex-col gap-10 lg:flex-row lg:items-start lg:justify-between"
+      class="flex flex-col gap-16 lg:flex-row lg:items-start lg:justify-between"
     >
       <!-- "Main title & tag" 1016:1891 — eyebrow, gap 48, then title over
            subtitle at gap 24. -->
-      <div class="flex max-w-[612px] flex-col gap-12">
+      <div class="flex h-[184px] max-w-[612px] flex-col gap-6 md:h-auto md:gap-12">
         <p class="eyebrow">{{ heading.eyebrow }}</p>
         <div class="flex flex-col gap-6">
           <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-lg">
@@ -120,7 +125,7 @@ const restRows = computed(() => props.posts.data.slice(2));
     <Link
       v-if="featured"
       :href="featured.url"
-      class="group flex flex-col gap-4 rounded-lg md:gap-8 md:bg-gold-50 md:p-4 lg:flex-row lg:items-center"
+      class="group flex min-h-[521px] flex-col gap-6 rounded-sm bg-gold-50 p-2 md:min-h-0 md:gap-8 md:rounded-lg md:p-4 lg:flex-row lg:items-center"
     >
       <img
         v-if="featured.image"
@@ -129,13 +134,13 @@ const restRows = computed(() => props.posts.data.slice(2));
         :alt="featured.image.alt"
         width="612"
         height="459"
-        class="aspect-[612/459] w-full shrink-0 rounded-lg border border-neutral-100 object-cover shadow-card lg:w-[612px]"
+        class="h-[248px] w-full shrink-0 rounded-sm border border-neutral-100 object-cover shadow-card md:aspect-[612/459] md:h-auto md:rounded-lg lg:w-[612px]"
       />
 
       <div class="flex flex-1 flex-col gap-4 md:gap-12">
         <span
           v-if="featured.category"
-          class="w-fit rounded-round bg-gold-600 px-2 py-1 text-body-md text-paper"
+          class="w-fit rounded-round bg-gold-600 px-2 py-1 text-[12px] leading-4 text-paper md:text-body-md"
         >
           {{ featured.category.name }}
         </span>
@@ -145,24 +150,24 @@ const restRows = computed(() => props.posts.data.slice(2));
             <h2 class="text-[18px] font-medium text-neutral-900 md:text-[32px]">
               {{ featured.title }}
             </h2>
-            <p class="hidden text-body-lg text-neutral-800 md:block">{{ featured.excerpt }}</p>
+            <p class="line-clamp-3 text-[14px] leading-normal text-neutral-800 md:line-clamp-none md:text-body-lg">{{ featured.excerpt }}</p>
           </div>
 
           <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-4">
               <time
                 :datetime="featured.publishedAtIso"
-                class="flex items-center gap-2 text-body-md text-neutral-500"
+                class="flex items-center gap-2 text-[12px] text-neutral-500 md:text-body-md"
               >
                 <CalendarDays
-                  class="size-6 text-gold"
+                  class="size-4 text-gold md:size-6"
                   :stroke-width="1.5"
                   aria-hidden="true"
                 />
                 {{ featured.publishedAt }}
               </time>
               <span
-                class="flex items-center gap-2 text-body-md text-neutral-500"
+                class="flex items-center gap-2 text-[12px] text-neutral-500 md:text-body-md"
               >
                 <span
                   class="inline-block size-1 rounded-full bg-gold"
@@ -173,11 +178,11 @@ const restRows = computed(() => props.posts.data.slice(2));
             </div>
 
             <span
-              class="hidden items-center gap-2 text-body-lg font-medium text-neutral-900 md:flex"
+              class="flex items-center gap-2 text-[14px] font-medium text-neutral-900 md:text-body-lg"
             >
               {{ t("common.read_article") }}
               <ArrowUpRight
-                class="size-6 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 rtl:-scale-x-100"
+                class="size-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 rtl:-scale-x-100 md:size-6"
                 :stroke-width="1.5"
                 aria-hidden="true"
               />
@@ -196,9 +201,9 @@ const restRows = computed(() => props.posts.data.slice(2));
 
     <!-- Card rows — 1228:4571 (2-up) then 3-up -->
     <div v-else class="flex flex-col gap-16 md:gap-24">
-      <ul v-if="leadRow.length > 0" class="grid gap-6 sm:grid-cols-2">
+      <ul v-if="leadRow.length > 0" class="grid gap-16 sm:grid-cols-2 sm:gap-6">
         <li v-for="post in leadRow" :key="post.slug">
-          <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
+          <Link :href="post.url" class="group flex min-h-[412.5px] flex-col gap-4 rounded-lg md:min-h-0">
             <img
               v-if="post.image"
               :src="post.image.src"
@@ -206,23 +211,23 @@ const restRows = computed(() => props.posts.data.slice(2));
               :alt="post.image.alt"
               width="612"
               height="400"
-              class="h-[245px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
+              class="h-[272px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
                 <time
                   :datetime="post.publishedAtIso"
-                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                  class="flex items-center gap-2 text-[12px] text-neutral-500 md:text-body-md"
                 >
                   <CalendarDays
-                    class="size-6 text-gold"
+                    class="size-4 text-gold md:size-6"
                     :stroke-width="1.5"
                     aria-hidden="true"
                   />
                   {{ post.publishedAt }}
                 </time>
                 <span
-                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                  class="flex items-center gap-2 text-[12px] text-neutral-500 md:text-body-md"
                 >
                   <span
                     class="inline-block size-1 rounded-full bg-gold"
@@ -243,14 +248,14 @@ const restRows = computed(() => props.posts.data.slice(2));
 
       <ul
         v-if="restRows.length > 0"
-        class="grid gap-x-6 gap-y-24 sm:grid-cols-2 lg:grid-cols-3"
+        class="grid gap-x-6 gap-y-16 sm:grid-cols-2 md:gap-y-24 lg:grid-cols-3"
       >
         <li
           v-for="(post, postIndex) in restRows"
           :key="post.slug"
-          :class="postIndex >= 2 ? 'max-sm:hidden' : ''"
+          :class="postIndex >= visibleRestPosts ? 'max-sm:hidden' : ''"
         >
-          <Link :href="post.url" class="group flex flex-col gap-4 rounded-lg">
+          <Link :href="post.url" class="group flex min-h-[412.5px] flex-col gap-4 rounded-lg md:min-h-0">
             <img
               v-if="post.image"
               :src="post.image.src"
@@ -258,23 +263,23 @@ const restRows = computed(() => props.posts.data.slice(2));
               :alt="post.image.alt"
               width="400"
               height="400"
-              class="h-[245px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
+              class="h-[272px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
             />
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
                 <time
                   :datetime="post.publishedAtIso"
-                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                  class="flex items-center gap-2 text-[12px] text-neutral-500 md:text-body-md"
                 >
                   <CalendarDays
-                    class="size-6 text-gold"
+                    class="size-4 text-gold md:size-6"
                     :stroke-width="1.5"
                     aria-hidden="true"
                   />
                   {{ post.publishedAt }}
                 </time>
                 <span
-                  class="flex items-center gap-2 text-body-md text-neutral-500"
+                  class="flex items-center gap-2 text-[12px] text-neutral-500 md:text-body-md"
                 >
                   <span
                     class="inline-block size-1 rounded-full bg-gold"
@@ -290,13 +295,32 @@ const restRows = computed(() => props.posts.data.slice(2));
       </ul>
     </div>
 
-    <div
-      v-if="posts.data.length > 0 && posts.lastPage === 1"
-      class="mx-auto inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900"
+    <!--
+      "More Insights" — Figma 1215:4065, the same control the Work grid uses.
+
+      This was a bare <div>: no href, no button, no handler, so it rendered as
+      dead text that looked like a control and did nothing on any device. It
+      also carried `common.load_more` (= "More Works"), putting the word
+      "Works" under the article grid, and its condition was inverted —
+      `lastPage === 1` shows it only when there is NO further page, i.e. it
+      appeared exactly when there was nothing left to load and vanished the
+      moment there was.
+
+      Now it is an Inertia <Link> to the next page, rendered only when one
+      exists. `nextPageUrl` comes from the paginator, so it already carries the
+      active locale prefix and any category/search filter, and RTL needs no
+      special handling because the row is ordinary logical flow.
+    -->
+    <button
+      v-if="restRows.length > visibleRestPosts"
+      type="button"
+      class="mx-auto inline-flex items-center gap-2 text-body-lg font-medium
+             text-neutral-900 transition-opacity hover:opacity-70"
+      @click="showMoreInsights"
     >
-      {{ t("common.load_more") }}
+      {{ t("common.more_insights") }}
       <ChevronDown class="size-6 shrink-0" aria-hidden="true" />
-    </div>
+    </button>
 
     <!-- Pagination -->
     <nav
@@ -328,6 +352,6 @@ const restRows = computed(() => props.posts.data.slice(2));
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[226px] pt-24 md:pb-[304px]"
+    spacing-class="pb-[79px] pt-[72px] md:pb-[304px] md:pt-24"
   />
 </template>

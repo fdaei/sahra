@@ -38,6 +38,7 @@ const lastUpdated = computed(() => {
   const date = new Intl.DateTimeFormat(page.props.locale.htmlLang, {
     year: 'numeric',
     month: 'long',
+    numberingSystem: page.props.locale.htmlLang.startsWith('ar') ? 'latn' : undefined,
   }).format(new Date(props.updatedAt))
 
   return t('common.last_updated', { date })

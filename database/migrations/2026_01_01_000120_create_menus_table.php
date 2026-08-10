@@ -36,7 +36,7 @@ return new class extends Migration
             $table->string('url', 500)->nullable();
 
             $table->string('target', 10)->default('_self');
-            $table->boolean('is_cta')->default(false)->comment("Renders as the header's Let's Talk button");
+            $table->boolean('is_cta')->default(false)->comment("Renders as the header's Book Consultation button");
             $table->unsignedSmallInteger('sort_order')->default(0);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

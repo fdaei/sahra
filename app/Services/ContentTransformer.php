@@ -169,13 +169,13 @@ final class ContentTransformer
 
             /*
              | Display string in the locale's own format (config/locales.php:
-             | en "M d, Y" → "May 09, 2024", fa/ar "Y/m/d"), then run through
-             | Numerals because translatedFormat() localises month names but
-             | still emits ASCII digits. The ISO value is deliberately NOT
-             | converted — it feeds <time datetime> and must stay machine
-             | readable.
+             | en "M d, Y" → "May 09, 2024", fa "Y/m/d", and ar
+             | "d F Y" → "09 مايو 2024"). Date digits are handled
+             | separately from other generated numbers so Arabic dates remain
+             | Latin-digit. The ISO value is deliberately NOT converted — it
+             | feeds <time datetime> and must stay machine readable.
              */
-            'publishedAt' => Numerals::localise(
+            'publishedAt' => Numerals::localiseDate(
                 $post->published_at?->translatedFormat(
                     (string) config('locales.supported.'.app()->getLocale().'.date_format', 'M d, Y'),
                 ) ?? '',

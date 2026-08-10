@@ -204,16 +204,16 @@ const linkedInShare = computed(
       <div class="flex gap-4">
         <button
           type="button"
-          class="flex size-12 items-center justify-center rounded-round border border-neutral-200 text-neutral-800"
+          class="share-button size-12"
           :aria-label="copied ? t('blog.link_copied') : t('blog.copy_link')"
           @click="copyLink"
         >
           <component :is="copied ? Check : Link2" class="size-5" aria-hidden="true" />
         </button>
-        <a :href="xShare" target="_blank" rel="noopener noreferrer" class="flex size-12 items-center justify-center rounded-round border border-neutral-200 text-neutral-800" aria-label="X">
+        <a :href="xShare" target="_blank" rel="noopener noreferrer" class="share-button size-12" aria-label="X">
           <span class="text-[18px] font-medium">X</span>
         </a>
-        <a :href="linkedInShare" target="_blank" rel="noopener noreferrer" class="flex size-12 items-center justify-center rounded-round border border-neutral-200 text-neutral-800" aria-label="LinkedIn">
+        <a :href="linkedInShare" target="_blank" rel="noopener noreferrer" class="share-button size-12" aria-label="LinkedIn">
           <Linkedin class="size-5" :stroke-width="1.5" aria-hidden="true" />
         </a>
       </div>
@@ -266,7 +266,7 @@ const linkedInShare = computed(
         <div class="flex flex-col gap-4">
           <button
             type="button"
-            class="flex size-[68px] items-center justify-center rounded-round border border-neutral-200 text-neutral-800 transition-colors hover:border-ink hover:text-ink"
+            class="share-button size-[68px]"
             :aria-label="copied ? t('blog.link_copied') : t('blog.copy_link')"
             @click="copyLink"
           >
@@ -281,7 +281,7 @@ const linkedInShare = computed(
             :href="xShare"
             target="_blank"
             rel="noopener noreferrer"
-            class="flex size-[68px] items-center justify-center rounded-round border border-neutral-200 text-neutral-800 transition-colors hover:border-ink hover:text-ink"
+            class="share-button size-[68px]"
             aria-label="X"
           >
             <svg
@@ -300,7 +300,7 @@ const linkedInShare = computed(
             :href="linkedInShare"
             target="_blank"
             rel="noopener noreferrer"
-            class="flex size-[68px] items-center justify-center rounded-round border border-neutral-200 text-neutral-800 transition-colors hover:border-ink hover:text-ink"
+            class="share-button size-[68px]"
             aria-label="LinkedIn"
           >
             <Linkedin class="size-6" :stroke-width="1.5" aria-hidden="true" />
@@ -366,6 +366,51 @@ const linkedInShare = computed(
   <CtaBanner
     v-if="finalCta"
     :section="finalCta"
-    spacing-class="pb-[109px] pt-24 md:pb-[277px]"
+    spacing-class="pb-[109px] pt-[76px] md:pb-[277px] md:pt-24"
   />
 </template>
+
+<style scoped>
+/*
+ | Share rail button — Figma component 622:1053, which stores three states:
+ |
+ |   default  #F8F7F8 disc, dark glyph, NO stroke
+ |   hover    solid #231F20 disc, white glyph
+ |   (third)  back to the light disc
+ |
+ | The build had this as a hairline-outlined transparent disc whose hover only
+ | darkened the border and glyph — the black fill, which is the whole point of
+ | the interaction in the file, never appeared.
+ |
+ | Only `background-color` and `color` change, so the disc never resizes and
+ | nothing around it reflows on hover. The border is gone rather than made
+ | transparent for the same reason: there was none in the file, and keeping a
+ | 1px transparent one would leave the glyph 1px off-centre against the frame.
+ |
+ | `:focus-visible` gets the same treatment so keyboard users see the state
+ | too; the global gold focus ring in app.css still draws on top of it.
+ */
+.share-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1000px;
+  background-color: theme('colors.neutral.25');
+  color: theme('colors.neutral.800');
+  transition:
+    background-color 0.3s ease-out,
+    color 0.3s ease-out;
+}
+
+.share-button:hover,
+.share-button:focus-visible {
+  background-color: theme('colors.ink');
+  color: theme('colors.paper');
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-button {
+    transition: none;
+  }
+}
+</style>

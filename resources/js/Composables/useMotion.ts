@@ -1,4 +1,4 @@
-import { onMounted, onUnmounted, type Ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import { MOTION, directionFactor, gsap, prefersReducedMotion } from '@/lib/motion'
 
 /*
@@ -93,6 +93,140 @@ export function useSectionReveal(target?: MotionTarget): void {
       })
     }
   }, target)
+}
+
+/*
+ |=============================================================================
+ | A7b — GLOBAL SECTION REVEAL
+ |=============================================================================
+ |
+ | `useSectionReveal` above is opt-in: it only touches elements an author
+ | tagged with [data-reveal]. That covered a handful of card grids on Home and
+ | left every other page with no scroll motion at all. This gives EVERY page
+ | the same subtle lift as each block enters the viewport — 20px up, 0 -> 1
+ | opacity — without needing an attribute on every section.
+ |
+ | It is deliberately conservative about what it touches:
+ |
+ |   - Blocks already carrying [data-reveal]/[data-reveal-group] are skipped,
+ |     so the existing staggers keep ownership of their own section and nothing
+ |     animates twice.
+ |   - Blocks already on screen at load are skipped entirely and never hidden.
+ |     The effect is "content rises as it ARRIVES"; hiding the hero to fade it
+ |     back in on first paint is a different (and worse) effect, and it would
+ |     fight the A1 hero stagger.
+ |   - `data-no-reveal` opts a block out; `data-reveal-section` opts a non-
+ |     <section> block in.
+ |
+ | `clearProps` on completion removes the inline transform. That matters beyond
+ | tidiness: a lingering `transform` on a section makes it the containing block
+ | for any `position: fixed` descendant.
+ */
+const AUTO_REVEAL_DISTANCE = 20
+
+/** Blocks that should carry the page-level reveal, outermost-first. */
+function autoRevealTargets(root: HTMLElement): HTMLElement[] {
+  const blocks = Array.from(
+    root.querySelectorAll<HTMLElement>('section, [data-reveal-section]'),
+  )
+
+  // Only the outermost of any nested pair — a section inside a section is one
+  // gesture, not two.
+  const outermost = blocks.filter(
+    (el) => !blocks.some((other) => other !== el && other.contains(el)),
+  )
+
+  /*
+   | Several pages (Insights/Show, Work/Index) put their whole body in a plain
+   | container <div> and use <section> only for a trailing block, so sections
+   | alone would leave most of the page static. Pick up top-level children that
+   | neither contain nor sit inside an already-chosen section.
+   */
+  const looseTopLevel = Array.from(root.children).filter(
+    (el): el is HTMLElement =>
+      el instanceof HTMLElement &&
+      !outermost.some(
+        (section) =>
+          section === el || section.contains(el) || el.contains(section),
+      ),
+  )
+
+  return [...outermost, ...looseTopLevel].filter((el) => {
+    if (el.hasAttribute('data-no-reveal')) return false
+
+    // Owned by useSectionReveal — leave it alone.
+    if (el.matches('[data-reveal], [data-reveal-group]')) return false
+    if (el.querySelector('[data-reveal], [data-reveal-group]')) return false
+
+    // Already visible at load: show it, do not animate it.
+    return el.getBoundingClientRect().top > window.innerHeight * 0.85
+  })
+}
+
+/**
+ * A7b — applies the shared section reveal across the whole page, and re-applies
+ * it after each Inertia navigation. Call once, from AppLayout.
+ *
+ * @param pageKey Reactive Inertia page component name. Changing it re-scans the
+ *                new DOM; the layout itself never unmounts, so without this the
+ *                effect would only ever run on the first page loaded.
+ */
+export function useAutoReveal(pageKey: Ref<string>): void {
+  let ctx: gsap.Context | null = null
+
+  function run(): void {
+    ctx?.revert()
+    ctx = null
+
+    if (prefersReducedMotion()) return
+
+    const main = document.getElementById('main')
+    if (!main) return
+
+    const targets = autoRevealTargets(main)
+    if (targets.length === 0) return
+
+    ctx = gsap.context(() => {
+      /*
+       | Each block gets its OWN trigger. One shared trigger across the whole
+       | set would fire every tween the moment the first block crossed the
+       | line, so the rest of the page would have finished animating long
+       | before the reader reached it.
+       */
+      for (const el of targets) {
+        gsap.fromTo(
+          el,
+          { y: AUTO_REVEAL_DISTANCE, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: MOTION.duration.reveal,
+            ease: MOTION.ease.brand,
+            clearProps: 'transform,opacity',
+            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+          },
+        )
+      }
+    }, main)
+  }
+
+  onMounted(() => {
+    void nextTick(run)
+  })
+
+  watch(pageKey, () => {
+    // Two frames: the outgoing page has to leave and the incoming one has to
+    // be laid out before any of it can be measured. Mirrors app.ts's own
+    // re-init cadence on `router.on('navigate')`.
+    void nextTick(() => {
+      requestAnimationFrame(() => requestAnimationFrame(run))
+    })
+  })
+
+  onUnmounted(() => {
+    ctx?.revert()
+    ctx = null
+  })
 }
 
 /**

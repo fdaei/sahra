@@ -29,11 +29,12 @@ import {
   ArrowUpRight,
   BadgeCheck,
   CalendarDays,
+  ChartNoAxesCombined,
+  CircleMinus,
+  CirclePlus,
   ClipboardCheck,
   Gem,
-  Minus,
-  PanelsTopLeft,
-  Plus,
+  Copy,
   TrendingUp,
   UsersRound,
 } from "lucide-vue-next";
@@ -110,6 +111,15 @@ const whyUs = computed(() => props.sections.why_us);
 const reviews = computed(() => props.sections.reviews);
 const insights = computed(() => props.sections.insights);
 const faqSection = computed(() => props.sections.faq);
+const faqSubtitle = computed(
+  () =>
+    faqSection.value?.subtitle ||
+    {
+      en: "Because every creative decision is built around brand clarity, consistency, and growth.",
+      fa: "چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.",
+      ar: "لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.",
+    }[page.props.locale.current],
+);
 const insightsSubtitle = computed(() => {
   if (insights.value?.description || insights.value?.subtitle) {
     return insights.value.description || insights.value.subtitle;
@@ -141,28 +151,25 @@ const testimonialTrack = computed(() => {
   return [...half, ...half];
 });
 
-/*
- | Hero CTA fill (Figma 1419:9202 en / 1365:9960 ar).
- |
- | Both frames list Explore Projects first, but they disagree on which button
- | is solid: LTR fills the first, RTL fills the second. So the solid style
- | follows the direction, not the primary/secondary role — revert this to a
- | fixed `primary === solid` if the RTL frame is ever corrected.
- */
+/* The conversation CTA is always first and receives the solid treatment. */
 const heroCtaSolid =
   "flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:px-8 md:py-4 md:text-title-md";
 const heroCtaOutline =
   "flex items-center gap-1 rounded-sm border border-ink bg-paper px-6 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-4 md:text-title-md";
 
-function heroCtaClass(role: "primary" | "secondary"): string {
-  const solid =
-    page.props.locale.direction === "rtl" ? "secondary" : "primary";
+const heroCtas = computed(() => {
+  const primary = hero.value?.primaryCta ?? null;
+  const secondary = hero.value?.secondaryCta ?? null;
 
-  return role === solid ? heroCtaSolid : heroCtaOutline;
-}
+  const ordered = [secondary, primary];
 
-const whyUsIcons = [BadgeCheck, PanelsTopLeft, Gem, ClipboardCheck];
-const kpiIcons = [TrendingUp, TrendingUp, UsersRound];
+  return ordered.filter(
+    (cta): cta is { label: string; url: string } => cta !== null,
+  );
+});
+
+const whyUsIcons = [BadgeCheck, Copy, Gem, ClipboardCheck];
+const kpiIcons = [ChartNoAxesCombined, TrendingUp, UsersRound];
 
 /*
  | Motion — audit A1 (hero stagger), A3 (KPI counters), A7 (section reveal).
@@ -280,19 +287,18 @@ useSectionReveal();
         >
           <span class="block text-[28px] md:text-[56px]">{{ hero.title }}</span>
           <!--
-            The gradient run is `w-fit` so the 90deg ramp is measured across
-            the glyphs, as in Figma, rather than across the 731px column.
+            "marketing systems" — flat primary gold, no gradient and no glow.
+            This previously painted a 90deg white→gold→white ramp through
+            `bg-clip-text`, which faded both ends of the run towards paper and
+            read as a soft shadow. The handover spec pins it to the primary
+            gold variable outright, so the run is a plain `color` fill and
+            carries no text-shadow / drop-shadow of any kind.
           -->
           <span
-            class="block w-fit bg-clip-text font-display text-[40px] leading-normal tracking-normal text-transparent md:text-[96px] md:leading-[80px]"
-            :style="
-              hero.colors.content
-                ? { color: hero.colors.content, backgroundImage: 'none' }
-                : {
-                    backgroundImage:
-                      'linear-gradient(90deg, var(--color-paper) 0%, var(--color-gold) 27%, var(--color-gold) 65%, var(--color-paper) 100%)',
-                  }
-            "
+            class="block w-fit font-display text-[40px] leading-normal tracking-normal md:text-[96px] md:leading-[80px]"
+            :style="{
+              color: hero.colors.content || 'var(--primary-gold, #BD933B)',
+            }"
             >{{ hero.content }}</span
           >
           <span class="block text-[28px] md:text-[56px]">{{
@@ -311,25 +317,17 @@ useSectionReveal();
 
       <!--
         hero cta: gap-[10px] — Figma 1419:9202 (en) / 1365:9960 (ar).
-        Reading order is identical in both frames — Explore Projects first —
-        but the RTL frame paints the *second* button solid, so the emphasis
-        lands on "start a conversation". Hence heroCtaClass rather than fixed
-        classes: the order is shared, only the fill swaps.
+        `heroCtas` puts the conversation action first; the first entry receives
+        the solid treatment.
       -->
       <div class="flex flex-wrap items-center gap-[10px]">
         <a
-          v-if="hero.primaryCta"
-          :href="hero.primaryCta.url"
-          :class="heroCtaClass('primary')"
+          v-for="(cta, i) in heroCtas"
+          :key="cta.url"
+          :href="cta.url"
+          :class="i === 0 ? heroCtaSolid : heroCtaOutline"
         >
-          {{ hero.primaryCta.label }}
-        </a>
-        <a
-          v-if="hero.secondaryCta"
-          :href="hero.secondaryCta.url"
-          :class="heroCtaClass('secondary')"
-        >
-          {{ hero.secondaryCta.label }}
+          {{ cta.label }}
         </a>
       </div>
     </div>
@@ -359,7 +357,7 @@ useSectionReveal();
       <div
         v-for="(item, i) in kpi.items"
         :key="i"
-        class="edge-gold will-reveal flex h-[77px] flex-col items-center justify-center gap-1 rounded-sm px-1 py-2 md:h-auto md:gap-2 md:px-3 md:py-6"
+        class="edge-gold will-reveal flex h-[77px] flex-col items-center justify-center gap-2 rounded-[4px] px-3 py-3 md:h-auto md:px-3 md:py-6"
         data-reveal
       >
         <div class="flex items-center justify-center gap-1 md:gap-4">
@@ -378,7 +376,7 @@ useSectionReveal();
           </p>
         </div>
         <div class="flex flex-col items-center gap-1">
-          <p class="text-[10px] font-medium leading-normal text-gold md:text-title-sm">{{ item.title }}</p>
+          <p class="whitespace-nowrap text-[12px] font-medium leading-normal text-gold md:text-title-sm">{{ item.title }}</p>
           <p class="hidden text-body-md text-neutral-700 md:block">{{ item.description }}</p>
         </div>
       </div>
@@ -438,8 +436,16 @@ useSectionReveal();
     :services="services"
   />
 
-  <!-- Content Direction Checklist — Figma 1419:9322 -->
-  <LeadMagnet v-if="sections.lead_magnet" class="max-md:h-[207px] max-md:overflow-hidden max-md:opacity-0 lg:mt-[48px]" :section="sections.lead_magnet" />
+  <!--
+    Content Direction Checklist — Figma 1419:9322.
+
+    The mobile overrides here were `max-md:h-[207px] max-md:overflow-hidden
+    max-md:opacity-0`, which pinned the block to a fixed height and then made
+    it fully TRANSPARENT below 768px — the section was rendered, occupied
+    space, and was invisible on every phone. Removed: the card sizes itself
+    from its content at every width.
+  -->
+  <LeadMagnet v-if="sections.lead_magnet" class="lg:mt-[48px]" :section="sections.lead_magnet" />
 
   <!-- Projects showcase — Figma 1419:9216 -->
   <ProjectsShowcase
@@ -456,7 +462,7 @@ useSectionReveal();
   <PackagesSection v-if="packages" class="lg:mt-[126px]" :section="packages" />
 
   <!-- Why us — Figma 1419:9230 -->
-  <section v-if="whyUs" class="h-[1094px] pt-[193px] md:h-auto md:py-24 lg:mt-[92px] lg:py-28">
+  <section v-if="whyUs" class="py-14 md:py-24 lg:mt-[92px] lg:py-28">
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -470,7 +476,7 @@ useSectionReveal();
         whose two axes differ, so both gap-x and gap-y are explicit.
       -->
       <div
-        class="mt-8 grid gap-8 lg:grid-cols-[506px_1fr] lg:items-center lg:justify-between"
+        class="mt-6 grid gap-12 lg:mt-8 lg:grid-cols-[506px_1fr] lg:items-center lg:justify-between lg:gap-8"
       >
         <!-- title & subtitle 1419:9233 — column, gap 40 -->
         <div class="flex flex-col gap-6 md:gap-10">
@@ -488,11 +494,11 @@ useSectionReveal();
             {{ whyUs.subtitle }}
           </p>
         </div>
-        <div class="grid grid-cols-2 gap-3 md:gap-x-10 md:gap-y-12" data-reveal-group>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-x-10 md:gap-y-12" data-reveal-group>
           <div
             v-for="(item, i) in whyUs.items"
             :key="i"
-            class="will-reveal flex flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-4 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
+            class="will-reveal flex min-h-[140px] flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
             data-reveal
           >
             <component
@@ -514,7 +520,7 @@ useSectionReveal();
   </section>
 
   <!-- Reviews — Figma 1419:9243 -->
-  <section v-if="reviews" class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[100px] lg:py-28">
+  <section v-if="reviews" class="overflow-hidden py-14 md:py-24 lg:-mt-[100px] lg:py-28">
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -552,7 +558,18 @@ useSectionReveal();
       as the client rail, at the 40s the audit specifies; hovering pauses it so
       a card can be read (and its 414:864 hover state inspected).
     -->
-    <div class="marquee-mask mt-8 h-[246px] overflow-hidden md:mt-10 md:h-[297px]">
+    <!--
+      The rail is clipped to the SAME track as every other section rather than
+      running to the viewport edges. It used to be a direct child of <section>,
+      so on wide screens the cards bled past `.container-sahra` and the reviews
+      block was the only band on the page without the site gutter.
+
+      `.container-sahra` supplies the gutter; `.marquee-mask` then fades inside
+      it, so the row still reads as continuous motion rather than as a boxed
+      carousel. The track itself keeps its own `width: max-content` — see below.
+    -->
+    <div class="container-sahra mt-10 md:mt-10">
+    <div class="marquee-mask hidden h-[246px] overflow-hidden md:block md:h-[297px]">
       <!-- No padding on the track: it is `width: max-content`, so any inline
            padding would be carried into the -50% shift and the loop would drift.
            Viewport 1419:9249 is 297 tall for a 246 card — the surplus is shadow
@@ -584,6 +601,23 @@ useSectionReveal();
           </div>
         </div>
       </div>
+    </div>
+    <div v-if="testimonials[0]" class="md:hidden">
+      <div class="testimonial-card flex h-[246px] w-full flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial">
+        <p class="text-[14px] leading-normal text-neutral-800">{{ testimonials[0].quote }}</p>
+        <div class="mt-auto flex items-center gap-2">
+          <img v-if="testimonials[0].avatar" :src="testimonials[0].avatar.src" :alt="testimonials[0].avatar.alt" class="size-12 rounded-full object-cover" />
+          <div>
+            <p class="text-label-lg text-neutral-700">{{ testimonials[0].name }}</p>
+            <p class="mt-1 text-label-md text-neutral-600">{{ testimonials[0].role }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 flex h-[10px] items-center justify-center gap-2" aria-hidden="true">
+        <span class="h-[10px] w-4 rounded-round bg-gold-600"></span>
+        <span v-for="i in 3" :key="i" class="size-[10px] rounded-round bg-neutral-200"></span>
+      </div>
+    </div>
     </div>
   </section>
 
@@ -625,10 +659,10 @@ useSectionReveal();
         <a
           v-if="posts[0]"
           :href="posts[0].url"
-          class="group will-reveal grid h-[458px] grid-cols-[174px_1fr] gap-3 overflow-hidden rounded-sm border border-gold-200 bg-gold-100 p-3 shadow-card md:h-auto md:grid-cols-[279px_270px] md:justify-between md:gap-0 md:p-4"
+          class="group will-reveal flex min-h-[457px] flex-col gap-6 overflow-hidden rounded-sm bg-[#fbf9f5] p-4 shadow-card md:grid md:h-auto md:min-h-0 md:grid-cols-[279px_270px] md:justify-between md:gap-0"
           data-reveal
         >
-          <div class="h-full overflow-hidden rounded-sm md:h-[392px]">
+          <div class="h-[248px] overflow-hidden rounded-sm border border-neutral-100 shadow-card md:h-[392px]">
             <img
               v-if="posts[0].image"
               :src="posts[0].image.src"
@@ -641,7 +675,7 @@ useSectionReveal();
             space-between over a fixed 270 — not fixed margins, which would
             stop matching the frame as soon as an excerpt changes length.
           -->
-          <div class="flex min-w-0 flex-col justify-between py-2 md:py-0">
+          <div class="flex min-w-0 flex-1 flex-col gap-6 md:justify-between md:gap-0 md:py-0">
             <div class="flex items-center gap-2 text-body-md text-neutral-700">
               <CalendarDays class="size-6 text-gold" :stroke-width="1.5" />
               <span>{{ posts[0].publishedAt }}</span>
@@ -649,12 +683,10 @@ useSectionReveal();
             <h3 class="text-title-md font-semibold text-gold">
               {{ posts[0].title }}
             </h3>
-            <p class="hidden text-body-md text-neutral-700 md:block">
+            <p class="text-body-md text-neutral-700">
               {{ posts[0].excerpt }}
             </p>
-            <span
-              class="ms-auto flex size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper md:size-12"
-            >
+            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper md:flex md:size-12">
               <ArrowUpRight class="size-8" :stroke-width="1.25" />
             </span>
           </div>
@@ -714,11 +746,11 @@ useSectionReveal();
           </h2>
           <!-- Subtitle 1419:9277 — Poppins Medium 18, black/700 -->
           <p
-            v-if="faqSection.subtitle"
+            v-if="faqSubtitle"
             class="text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
             :style="{ color: faqSection.colors.subtitle || undefined }"
           >
-            {{ faqSection.subtitle }}
+            {{ faqSubtitle }}
           </p>
         </div>
 
@@ -727,7 +759,7 @@ useSectionReveal();
           <details
             v-for="(faq, i) in faqs"
             :key="i"
-            :open="i === 0"
+            :open="i === 1"
             class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-4 md:p-8"
             data-reveal
           >
@@ -735,12 +767,20 @@ useSectionReveal();
               class="flex cursor-pointer list-none items-center justify-between gap-4 text-[14px] font-medium text-neutral-900 md:text-title-sm [&::-webkit-details-marker]:hidden"
             >
               {{ faq.question }}
-              <span class="relative size-6 shrink-0 text-neutral-700">
-                <Plus
+              <!--
+                Figma 438:571 / 438:551 export as a ringed glyph — a 20px
+                circle at stroke 1.5 #4F4C4D with the bar(s) inside it, i.e.
+                lucide `circle-plus` / `circle-minus`. The bare `plus` / `minus`
+                used here before dropped that ring, which is the "+ has no
+                border" defect. Colour is black/800 (#4F4C4D), matching the
+                exported stroke exactly — not black/700.
+              -->
+              <span class="relative size-6 shrink-0 text-neutral-800">
+                <CirclePlus
                   class="absolute inset-0 size-6 group-open:hidden"
                   :stroke-width="1.5"
                 />
-                <Minus
+                <CircleMinus
                   class="absolute inset-0 hidden size-6 group-open:block"
                   :stroke-width="1.5"
                 />

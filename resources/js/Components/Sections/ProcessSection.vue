@@ -55,30 +55,28 @@ const iconKey = (item: ProcessItem, index: number): string =>
         </div>
       </div>
 
-      <div
-        class="mt-10 grid gap-2 sm:grid-cols-2 md:mt-16 md:gap-x-6 md:gap-y-12 lg:mt-24 lg:grid-cols-3"
-      >
+      <div class="mt-9 flex flex-col md:mt-16 md:grid md:grid-cols-2 md:gap-x-6 md:gap-y-12 lg:mt-24 lg:grid-cols-3">
         <article
           v-for="(item, index) in section.items"
           :key="item.value"
-          class="flex min-w-0 flex-row items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-3 md:flex-col md:gap-8 md:border-0 md:bg-transparent md:p-4"
+          class="flex min-h-[97px] min-w-0 items-center gap-6 border-b border-gold-300 px-2 py-6 md:min-h-0 md:flex-col md:items-start md:gap-8 md:border-0 md:bg-transparent md:p-4"
         >
           <span
-            class="latin-nums border-b border-gold pb-1 text-[18px] font-medium leading-none text-gold-700 md:text-[36px]"
+            class="latin-nums shrink-0 text-[24px] font-semibold leading-none text-gold-700 md:border-b md:border-gold md:pb-1 md:text-[36px] md:font-medium"
           >
             {{ item.value }}
           </span>
 
-          <div class="flex w-full flex-col items-start gap-1 md:gap-[11px]">
+          <div class="flex min-w-0 flex-1 flex-col items-start gap-1 md:w-full md:gap-[11px]">
             <div class="flex min-w-0 items-center gap-1">
               <span
-                class="relative flex size-6 shrink-0 items-center justify-center rounded-round drop-shadow-[1px_1px_5px_rgba(0,0,0,0.08)] md:size-10 md:p-1"
+                class="relative hidden size-10 shrink-0 items-center justify-center rounded-round p-1 drop-shadow-[1px_1px_5px_rgba(0,0,0,0.08)] md:flex"
               >
                 <img
                   v-if="singleAssetIcons[iconKey(item, index)]"
                   :src="singleAssetIcons[iconKey(item, index)]"
                   alt=""
-                  class="size-6 object-contain md:size-9"
+                  class="size-9 object-contain"
                   width="36"
                   height="36"
                 />
@@ -87,42 +85,18 @@ const iconKey = (item: ProcessItem, index: number): string =>
                   v-else-if="iconKey(item, index) === 'production'"
                   class="relative block h-9 w-[30px]"
                 >
-                  <img
-                    src="/icons/sahra/process/production-1.svg"
-                    alt=""
-                    class="absolute left-0 top-[15%] h-[76%] w-[69%]"
-                  />
-                  <img
-                    src="/icons/sahra/process/production-2.svg"
-                    alt=""
-                    class="absolute left-[43%] top-0 h-[43%] w-[39%]"
-                  />
-                  <img
-                    src="/icons/sahra/process/production-3.svg"
-                    alt=""
-                    class="absolute right-0 top-[46%] h-[54%] w-[44%]"
-                  />
+                  <img src="/icons/sahra/process/production-1.svg" alt="" class="absolute left-0 top-[15%] h-[76%] w-[69%]" />
+                  <img src="/icons/sahra/process/production-2.svg" alt="" class="absolute left-[43%] top-0 h-[43%] w-[39%]" />
+                  <img src="/icons/sahra/process/production-3.svg" alt="" class="absolute right-0 top-[46%] h-[54%] w-[44%]" />
                 </span>
 
                 <span
                   v-else-if="iconKey(item, index) === 'approval'"
                   class="relative block h-9 w-[30px]"
                 >
-                  <img
-                    src="/icons/sahra/process/approval-1.svg"
-                    alt=""
-                    class="absolute left-[19%] top-0 h-[19%] w-[38%]"
-                  />
-                  <img
-                    src="/icons/sahra/process/approval-2.svg"
-                    alt=""
-                    class="absolute left-0 top-[11%] h-[80%] w-[75%]"
-                  />
-                  <img
-                    src="/icons/sahra/process/approval-3.svg"
-                    alt=""
-                    class="absolute right-0 top-[54%] h-[38%] w-[37%]"
-                  />
+                  <img src="/icons/sahra/process/approval-1.svg" alt="" class="absolute left-[19%] top-0 h-[19%] w-[38%]" />
+                  <img src="/icons/sahra/process/approval-2.svg" alt="" class="absolute left-0 top-[11%] h-[80%] w-[75%]" />
+                  <img src="/icons/sahra/process/approval-3.svg" alt="" class="absolute right-0 top-[54%] h-[38%] w-[37%]" />
                 </span>
               </span>
 

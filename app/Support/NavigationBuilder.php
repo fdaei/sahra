@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Cache;
  * route() so they automatically carry the active locale prefix.
  *
  * Figma reference:
- *   header  1419:9339  — Home / Work / Service / Insight / About + Let's Talk
+ *   header  1419:9339  — Home / Work / Service / Insight / About + Book Consultation
  *   footer  1419:9317  — Quick Links / Social Links / Info columns
  */
 final class NavigationBuilder

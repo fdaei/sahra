@@ -6,6 +6,7 @@ use App\Models\NewsletterSubscription;
 
 it('subscribes a new email address', function (): void {
     $response = $this->from('/en')->post('/en/newsletter', [
+        'name' => 'Test User',
         'email' => 'lead@example.com',
         'source' => 'home',
     ]);
@@ -20,7 +21,10 @@ it('reactivates a previously unsubscribed address without creating a duplicate',
         'unsubscribed_at' => now()->subMonth(),
     ]);
 
-    $this->from('/en')->post('/en/newsletter', ['email' => 'returning@example.com']);
+    $this->from('/en')->post('/en/newsletter', [
+        'name' => 'Returning User',
+        'email' => 'returning@example.com',
+    ]);
 
     expect(NewsletterSubscription::query()->where('email', 'returning@example.com')->count())->toBe(1);
     expect(NewsletterSubscription::query()->where('email', 'returning@example.com')->first()->isActive())->toBeTrue();

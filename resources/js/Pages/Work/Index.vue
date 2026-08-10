@@ -18,7 +18,7 @@
  */
 import { computed, ref, watch } from 'vue'
 import { Link, usePage } from '@inertiajs/vue3'
-import { ChevronDown } from 'lucide-vue-next'
+import { Building2, ChevronDown } from 'lucide-vue-next'
 import CtaBanner from '@/Components/CtaBanner.vue'
 import FilterChips from '@/Components/FilterChips.vue'
 import SeoHead from '@/Components/SeoHead.vue'
@@ -156,12 +156,16 @@ function loadMore(): void {
                   v-if="project.industry"
                   class="flex shrink-0 items-center gap-2 text-[12px] font-medium text-neutral-500 md:text-label-lg"
                 >
-                  <img
-                    src="/icons/sahra/industry.svg"
-                    alt=""
-                    width="24"
-                    height="24"
-                    class="size-4 md:size-6"
+                  <!--
+                    `/icons/sahra/industry.svg` was a Figma export of lucide
+                    `building-2` with the gold baked into its stroke. Using the
+                    component instead keeps one icon system (brief §12) and lets
+                    the colour come from `text-gold` like every other icon, so
+                    it can no longer drift from the palette.
+                  -->
+                  <Building2
+                    class="size-4 shrink-0 text-gold md:size-6"
+                    :stroke-width="1.5"
                     aria-hidden="true"
                   />
                   {{ project.industry }}
@@ -204,7 +208,7 @@ function loadMore(): void {
              transition-opacity hover:opacity-70"
       @click="loadMore"
     >
-      {{ t('common.load_more') }}
+      {{ t('common.more_works') }}
       <ChevronDown class="size-4 shrink-0 md:size-6" aria-hidden="true" />
     </button>
     </div>
@@ -214,6 +218,6 @@ function loadMore(): void {
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[270px] pt-[57px] md:pb-[145px] md:pt-24"
+    spacing-class="pb-[270px] pt-[76px] md:pb-[145px] md:pt-24"
   />
 </template>

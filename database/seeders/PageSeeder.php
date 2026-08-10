@@ -487,9 +487,21 @@ final class PageSeeder extends Seeder
 
         // FAQ — 1419:9272
         $this->section($page, SectionType::Faq, 11, [
-            'en' => ['eyebrow' => 'FAQ', 'title' => 'Questions we hear often'],
-            'fa' => ['eyebrow' => 'پرسش‌های متداول', 'title' => 'پرسش‌هایی که زیاد می‌شنویم'],
-            'ar' => ['eyebrow' => 'الأسئلة الشائعة', 'title' => 'أسئلة نسمعها كثيراً'],
+            'en' => [
+                'eyebrow' => 'FAQ',
+                'title' => 'Questions we hear often',
+                'subtitle' => 'Because every creative decision is built around brand clarity, consistency, and growth.',
+            ],
+            'fa' => [
+                'eyebrow' => 'پرسش‌های متداول',
+                'title' => 'پرسش‌هایی که زیاد می‌شنویم',
+                'subtitle' => 'چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.',
+            ],
+            'ar' => [
+                'eyebrow' => 'الأسئلة الشائعة',
+                'title' => 'أسئلة نسمعها كثيراً',
+                'subtitle' => 'لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.',
+            ],
         ]);
 
         // Final CTA — 1419:9333

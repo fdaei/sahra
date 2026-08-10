@@ -47,6 +47,31 @@ final class Numerals
     }
 
     /**
+     * Transliterate digits in a display date independently from other numbers.
+     * A locale may use native digits generally while keeping dates in Latin
+     * digits for readability.
+     */
+    public static function localiseDate(string $value, ?string $locale = null): string
+    {
+        $locale ??= app()->getLocale();
+        $localeConfig = config("locales.supported.{$locale}", []);
+
+        if (is_array($localeConfig) && array_key_exists('date_digits', $localeConfig)) {
+            $dateDigits = $localeConfig['date_digits'];
+
+            if (! is_string($dateDigits) || $dateDigits === '') {
+                return $value;
+            }
+
+            $map = self::digitMap($dateDigits);
+
+            return $map === null ? $value : strtr($value, $map);
+        }
+
+        return self::localise($value, $locale);
+    }
+
+    /**
      * ASCII digit => locale digit map, or null when the locale needs no
      * conversion. Cached per locale because this runs once per rendered date.
      *
@@ -66,14 +91,20 @@ final class Numerals
             return $cache[$locale] = null;
         }
 
+        return $cache[$locale] = self::digitMap($set);
+    }
+
+    /** @return array<string, string>|null */
+    private static function digitMap(string $digitSet): ?array
+    {
         // mb_str_split: each glyph is multi-byte, so a byte-wise split breaks it.
-        $glyphs = mb_str_split($set);
+        $glyphs = mb_str_split($digitSet);
 
         if (count($glyphs) !== 10) {
-            return $cache[$locale] = null;
+            return null;
         }
 
-        return $cache[$locale] = array_combine(
+        return array_combine(
             ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
             $glyphs,
         );

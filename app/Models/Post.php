@@ -37,6 +37,8 @@ final class Post extends Model implements HasLocalisedSlugs
         'published_at',
         'is_featured',
         'cover_path',
+        'lead_magnet_file_path',
+        'lead_magnet_image_path',
         'reading_minutes',
     ];
 
@@ -47,6 +49,10 @@ final class Post extends Model implements HasLocalisedSlugs
         'subtitle',
         'excerpt',
         'content',
+        'lead_magnet_title',
+        'lead_magnet_description',
+        'lead_magnet_cta_label',
+        'lead_magnet_image_alt',
         'seo_title',
         'seo_description',
         'cover_alt',

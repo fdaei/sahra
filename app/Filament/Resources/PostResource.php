@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\PublicationStatus;
+use App\Filament\Resource;
 use App\Filament\Resources\PostResource\Pages;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\TranslatableForm;
@@ -22,7 +23,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\PageRegistration;
-use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -73,10 +73,28 @@ final class PostResource extends Resource
 
                 RichEditor::make("translations.{$locale}.content")
                     ->label('Article body')
-                    ->helperText('Insert [[lead_magnet]] on its own line wherever the Content Direction Checklist should appear.')
+                    ->helperText('Insert [[lead_magnet]] on its own line wherever this article’s download banner should appear.')
                     ->toolbarButtons([
                         'bold', 'italic', 'link', 'bulletList', 'orderedList',
                         'h2', 'h3', 'blockquote', 'codeBlock', 'undo', 'redo',
+                    ]),
+
+                Section::make('Article download banner')
+                    ->description('Localised copy for the [[lead_magnet]] block. The downloadable file is selected below.')
+                    ->collapsed()
+                    ->schema([
+                        TextInput::make("translations.{$locale}.lead_magnet_title")
+                            ->label('Title')
+                            ->maxLength(250),
+                        Textarea::make("translations.{$locale}.lead_magnet_description")
+                            ->label('Description')
+                            ->rows(2),
+                        TextInput::make("translations.{$locale}.lead_magnet_cta_label")
+                            ->label('Button label')
+                            ->maxLength(100),
+                        TextInput::make("translations.{$locale}.lead_magnet_image_alt")
+                            ->label('Background image alt text')
+                            ->maxLength(300),
                     ]),
 
                 TextInput::make("translations.{$locale}.cover_alt")
@@ -151,6 +169,27 @@ final class PostResource extends Resource
                             ->directory('posts')
                             ->disk('public'),
                     ]),
+
+                    Section::make('Article download')
+                        ->description('Each Insight can deliver a different private file after the visitor submits the form.')
+                        ->schema([
+                            FileUpload::make('lead_magnet_file_path')
+                                ->label('Downloadable file')
+                                ->directory('lead-magnets')
+                                ->disk('local')
+                                ->visibility('private')
+                                ->acceptedFileTypes([
+                                    'application/pdf',
+                                    'application/zip',
+                                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                                ]),
+                            FileUpload::make('lead_magnet_image_path')
+                                ->label('Banner background')
+                                ->image()
+                                ->imageEditor()
+                                ->directory('posts/lead-magnets')
+                                ->disk('public'),
+                        ]),
                 ]),
             ]),
         ]);

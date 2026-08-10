@@ -50,7 +50,7 @@ function columnHeading(index: number, fallback: string): string {
       <div class="relative z-10 flex flex-col gap-2 md:gap-10">
         <div
           class="grid gap-10 md:grid-cols-2
-                 lg:grid-cols-[402px_minmax(0,1fr)] lg:justify-between lg:gap-12"
+                 lg:flex lg:items-start lg:justify-between lg:gap-0"
         >
         <!-- Brand -->
         <div class="flex max-w-[402px] flex-col items-start gap-4 md:gap-8">
@@ -68,7 +68,7 @@ function columnHeading(index: number, fallback: string): string {
 
           <div
             class="grid grid-cols-2 gap-x-10 gap-y-1 md:gap-y-10
-                   lg:grid-cols-[max-content_max-content_minmax(190px,max-content)] lg:gap-[88px]"
+                   lg:flex lg:shrink-0 lg:items-start lg:gap-[88px]"
           >
             <!-- Menu columns -->
             <nav
@@ -157,13 +157,26 @@ function columnHeading(index: number, fallback: string): string {
         vector paths with a built-in linear gradient (#231F20 at 15% fading to
         transparent), not text: setting "SAHRA" in Poppins gets the wrong
         letterforms and a flat fill. Exported at its native 1248x305.
+
+        VERTICAL POSITION. The file places the group at y=264 inside a 431-tall
+        footer at its natural 304.46 height, so it runs 137.46px PAST the
+        bottom edge and the footer clips it — only the upper ~55% of the
+        letterforms is ever visible. Sitting it flush at `bottom-0` (as it did)
+        showed the whole wordmark and read too high against the frame.
+
+        137.46 / 304.46 = 45.15% of the artwork's OWN height, so the offset is
+        a self-relative translate rather than a pixel value: `bottom`
+        percentages resolve against the containing block, which would drift as
+        the footer grows, while `translateY` resolves against the element and
+        therefore holds at every breakpoint and in every locale.
       -->
       <img
         src="/icons/sahra/footer-wordmark.svg"
         alt=""
         width="1248"
         height="305"
-        class="pointer-events-none absolute inset-inline-0 bottom-0 w-full select-none"
+        class="pointer-events-none absolute inset-inline-0 bottom-0 w-full
+               translate-y-[45.15%] select-none"
         aria-hidden="true"
         decoding="async"
       />

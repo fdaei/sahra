@@ -7,6 +7,7 @@ use App\Http\Controllers\AdminLocaleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\LeadMagnetDownloadController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
@@ -80,6 +81,12 @@ Route::prefix('{locale}')
          | The page was built against the LTR frame; the old comment was wrong.
          */
         Route::get('insights', [PostController::class, 'index'])->name('insights.index');
+
+        Route::post('insights/{post}/lead-magnet', [LeadMagnetDownloadController::class, 'store'])
+            ->middleware('throttle:6,1')
+            ->name('insights.lead-magnet.store');
+        Route::get('insights/{post}/lead-magnet/download', [LeadMagnetDownloadController::class, 'download'])
+            ->name('insights.lead-magnet.download');
 
         // 7 — Single blog                Figma 1352:7391 / 1543:11175
         Route::get('insights/{post}', [PostController::class, 'show'])->name('insights.show');

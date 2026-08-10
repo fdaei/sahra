@@ -61,7 +61,7 @@ defineProps<{
 </script>
 
 <template>
-  <section class="pb-[224px] pt-24" :class="spacingClass">
+  <section :class="spacingClass || 'pb-[224px] pt-24'">
     <div class="container-sahra">
       <div
         class="relative flex min-h-[359px] flex-col justify-center gap-2 overflow-hidden rounded-lg
@@ -114,7 +114,7 @@ defineProps<{
                      text-body-md text-ink transition-opacity hover:opacity-90 md:px-6 md:text-title-sm"
             >
               {{ section.primaryCta.label }}
-              <ArrowRight class="size-5 shrink-0 rtl:-scale-x-100 md:size-6" aria-hidden="true" />
+              <ArrowRight class="hidden size-5 shrink-0 rtl:-scale-x-100 md:block md:size-6" aria-hidden="true" />
             </a>
           </div>
 

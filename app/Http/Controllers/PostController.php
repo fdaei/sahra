@@ -8,8 +8,10 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Services\ContentTransformer;
+use App\Services\MediaTransformer;
 use App\Services\SeoBuilder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -126,10 +128,47 @@ final class PostController extends Controller
         return Inertia::render('Insights/Show', [
             'post' => ContentTransformer::postDetail($post),
 
-            'leadMagnet' => $homeSections['lead_magnet'] ?? null,
+            'leadMagnet' => $this->leadMagnetFor($post, $homeSections['lead_magnet'] ?? null),
             'finalCta' => $homeSections['final_cta'] ?? null,
 
             'seo' => SeoBuilder::forPost($post),
         ]);
+    }
+
+    /**
+     * The visual defaults come from Home, while copy, artwork, and the private
+     * download belong to the individual article.
+     *
+     * @param  array<string, mixed>|null  $fallback
+     * @return array<string, mixed>|null
+     */
+    private function leadMagnetFor(Post $post, ?array $fallback): ?array
+    {
+        $path = $post->lead_magnet_file_path;
+
+        if (blank($path) || ! Storage::disk('local')->exists($path)) {
+            return null;
+        }
+
+        $slug = $post->slugForLocale(app()->getLocale());
+
+        return [
+            'title' => (string) ($post->getTranslation('lead_magnet_title') ?: ($fallback['title'] ?? '')),
+            'description' => (string) ($post->getTranslation('lead_magnet_description') ?: ($fallback['description'] ?? '')),
+            'primaryCta' => [
+                'label' => (string) ($post->getTranslation('lead_magnet_cta_label') ?: ($fallback['primaryCta']['label'] ?? __('forms.newsletter.submit'))),
+                'url' => '',
+            ],
+            'image' => $post->lead_magnet_image_path
+                ? MediaTransformer::make(
+                    $post->lead_magnet_image_path,
+                    $post->getTranslation('lead_magnet_image_alt'),
+                    'post.cover',
+                )
+                : ($fallback['image'] ?? null),
+            'colors' => $fallback['colors'] ?? [],
+            'submitUrl' => route('insights.lead-magnet.store', ['post' => $slug], absolute: false),
+            'downloadUrl' => route('insights.lead-magnet.download', ['post' => $slug], absolute: false),
+        ];
     }
 }

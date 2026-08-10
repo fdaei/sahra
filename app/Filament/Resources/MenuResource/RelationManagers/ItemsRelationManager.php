@@ -89,7 +89,7 @@ final class ItemsRelationManager extends RelationManager
 
                     Toggle::make('is_cta')
                         ->label('Render as button')
-                        ->helperText("The header's Let's Talk CTA."),
+                        ->helperText('The header\'s Book Consultation CTA.'),
 
                     Toggle::make('is_active')->label('Active')->default(true),
                 ]),

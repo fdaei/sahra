@@ -69,6 +69,8 @@ final class SubmissionHandler
             ->first();
 
         if ($existing !== null) {
+            $existing->name = $request->validated('name');
+
             // Previously unsubscribed addresses are quietly reactivated.
             if (! $existing->isActive()) {
                 $existing->resubscribe();
@@ -76,10 +78,13 @@ final class SubmissionHandler
                 return true;
             }
 
+            $existing->save();
+
             return false;
         }
 
         NewsletterSubscription::create([
+            'name' => $request->validated('name'),
             'email' => $email,
             'locale' => app()->getLocale(),
             'source' => $request->validated('source') ?? 'home',

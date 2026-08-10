@@ -73,7 +73,7 @@ function classesFor(slug: string | null): string {
       :key="item.slug"
       :href="hrefFor(item.slug)"
       :class="classesFor(item.slug)"
-      class="w-fit rounded-xs transition-colors"
+      class="w-fit whitespace-nowrap rounded-xs transition-colors"
       :aria-current="active === item.slug ? 'true' : undefined"
     >
       {{ item.name }}

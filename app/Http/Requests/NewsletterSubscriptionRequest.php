@@ -25,6 +25,7 @@ final class NewsletterSubscriptionRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'name' => ['required', 'string', 'max:120'],
             'email' => ['required', 'email:rfc,dns', 'max:200'],
             'source' => ['nullable', 'string', 'in:home,article,contact'],
             'website' => ['nullable', 'prohibited'], // honeypot
@@ -37,6 +38,7 @@ final class NewsletterSubscriptionRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'name' => __('forms.newsletter.name'),
             'email' => __('forms.newsletter.email'),
         ];
     }

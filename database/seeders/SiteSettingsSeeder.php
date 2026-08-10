@@ -162,7 +162,7 @@ final class SiteSettingsSeeder extends Seeder
 
     /**
      * Header — Figma 1419:9339.
-     * Home / Work / Service / Insight / About, plus the Let's Talk CTA.
+     * Home / Work / Service / Insight / About, plus the Book Consultation CTA.
      */
     private function headerMenu(): void
     {
@@ -183,7 +183,7 @@ final class SiteSettingsSeeder extends Seeder
             ['services', ['en' => 'Service', 'fa' => 'خدمات', 'ar' => 'خَدَمَاتُنَا'], false],
             ['insights.index', ['en' => 'Insight', 'fa' => 'بینش', 'ar' => 'رُؤَانَا'], false],
             ['about', ['en' => 'About', 'fa' => 'درباره ما', 'ar' => 'مَن نَحْنُ'], false],
-            ['contact', ['en' => "Let's Talk", 'fa' => 'گفتگو کنیم', 'ar' => 'لنتحدث'], true],
+            ['contact', ['en' => 'Book Consultation', 'fa' => 'گفتگو کنیم', 'ar' => 'لنتحدث'], true],
         ];
 
         foreach ($items as $index => [$route, $labels, $isCta]) {

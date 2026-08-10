@@ -21,6 +21,7 @@ final class NewsletterSubscriptionFactory extends Factory
     public function definition(): array
     {
         return [
+            'name' => fake()->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'locale' => 'en',
             'source' => 'home',

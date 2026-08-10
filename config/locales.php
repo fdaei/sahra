@@ -71,7 +71,9 @@ return [
             'html_lang'   => 'ar',
             'locale'      => 'ar_OM',
             'flag'        => 'OM',
-            'date_format' => 'Y/m/d',
+            // Keep dates easy to scan: "09 مايو 2024" rather than "٢٠٢٤/٠٥/٠٩".
+            'date_format' => 'd F Y',
+            'date_digits' => null,
             // Arabic-Indic (U+0660–U+0669) — not the Persian set above.
             'digits'      => '٠١٢٣٤٥٦٧٨٩',
         ],

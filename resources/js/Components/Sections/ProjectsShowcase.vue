@@ -18,17 +18,71 @@ const props = defineProps<{
 }>();
 
 const activeIndex = ref(0);
+const mobileActiveIndex = ref(0);
 const isPaused = ref(false);
 const isVisible = ref(false);
 const sectionRoot = ref<HTMLElement | null>(null);
+const mobileCarousel = ref<HTMLElement | null>(null);
 let rotationTimer: number | null = null;
 let observer: IntersectionObserver | null = null;
+let mobileMedia: MediaQueryList | null = null;
+let pointerStartX = 0;
+let pointerStartY = 0;
+let didSwipe = false;
 
 const activeProject = computed(() => props.projects[activeIndex.value] ?? null);
+// The mobile Figma frame has four states/dots while desktop has five rows.
+const mobileProjects = computed(() => props.projects.slice(0, 4));
+const mobileActiveProject = computed(
+  () => mobileProjects.value[mobileActiveIndex.value] ?? null,
+);
 const canRotate = computed(() => props.projects.length > 1);
 
 function selectProject(index: number): void {
   activeIndex.value = index;
+}
+
+function selectMobileProject(index: number): void {
+  if (!mobileProjects.value.length) return;
+
+  mobileActiveIndex.value =
+    (index + mobileProjects.value.length) % mobileProjects.value.length;
+  startRotation();
+}
+
+function handlePointerDown(event: PointerEvent): void {
+  if (event.pointerType === "mouse" && event.button !== 0) return;
+
+  pointerStartX = event.clientX;
+  pointerStartY = event.clientY;
+  didSwipe = false;
+  mobileCarousel.value?.setPointerCapture(event.pointerId);
+  isPaused.value = true;
+}
+
+function handlePointerUp(event: PointerEvent): void {
+  const deltaX = event.clientX - pointerStartX;
+  const deltaY = event.clientY - pointerStartY;
+
+  if (Math.abs(deltaX) >= 44 && Math.abs(deltaX) > Math.abs(deltaY)) {
+    didSwipe = true;
+    // Physical swipe direction stays natural in both LTR and RTL layouts.
+    selectMobileProject(mobileActiveIndex.value + (deltaX < 0 ? 1 : -1));
+  }
+
+  isPaused.value = false;
+}
+
+function handlePointerCancel(): void {
+  isPaused.value = false;
+}
+
+function handleCarouselClick(event: MouseEvent): void {
+  if (!didSwipe) return;
+
+  event.preventDefault();
+  event.stopPropagation();
+  didSwipe = false;
 }
 
 function stopRotation(): void {
@@ -51,6 +105,12 @@ function startRotation(): void {
   }
 
   rotationTimer = window.setInterval(() => {
+    if (mobileMedia?.matches && mobileProjects.value.length > 1) {
+      mobileActiveIndex.value =
+        (mobileActiveIndex.value + 1) % mobileProjects.value.length;
+      return;
+    }
+
     activeIndex.value = (activeIndex.value + 1) % props.projects.length;
   }, 5500);
 }
@@ -65,10 +125,16 @@ watch(
   () => props.projects.length,
   (length) => {
     if (activeIndex.value >= length) activeIndex.value = 0;
+    if (mobileActiveIndex.value >= mobileProjects.value.length) {
+      mobileActiveIndex.value = 0;
+    }
   },
 );
 
 onMounted(() => {
+  mobileMedia = window.matchMedia("(max-width: 1023px)");
+  mobileMedia.addEventListener("change", startRotation);
+
   observer = new IntersectionObserver(
     ([entry]) => {
       isVisible.value = entry?.isIntersecting ?? false;
@@ -83,6 +149,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stopRotation();
   observer?.disconnect();
+  mobileMedia?.removeEventListener("change", startRotation);
   document.removeEventListener("visibilitychange", handleVisibilityChange);
 });
 </script>
@@ -128,9 +195,91 @@ onBeforeUnmount(() => {
           </div>
         </header>
 
+        <!-- Mobile carousel — Figma 1465:10846 (362×627, four states). -->
+        <div
+          v-if="mobileProjects.length"
+          ref="mobileCarousel"
+          class="project-mobile-carousel flex touch-pan-y select-none flex-col items-center gap-6 lg:hidden"
+          role="region"
+          aria-roledescription="carousel"
+          :aria-label="t('common.projects')"
+          @pointerdown="handlePointerDown"
+          @pointerup="handlePointerUp"
+          @pointercancel="handlePointerCancel"
+          @click.capture="handleCarouselClick"
+        >
+          <Transition name="project-mobile" mode="out-in">
+            <article
+              v-if="mobileActiveProject"
+              :key="mobileActiveProject.slug"
+              class="flex w-full flex-col gap-6"
+              aria-live="polite"
+            >
+              <div class="flex flex-col gap-2">
+                <div class="flex items-center justify-between gap-4">
+                  <h3 class="truncate text-[24px] font-medium leading-none text-neutral-900">
+                    {{ mobileActiveProject.title }}
+                  </h3>
+                  <a
+                    :href="mobileActiveProject.url"
+                    class="inline-flex shrink-0 items-center gap-1 text-[14px] font-medium leading-none text-neutral-900"
+                  >
+                    {{ t("work.view_case_study") }}
+                    <ArrowUpRight class="size-4" :stroke-width="1.5" />
+                  </a>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                  <span class="flex items-center gap-2 text-[12px] font-medium leading-none text-neutral-500">
+                    <Building2 class="size-4 text-gold" :stroke-width="1.5" />
+                    {{ mobileActiveProject.industry }}
+                  </span>
+                  <p class="text-[14px] font-normal leading-normal text-neutral-800">
+                    {{ mobileActiveProject.excerpt }}
+                  </p>
+                </div>
+              </div>
+
+              <a
+                :href="mobileActiveProject.url"
+                class="aspect-[362/453] w-full overflow-hidden rounded-lg bg-neutral-50"
+                draggable="false"
+              >
+                <img
+                  v-if="mobileActiveProject.image"
+                  :src="mobileActiveProject.image.src"
+                  :srcset="mobileActiveProject.image.srcset"
+                  :alt="mobileActiveProject.image.alt"
+                  class="size-full object-cover"
+                  :width="mobileActiveProject.image.width"
+                  :height="mobileActiveProject.image.height"
+                  draggable="false"
+                />
+              </a>
+            </article>
+          </Transition>
+
+          <div
+            class="flex h-[10px] items-center justify-center gap-2"
+            role="group"
+            :aria-label="t('common.pagination')"
+          >
+            <button
+              v-for="(project, index) in mobileProjects"
+              :key="project.slug"
+              type="button"
+              class="h-[10px] rounded-round bg-neutral-200 transition-[width,background-color] duration-300 ease-out"
+              :class="mobileActiveIndex === index ? 'w-4 bg-gold-600' : 'w-[10px]'"
+              :aria-label="`${index + 1}: ${project.title}`"
+              :aria-current="mobileActiveIndex === index ? 'true' : undefined"
+              @click="selectMobileProject(index)"
+            />
+          </div>
+        </div>
+
         <div
           v-if="projects.length"
-          class="grid items-center gap-4 lg:grid-cols-[minmax(0,612px)_minmax(0,530px)] lg:justify-between lg:gap-10 xl:grid-cols-[612px_530px] xl:gap-0"
+          class="hidden items-center gap-4 lg:grid lg:grid-cols-[minmax(0,612px)_minmax(0,530px)] lg:justify-between lg:gap-10 xl:grid-cols-[612px_530px] xl:gap-0"
         >
           <div
             class="order-1 flex min-w-0 flex-col lg:order-1"
@@ -140,8 +289,8 @@ onBeforeUnmount(() => {
             <article
               v-for="(project, index) in projects"
               :key="project.slug"
-              class="project-slide-row max-lg:hidden"
-              :class="{ 'is-active max-lg:!block': activeIndex === index }"
+              class="project-slide-row"
+              :class="{ 'is-active': activeIndex === index }"
             >
               <div
                 class="group py-4 lg:py-6"
@@ -361,13 +510,40 @@ onBeforeUnmount(() => {
   }
 }
 
+.project-mobile-enter-active,
+.project-mobile-leave-active {
+  transition:
+    opacity 300ms ease-out,
+    transform 300ms ease-out;
+}
+
+.project-mobile-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.project-mobile-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+[dir="rtl"] .project-mobile-enter-from {
+  transform: translateX(-20px);
+}
+
+[dir="rtl"] .project-mobile-leave-to {
+  transform: translateX(20px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .project-slide-details,
   .project-slide-title,
   .project-slide-rule,
   .project-slide-rule span,
   .project-image-enter-active,
-  .project-image-leave-active {
+  .project-image-leave-active,
+  .project-mobile-enter-active,
+  .project-mobile-leave-active {
     transition: none;
   }
 }

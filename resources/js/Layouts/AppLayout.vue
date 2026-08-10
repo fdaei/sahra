@@ -11,12 +11,21 @@ import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import AppHeader from '@/Layouts/AppHeader.vue'
 import AppFooter from '@/Layouts/AppFooter.vue'
+import { useAutoReveal } from '@/Composables/useMotion'
 import type { SharedProps } from '@/types'
 
 const page = usePage<SharedProps>()
 
 const flash = computed(() => page.props.flash)
 const isErrorPage = computed(() => page.component === 'Error')
+
+/*
+ | A7b — the shared scroll reveal, applied here so EVERY page gets it rather
+ | than only the ones that remembered to tag elements with [data-reveal].
+ | Keyed on the page component: this layout persists across Inertia
+ | navigations, so the composable has to re-scan when the page swaps.
+ */
+useAutoReveal(computed(() => page.component))
 
 // Announce flash messages to screen readers when they appear.
 const announcement = computed(() => flash.value.success ?? flash.value.error ?? '')
