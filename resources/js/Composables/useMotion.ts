@@ -256,9 +256,9 @@ export function useHeroStagger(target: MotionTarget): void {
  * when JS is unavailable or motion is reduced.
  *
  * The displayed strings carry affixes and are locale-formatted ("+70k", "%95"),
- * so the numeric run is isolated and its prefix/suffix preserved. Non-Latin
- * digit sets (fa/ar) are left untouched rather than mis-parsed — the value is
- * simply not animated.
+ * so the numeric run is isolated and its prefix/suffix preserved. Western,
+ * Persian, and Arabic-Indic digit sets are normalised for the calculation and
+ * converted back to the active digit set on every animation frame.
  */
 export function useCounters(target?: MotionTarget): void {
   useEffectScope(({ scope }) => {
@@ -266,16 +266,31 @@ export function useCounters(target?: MotionTarget): void {
 
     for (const el of Array.from(root.querySelectorAll<HTMLElement>('[data-counter]'))) {
       const text = el.textContent?.trim() ?? ''
-      const match = text.match(/^(\D*?)(\d[\d,.]*)(\D*)$/)
+      const match = text.match(/^([^\p{N}]*?)([\p{N}][\p{N},.٬٫]*)([^\p{N}]*)$/u)
       if (!match) continue
 
       const [, prefix, digits, suffix] = match
-      const decimals = digits.includes('.') ? (digits.split('.')[1]?.length ?? 0) : 0
-      const endValue = Number(digits.replace(/,/g, ''))
+      const asciiDigits = digits
+        .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+        .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+        .replace(/٬/g, ',')
+        .replace(/٫/g, '.')
+      const decimals = asciiDigits.includes('.')
+        ? (asciiDigits.split('.')[1]?.length ?? 0)
+        : 0
+      const endValue = Number(asciiDigits.replace(/,/g, ''))
       if (!Number.isFinite(endValue)) continue
 
       const state = { value: 0 }
-      const grouped = digits.includes(',')
+      const grouped = /[,٬]/.test(digits)
+      const groupSeparator = digits.includes('٬') ? '٬' : ','
+      const decimalSeparator = digits.includes('٫') ? '٫' : '.'
+      const documentLanguage = document.documentElement.lang.toLowerCase()
+      const digitSet = /[٠-٩]/.test(digits) || documentLanguage.startsWith('ar')
+        ? '٠١٢٣٤٥٦٧٨٩'
+        : /[۰-۹]/.test(digits) || documentLanguage.startsWith('fa')
+          ? '۰۱۲۳۴۵۶۷۸۹'
+          : '0123456789'
 
       gsap.to(state, {
         value: endValue,
@@ -289,7 +304,11 @@ export function useCounters(target?: MotionTarget): void {
                 maximumFractionDigits: decimals,
               })
             : state.value.toFixed(decimals)
-          el.textContent = `${prefix}${shown}${suffix}`
+          const localised = shown
+            .replace(/,/g, groupSeparator)
+            .replace(/\./g, decimalSeparator)
+            .replace(/\d/g, (digit) => digitSet[Number(digit)] ?? digit)
+          el.textContent = `${prefix}${localised}${suffix}`
         },
         // Snap back to the exact authored string so no rounding artefact sticks.
         onComplete: () => {

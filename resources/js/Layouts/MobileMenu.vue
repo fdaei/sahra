@@ -90,16 +90,20 @@ watch(
         <div class="flex items-center justify-between px-5 py-6">
           <BrandLogo variant="full" :height="40" label="" />
 
-          <button
-            ref="closeButton"
-            type="button"
-            class="touch-target -me-2 inline-flex size-11 items-center justify-center
-                   rounded-sm text-neutral-900"
-            :aria-label="t('common.close_menu')"
-            @click="open = false"
-          >
-            <X class="size-6" aria-hidden="true" />
-          </button>
+          <div class="flex items-center gap-1">
+            <LanguageSwitcher />
+
+            <button
+              ref="closeButton"
+              type="button"
+              class="touch-target -me-2 inline-flex size-11 items-center justify-center
+                     rounded-sm text-neutral-900"
+              :aria-label="t('common.close_menu')"
+              @click="open = false"
+            >
+              <X class="size-6" aria-hidden="true" />
+            </button>
+          </div>
         </div>
 
         <nav class="flex-1 overflow-y-auto px-5" :aria-label="t('common.primary_navigation')">
@@ -118,8 +122,6 @@ watch(
         </nav>
 
         <div class="flex flex-col gap-4 border-t border-neutral-100 px-5 py-6">
-          <LanguageSwitcher />
-
           <Link
             v-if="cta"
             :href="cta.url"

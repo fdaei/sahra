@@ -61,7 +61,10 @@ defineProps<{
 </script>
 
 <template>
-  <section :class="spacingClass || 'pb-[224px] pt-24'">
+  <section
+    :dir="page.props.locale.direction"
+    :class="spacingClass || 'pb-[224px] pt-24'"
+  >
     <div class="container-sahra">
       <div
         class="relative flex min-h-[359px] flex-col justify-center gap-2 overflow-hidden rounded-lg
@@ -110,7 +113,7 @@ defineProps<{
             <a
               v-if="section.primaryCta"
               :href="section.primaryCta.url"
-              class="inline-flex w-fit items-center gap-1 rounded-sm bg-paper px-3 py-3
+              class="final-cta-button inline-flex w-fit items-center gap-1 self-start rounded-sm bg-gold px-3 py-3
                      text-body-md text-ink transition-opacity hover:opacity-90 md:px-6 md:text-title-sm"
             >
               {{ section.primaryCta.label }}
@@ -130,3 +133,14 @@ defineProps<{
     </div>
   </section>
 </template>
+
+<style scoped>
+:global(html[lang^='ar']) .final-cta-button {
+  color: var(--primary-black, #231f20);
+  font-family: 'Doran FaNum', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+</style>

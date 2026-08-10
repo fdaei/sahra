@@ -157,7 +157,7 @@ onBeforeUnmount(() => {
 <template>
   <section
     ref="sectionRoot"
-    class="h-[965px] overflow-hidden py-14 md:h-auto md:py-24 lg:py-28"
+    class="overflow-hidden py-14 md:py-24 lg:py-28"
     aria-labelledby="projects-showcase-title"
     @mouseenter="isPaused = true"
     @mouseleave="isPaused = false"
@@ -260,7 +260,7 @@ onBeforeUnmount(() => {
           </Transition>
 
           <div
-            class="flex h-[10px] items-center justify-center gap-2"
+            class="flex min-h-6 items-center justify-center gap-2"
             role="group"
             :aria-label="t('common.pagination')"
           >
@@ -268,8 +268,8 @@ onBeforeUnmount(() => {
               v-for="(project, index) in mobileProjects"
               :key="project.slug"
               type="button"
-              class="h-[10px] rounded-round bg-neutral-200 transition-[width,background-color] duration-300 ease-out"
-              :class="mobileActiveIndex === index ? 'w-4 bg-gold-600' : 'w-[10px]'"
+              class="h-[10px] rounded-round bg-neutral-300 transition-[width,background-color] duration-300 ease-out"
+              :class="mobileActiveIndex === index ? 'w-5 bg-gold-600' : 'w-[10px]'"
               :aria-label="`${index + 1}: ${project.title}`"
               :aria-current="mobileActiveIndex === index ? 'true' : undefined"
               @click="selectMobileProject(index)"

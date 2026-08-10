@@ -31,8 +31,13 @@ const props = withDefaults(
      * body column, so it drops the section rhythm and the outer container.
      */
     inline?: boolean;
+    /**
+     * Home mobile 1419:9191 keeps this carousel card just beyond the inline
+     * edge (x=382) while reserving a 180px slot in the page rhythm.
+     */
+    mobileOffcanvas?: boolean;
   }>(),
-  { inline: false },
+  { inline: false, mobileOffcanvas: false },
 );
 
 const { t } = useTranslations();
@@ -97,8 +102,18 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <section :class="inline ? '' : 'py-14 md:py-18 lg:py-24'">
-    <div :class="inline ? '' : 'container-sahra'">
+  <section
+    :class="[
+      inline ? '' : 'py-14 md:py-18 lg:py-24',
+      mobileOffcanvas ? 'max-md:h-[180px] max-md:overflow-hidden max-md:py-0' : '',
+    ]"
+  >
+    <div
+      :class="[
+        inline ? '' : 'container-sahra',
+        mobileOffcanvas ? 'max-md:translate-x-[362px] max-md:pt-[11px] rtl:max-md:-translate-x-[362px]' : '',
+      ]"
+    >
       <div
         class="relative mx-auto w-full max-w-[1101px] overflow-hidden bg-black text-white"
         :class="

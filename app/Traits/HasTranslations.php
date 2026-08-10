@@ -57,11 +57,20 @@ trait HasTranslations
     {
         $locale ??= app()->getLocale();
 
-        $translations = $this->relationLoaded('translations')
+        $relationLoaded = $this->relationLoaded('translations');
+        $translations = $relationLoaded
             ? $this->translations
             : $this->translations()->get();
 
         $match = $translations->firstWhere('locale', $locale);
+
+        // Some frontend scopes intentionally eager-load only the active and
+        // fallback locales. LocaleAlternates may then request a third locale
+        // to build the language-switcher URL. A missing item in that partial
+        // collection does not mean the translation is absent in the database.
+        if ($match === null && $relationLoaded) {
+            $match = $this->translations()->where('locale', $locale)->first();
+        }
 
         if ($match !== null) {
             return $match;
@@ -73,7 +82,13 @@ trait HasTranslations
 
         $fallback = config('locales.fallback');
 
-        return $translations->firstWhere('locale', $fallback) ?? $translations->first();
+        $fallbackMatch = $translations->firstWhere('locale', $fallback);
+
+        if ($fallbackMatch === null && $relationLoaded && $fallback !== $locale) {
+            $fallbackMatch = $this->translations()->where('locale', $fallback)->first();
+        }
+
+        return $fallbackMatch ?? $translations->first();
     }
 
     /**

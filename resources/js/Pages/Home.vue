@@ -151,17 +151,17 @@ const testimonialTrack = computed(() => {
   return [...half, ...half];
 });
 
-/* The conversation CTA is always first and receives the solid treatment. */
+/* Figma orders the project CTA first and gives it the solid treatment. */
 const heroCtaSolid =
-  "flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:px-8 md:py-4 md:text-title-md";
+  "flex items-center gap-1 rounded-sm bg-ink px-8 py-[13px] text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:py-4 md:text-title-md";
 const heroCtaOutline =
-  "flex items-center gap-1 rounded-sm border border-ink bg-paper px-6 py-3 text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-4 md:text-title-md";
+  "flex items-center gap-1 rounded-sm border border-ink bg-paper px-8 py-[12px] text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:py-[15px] md:text-title-md";
 
 const heroCtas = computed(() => {
   const primary = hero.value?.primaryCta ?? null;
   const secondary = hero.value?.secondaryCta ?? null;
 
-  const ordered = [secondary, primary];
+  const ordered = [primary, secondary];
 
   return ordered.filter(
     (cta): cta is { label: string; url: string } => cta !== null,
@@ -238,7 +238,7 @@ useSectionReveal();
       the section would flip the hero text with it.
     -->
     <div
-      class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview.png')] bg-cover bg-bottom rtl:-scale-x-100"
+      class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview.png')] bg-[length:114%_146%] bg-left-top bg-no-repeat md:bg-[length:100%_100%] md:bg-center rtl:-scale-x-100"
       aria-hidden="true"
     ></div>
     <!-- hero texts: x=96 y=176, gap-14 (space56) — Figma 1419:9194 -->
@@ -252,7 +252,7 @@ useSectionReveal();
     <div class="mx-auto w-full max-w-frame">
     <div
       ref="heroStack"
-      class="relative z-10 flex w-[731px] max-w-full flex-col gap-16 px-5 pb-10 pt-36 md:ms-24 md:max-w-[calc(100%-3rem)] md:gap-14 md:px-0 md:pb-0 md:pt-[176px]"
+      class="relative z-10 flex w-[731px] max-w-full flex-col gap-12 px-5 pb-10 pt-36 md:ms-24 md:max-w-[calc(100%-3rem)] md:gap-14 md:px-0 md:pb-0 md:pt-[176px]"
     >
       <!--
         hero badge — Figma 1419:9195: row, padding 8, gap 8, radius 1000,
@@ -295,7 +295,7 @@ useSectionReveal();
             carries no text-shadow / drop-shadow of any kind.
           -->
           <span
-            class="block w-fit font-display text-[40px] leading-normal tracking-normal md:text-[96px] md:leading-[80px]"
+            class="block w-fit font-display text-[36px] leading-normal tracking-normal md:text-[96px] md:leading-[80px]"
             :style="{
               color: hero.colors.content || 'var(--primary-gold, #BD933B)',
             }"
@@ -317,8 +317,8 @@ useSectionReveal();
 
       <!--
         hero cta: gap-[10px] — Figma 1419:9202 (en) / 1365:9960 (ar).
-        `heroCtas` puts the conversation action first; the first entry receives
-        the solid treatment.
+        `heroCtas` keeps the authored primary/secondary order; the primary
+        project action receives the solid treatment.
       -->
       <div class="flex flex-wrap items-center gap-[10px]">
         <a
@@ -445,24 +445,40 @@ useSectionReveal();
     space, and was invisible on every phone. Removed: the card sizes itself
     from its content at every width.
   -->
-  <LeadMagnet v-if="sections.lead_magnet" class="lg:mt-[48px]" :section="sections.lead_magnet" />
+  <LeadMagnet
+    v-if="sections.lead_magnet"
+    class="lg:mt-[48px]"
+    :section="sections.lead_magnet"
+    mobile-offcanvas
+  />
 
   <!-- Projects showcase — Figma 1419:9216 -->
   <ProjectsShowcase
     v-if="sections.projects_showcase"
-    class="lg:-mt-[64px]"
+    class="max-md:h-[971px] lg:-mt-[64px]"
     :section="sections.projects_showcase"
     :projects="projects"
   />
 
   <!-- Process — Figma 1419:9302 -->
-  <ProcessSection v-if="process" class="lg:mt-[7px]" :section="process" />
+  <ProcessSection
+    v-if="process"
+    class="max-md:!h-[944px] lg:mt-[7px]"
+    :section="process"
+  />
 
   <!-- Packages — Figma 1419:9323 -->
-  <PackagesSection v-if="packages" class="lg:mt-[126px]" :section="packages" />
+  <PackagesSection
+    v-if="packages"
+    class="max-md:!h-[1997px] lg:mt-[126px]"
+    :section="packages"
+  />
 
   <!-- Why us — Figma 1419:9230 -->
-  <section v-if="whyUs" class="py-14 md:py-24 lg:mt-[92px] lg:py-28">
+  <section
+    v-if="whyUs"
+    class="h-[957px] overflow-hidden py-14 md:h-auto md:py-24 lg:mt-[92px] lg:py-28"
+  >
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -501,8 +517,25 @@ useSectionReveal();
             class="will-reveal flex min-h-[140px] flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
             data-reveal
           >
+            <svg
+              v-if="item.title.trim().toLocaleLowerCase() === 'end-to-end support'"
+              class="size-6 md:size-8"
+              viewBox="0 0 10 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M1 1V6.33333C1 7.04058 1.28095 7.71885 1.78105 8.21895C2.28115 8.71905 2.95942 9 3.66667 9H9"
+                stroke="#BD933B"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
             <component
               :is="whyUsIcons[i] || BadgeCheck"
+              v-else
               class="size-6 text-gold md:size-8"
               :stroke-width="1.5"
             />
@@ -520,7 +553,10 @@ useSectionReveal();
   </section>
 
   <!-- Reviews — Figma 1419:9243 -->
-  <section v-if="reviews" class="overflow-hidden py-14 md:py-24 lg:-mt-[100px] lg:py-28">
+  <section
+    v-if="reviews"
+    class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[100px] lg:py-28"
+  >
     <div class="container-sahra">
       <div
         class="eyebrow"
@@ -622,7 +658,10 @@ useSectionReveal();
   </section>
 
   <!-- Insights — Figma 1419:9258 -->
-  <section v-if="insights" class="py-14 md:py-24 lg:-mt-[10px] lg:py-28">
+  <section
+    v-if="insights"
+    class="h-[1111px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[10px] lg:py-28"
+  >
     <div class="container-sahra flex flex-col gap-10 md:gap-12">
       <div class="flex flex-col gap-8 md:gap-12">
         <div

@@ -10,6 +10,7 @@
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
+import { getCountryDataList, getEmojiFlag } from "countries-list";
 import {
   BadgeCheck,
   Building2,
@@ -107,10 +108,26 @@ const form = useForm({
   form_started_at: 0,
 });
 
-const countries = computed(() => [
-  { code: "+968", flag: "🇴🇲", name: t("forms.contact.countries.om") },
-  { code: "+98", flag: "🇮🇷", name: t("forms.contact.countries.ir") },
-]);
+const countries = computed(() => {
+  const locale = page.props.locale.current;
+  const displayNames = new Intl.DisplayNames([locale], { type: "region" });
+
+  return getCountryDataList()
+    .flatMap((country) =>
+      country.phone.map((phone) => ({
+        id: `${country.iso2}-${phone}`,
+        code: `+${phone}`,
+        flag: getEmojiFlag(country.iso2),
+        name: displayNames.of(country.iso2) || country.name,
+        iso2: country.iso2,
+      })),
+    )
+    .sort((a, b) => {
+      if (a.iso2 === "OM") return -1;
+      if (b.iso2 === "OM") return 1;
+      return a.name.localeCompare(b.name, locale);
+    });
+});
 const selectedCountry = ref(countries.value[0]);
 const countrySearch = ref("");
 const countryOpen = ref(false);
@@ -197,14 +214,14 @@ function submit(): void {
   >
     <div class="container-sahra max-md:px-0">
       <div
-        class="relative overflow-hidden rounded-lg bg-neutral-100 lg:min-h-[854px] lg:pe-6"
+        class="relative overflow-visible rounded-lg bg-neutral-100 lg:min-h-[854px] lg:pe-6"
       >
         <img
           src="/images/sahra/contact-bg.png"
           alt=""
           width="1487"
           height="1058"
-          class="pointer-events-none absolute inset-0 size-full object-cover object-center opacity-60"
+          class="pointer-events-none absolute inset-0 size-full rounded-lg object-cover object-center opacity-60"
           aria-hidden="true"
           decoding="async"
         />
@@ -342,7 +359,7 @@ function submit(): void {
               </div>
 
               <div class="grid gap-6 sm:grid-cols-2">
-                <div ref="countryPicker" class="relative">
+                <div ref="countryPicker" class="relative min-w-0">
                   <label
                     for="phone"
                     class="mb-2 block text-label-lg text-neutral-800"
@@ -415,24 +432,26 @@ function submit(): void {
                         autofocus
                       />
                     </label>
-                    <button
-                      v-for="country in filteredCountries"
-                      :key="country.code"
-                      type="button"
-                      class="flex h-12 w-full items-center gap-2 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
-                      @click="chooseCountry(country)"
-                    >
-                      <span class="text-lg" aria-hidden="true">{{
-                        country.flag
-                      }}</span>
-                      <span>{{ country.name }} ({{ country.code }})</span>
-                    </button>
-                    <p
-                      v-if="filteredCountries.length === 0"
-                      class="px-3 py-4 text-body-md text-neutral-500"
-                    >
-                      {{ t("forms.contact.country_empty") }}
-                    </p>
+                    <div class="max-h-[min(24rem,50vh)] overflow-y-auto overscroll-contain">
+                      <button
+                        v-for="country in filteredCountries"
+                        :key="country.id"
+                        type="button"
+                        class="flex h-12 w-full items-center gap-2 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
+                        @click="chooseCountry(country)"
+                      >
+                        <span class="text-lg" aria-hidden="true">{{
+                          country.flag
+                        }}</span>
+                        <span>{{ country.name }} ({{ country.code }})</span>
+                      </button>
+                      <p
+                        v-if="filteredCountries.length === 0"
+                        class="px-3 py-4 text-body-md text-neutral-500"
+                      >
+                        {{ t("forms.contact.country_empty") }}
+                      </p>
+                    </div>
                   </div>
                   <p
                     v-if="form.errors.phone"
@@ -447,7 +466,7 @@ function submit(): void {
                 <div
                   v-if="services.length > 0"
                   ref="servicesPicker"
-                  class="relative"
+                  class="relative min-w-0"
                 >
                   <label
                     for="services"

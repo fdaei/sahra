@@ -13,7 +13,7 @@
  * docs/TRACEABILITY.md for the node mapping.
  */
 import { computed } from "vue";
-import { TrendingUp } from "lucide-vue-next";
+import { BadgeCheck, Focus, Repeat2, TrendingUp } from "lucide-vue-next";
 import arcRings from "~img/decor/arc-rings.svg";
 /*
  | Dune contours — Figma 979:1394, the texture behind the team header.
@@ -62,6 +62,7 @@ const hero = computed(() => props.sections.about_hero);
 const story = computed(() => props.sections.story);
 const howWeThink = computed(() => props.sections.how_we_think);
 const team = computed(() => props.sections.team);
+const thinkIcons = [BadgeCheck, Focus, Repeat2, TrendingUp];
 
 /*
  | Figma 951:3598 — the arch sculpture cutout beside the hero copy. It is
@@ -91,6 +92,20 @@ const heroImage = computed(() => hero.value?.image ?? null);
  */
 const TEAM_ITEM_WIDTH = 254;
 const TEAM_TRACK_COVER = 2560;
+const MOBILE_TEAM_ITEM_WIDTH = 190;
+const MOBILE_TEAM_TRACK_COVER = 800;
+
+const mobileTeamTrack = computed(() => {
+  if (props.team.length === 0) return { items: [], uniqueCount: 0 };
+
+  const repeats = Math.max(
+    1,
+    Math.ceil(MOBILE_TEAM_TRACK_COVER / MOBILE_TEAM_ITEM_WIDTH / props.team.length),
+  );
+  const half = Array.from({ length: repeats }, () => props.team).flat();
+
+  return { items: [...half, ...half], uniqueCount: props.team.length };
+});
 
 const teamRows = computed(() => {
   const members = props.team;
@@ -239,7 +254,7 @@ const teamRows = computed(() => {
       </div>
 
       <!-- How we think — Figma 1288:4182 -->
-      <div v-if="howWeThink" class="mt-[81px] flex h-[759px] flex-col gap-8 md:gap-12 lg:mt-0 lg:h-auto">
+      <div v-if="howWeThink" class="mt-[81px] flex h-[759px] flex-col gap-[51px] md:gap-12 lg:mt-0 lg:h-auto">
         <div
           class="flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-[348px]"
         >
@@ -250,7 +265,7 @@ const teamRows = computed(() => {
             {{ howWeThink.title }}
           </h2>
           <p
-            class="text-body-md text-neutral-700 md:text-title-sm md:font-medium lg:max-w-[612px]"
+            class="hidden text-body-md text-neutral-700 md:block md:text-title-sm md:font-medium lg:max-w-[612px]"
             :style="{ color: howWeThink.colors.description || undefined }"
           >
             {{ howWeThink.description }}
@@ -262,7 +277,7 @@ const teamRows = computed(() => {
           <div
             v-for="(item, i) in howWeThink.items"
             :key="i"
-            class="flex flex-col gap-4 rounded-sm border border-gold-400 px-6 py-6 md:gap-6 md:border-x-0 md:border-b-0 md:border-t-[3px] md:bg-neutral-50/30 md:py-12"
+            class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:border-x-0 md:border-b-0 md:py-12"
           >
             <!--
               Goal card icon — Figma 1061:2072. The default
@@ -279,15 +294,16 @@ const teamRows = computed(() => {
               height="32"
               class="size-5 md:size-8"
             />
-            <TrendingUp
+            <component
               v-else
+              :is="thinkIcons[i] || TrendingUp"
               class="size-5 shrink-0 text-gold md:size-8"
-              :stroke-width="2"
+              :stroke-width="1.5"
               aria-hidden="true"
             />
             <div class="flex flex-col gap-2">
-              <h3 class="text-[16px] font-medium text-neutral-900 md:text-title-xl">{{ item.title }}</h3>
-              <p class="text-[12px] text-neutral-800 md:text-title-sm">
+              <h3 class="text-[18px] font-medium text-neutral-900 md:text-title-xl">{{ item.title }}</h3>
+              <p class="text-[14px] text-neutral-800 md:text-title-sm">
                 {{ item.description }}
               </p>
             </div>
@@ -335,7 +351,38 @@ const teamRows = computed(() => {
           `.marquee-mask` edge fade means a card is never chopped in half at
           the boundary, and hovering the row pauses it so a name can be read.
         -->
-        <div class="relative z-10 flex flex-col gap-4 md:gap-6 lg:gap-[26px]">
+        <!-- Mobile frame 1557:12225 has one clipped horizontal row containing
+             all four members. Splitting the data into the two desktop marquee
+             rows added an entire extra card row and made the page ~250px too
+             tall at 402px. -->
+        <div class="marquee-mask relative z-10 overflow-hidden lg:hidden">
+          <div class="marquee-track gap-4" style="--marquee-duration: 32s">
+            <figure
+              v-for="(member, i) in mobileTeamTrack.items"
+              :key="i"
+              class="flex w-[174px] shrink-0 flex-col gap-2 overflow-hidden rounded-sm border border-neutral-200 bg-paper/60"
+              :aria-hidden="i >= mobileTeamTrack.uniqueCount ? 'true' : undefined"
+            >
+              <div v-if="member.image" class="aspect-square w-full overflow-hidden rounded-sm">
+                <img
+                  :src="member.image.src"
+                  :srcset="member.image.srcset"
+                  :alt="i >= mobileTeamTrack.uniqueCount ? '' : member.image.alt"
+                  :width="member.image.width"
+                  :height="member.image.height"
+                  class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"
+                />
+              </div>
+              <div v-else class="aspect-square w-full rounded-sm bg-neutral-100" />
+              <figcaption class="flex flex-col gap-1 px-3 py-2">
+                <p class="text-[14px] font-medium text-neutral-900">{{ member.name }}</p>
+                <p class="text-[12px] text-neutral-600">{{ member.role }}</p>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+
+        <div class="relative z-10 hidden flex-col gap-[26px] lg:flex">
           <div
             v-for="(row, rowIndex) in teamRows"
             :key="rowIndex"
@@ -394,6 +441,6 @@ const teamRows = computed(() => {
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[327px] pt-24 md:pb-[280px]"
+    spacing-class="pb-[353px] pt-24 md:pb-[280px]"
   />
 </template>
