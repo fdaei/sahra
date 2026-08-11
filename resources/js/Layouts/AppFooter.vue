@@ -81,7 +81,20 @@ function columnHeading(index: number, fallback: string): string {
               </h2>
 
               <ul class="mt-3 flex flex-col items-start gap-2 md:mt-4 md:gap-3">
-                <li v-for="child in column.children" :key="child.id">
+                <!--
+                  A bare `<li>` keeps `display: list-item` even as a flex
+                  child, so without its own font-size it rendered at the
+                  ambient 16px/24px line-height instead of the 14px/21px the
+                  link inside it actually uses — 3px too tall per row, 18px
+                  across the 6-item Quick Links column, which was the entire
+                  source of the footer's height drift from Figma (431 vs the
+                  live 451). Matching the size here directly fixes it.
+                -->
+                <li
+                  v-for="child in column.children"
+                  :key="child.id"
+                  class="text-[14px] leading-normal"
+                >
                   <Link
                     :href="child.url"
                     :target="child.target"

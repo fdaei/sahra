@@ -32,8 +32,11 @@ const props = withDefaults(
      */
     inline?: boolean;
     /**
-     * Home mobile 1419:9191 keeps this carousel card just beyond the inline
-     * edge (x=382) while reserving a 180px slot in the page rhythm.
+     * Home mobile 1419:9191 — node 1451:10444, a dedicated compact card
+     * (362x132, not a scaled-down version of the desktop banner): px-4 py-6,
+     * gap-4, text block + a small bordered pill CTA ("Get checklist" variant,
+     * no icon) bottom-aligned in a row. Renders below `md`; the desktop
+     * banner below still owns `md:` and up.
      */
     mobileOffcanvas?: boolean;
   }>(),
@@ -105,13 +108,57 @@ onBeforeUnmount(() => {
   <section
     :class="[
       inline ? '' : 'py-14 md:py-18 lg:py-24',
-      mobileOffcanvas ? 'max-md:h-[180px] max-md:overflow-hidden max-md:py-0' : '',
+      mobileOffcanvas ? 'max-md:py-0' : '',
     ]"
   >
+    <!--
+      Mobile-only compact card — Figma 1451:10444 (362x132). A distinct
+      layout from the desktop banner below, not a scaled-down version of it:
+      small bordered pill CTA, text+button in one bottom-aligned row.
+    -->
+    <div v-if="mobileOffcanvas" class="container-sahra md:hidden">
+      <div
+        class="relative flex w-full items-end justify-between gap-4 overflow-hidden rounded-sm bg-black px-4 py-6 text-white"
+      >
+        <img
+          src="/images/sahra/lead-magnet-large.png"
+          alt=""
+          class="pointer-events-none absolute inset-0 size-full object-cover"
+          aria-hidden="true"
+        />
+        <div
+          class="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0)_0%,rgba(0,0,0,1)_100%),linear-gradient(rgba(35,31,32,.2),rgba(35,31,32,.2))] rtl:bg-[linear-gradient(270deg,rgba(0,0,0,0)_0%,rgba(0,0,0,1)_100%),linear-gradient(rgba(35,31,32,.2),rgba(35,31,32,.2))]"
+          aria-hidden="true"
+        />
+        <div class="relative z-10 flex flex-col items-start gap-3">
+          <p
+            class="text-[18px] font-normal leading-normal text-white"
+            :style="{ color: section.colors?.title || undefined }"
+          >
+            {{ section.title }}
+          </p>
+          <p
+            class="text-[12px] font-medium leading-normal text-neutral-200"
+            :style="{ color: section.colors?.description || undefined }"
+          >
+            {{ section.description }}
+          </p>
+        </div>
+        <button
+          v-if="section.primaryCta"
+          type="button"
+          class="relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:bg-white hover:text-ink"
+          @click="openModal"
+        >
+          {{ section.primaryCta.label }}
+        </button>
+      </div>
+    </div>
+
     <div
       :class="[
         inline ? '' : 'container-sahra',
-        mobileOffcanvas ? 'max-md:translate-x-[362px] max-md:pt-[11px] rtl:max-md:-translate-x-[362px]' : '',
+        mobileOffcanvas ? 'max-md:hidden' : '',
       ]"
     >
       <div

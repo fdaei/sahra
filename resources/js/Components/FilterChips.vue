@@ -56,13 +56,13 @@ function classesFor(slug: string | null): string {
     role="group"
     class="flex gap-4"
     :class="direction === 'column'
-      ? 'items-center overflow-hidden md:items-start lg:flex-col lg:overflow-visible'
+      ? 'items-center overflow-x-auto md:items-start lg:flex-col lg:overflow-visible'
       : 'flex-wrap items-center gap-x-8'"
   >
     <Link
       :href="hrefFor(null)"
       :class="classesFor(null)"
-          class="w-fit whitespace-nowrap rounded-xs transition-colors"
+      class="w-fit shrink-0 whitespace-nowrap rounded-xs transition-colors"
       :aria-current="active === null ? 'true' : undefined"
     >
       {{ t('common.all') }}
@@ -73,7 +73,7 @@ function classesFor(slug: string | null): string {
       :key="item.slug"
       :href="hrefFor(item.slug)"
       :class="classesFor(item.slug)"
-      class="w-fit whitespace-nowrap rounded-xs transition-colors"
+      class="w-fit shrink-0 whitespace-nowrap rounded-xs transition-colors"
       :aria-current="active === item.slug ? 'true' : undefined"
     >
       {{ item.name }}

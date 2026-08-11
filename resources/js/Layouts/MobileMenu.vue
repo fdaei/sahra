@@ -35,6 +35,18 @@ const scrollLocked = useScrollLock(
 const items = computed(() => page.props.navigation.header.filter((i) => !i.isCta))
 const cta = computed(() => page.props.navigation.header.find((i) => i.isCta) ?? null)
 
+// Mirrors AppHeader's isActive() so the active route reads the same way in
+// both the desktop nav and this panel.
+function isActive(url: string): boolean {
+  const current = new URL(page.url, window.location.origin).pathname
+  const target = new URL(url, window.location.origin).pathname
+
+  const homePath = `/${page.props.locale.current}`
+  if (target === homePath) return current === homePath
+
+  return current === target || current.startsWith(`${target}/`)
+}
+
 watch(open, async (isOpen) => {
   scrollLocked.value = isOpen
 
@@ -112,7 +124,9 @@ watch(
               <Link
                 :href="item.url"
                 :target="item.target"
-                class="block py-5 text-title-md text-neutral-900 transition-colors hover:text-gold"
+                class="block py-5 text-title-md transition-colors hover:text-gold"
+                :class="isActive(item.url) ? 'font-medium text-ink' : 'text-neutral-800'"
+                :aria-current="isActive(item.url) ? 'page' : undefined"
                 @click="open = false"
               >
                 {{ item.label }}

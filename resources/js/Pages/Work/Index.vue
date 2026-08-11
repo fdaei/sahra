@@ -154,7 +154,7 @@ function loadMore(): void {
                 </h2>
                 <span
                   v-if="project.industry"
-                  class="flex shrink-0 items-center gap-2 text-[12px] font-medium text-neutral-500 md:text-label-lg"
+                  class="flex items-center gap-2 text-[12px] font-medium text-neutral-500 md:text-label-lg"
                 >
                   <!--
                     `/icons/sahra/industry.svg` was a Figma export of lucide

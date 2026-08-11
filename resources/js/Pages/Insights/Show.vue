@@ -170,7 +170,7 @@ const linkedInShare = computed(
           </p>
         </div>
 
-        <dl v-if="meta.length > 0" class="grid h-[106px] w-[346px] shrink-0 grid-cols-2 grid-rows-2 gap-x-[92px] gap-y-[26px] md:flex md:h-auto md:w-auto md:flex-col md:gap-6">
+        <dl v-if="meta.length > 0" class="grid h-[106px] w-full max-w-[346px] shrink-0 grid-cols-2 grid-rows-2 gap-x-[92px] gap-y-[26px] md:flex md:h-auto md:w-auto md:flex-col md:gap-6">
           <div v-for="row in meta" :key="row.label" class="flex flex-col gap-1">
             <dt class="flex items-center gap-2">
               <component
@@ -315,7 +315,7 @@ const linkedInShare = computed(
         {{ t("blog.related") }}
       </h2>
 
-      <ul class="flex gap-4 md:grid md:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul class="flex gap-4 overflow-x-auto md:grid md:gap-6 md:overflow-visible sm:grid-cols-2 lg:grid-cols-3">
         <li v-for="related in post.related" :key="related.slug" class="w-[268px] shrink-0 md:w-auto">
           <Link
             :href="related.url"

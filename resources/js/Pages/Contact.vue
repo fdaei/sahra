@@ -231,7 +231,7 @@ function submit(): void {
         >
           <!-- Form panel — Figma 457:991 -->
           <div
-            class="flex flex-col gap-[23px] rounded-lg bg-white/10 p-6 backdrop-blur-[10px] md:p-12 lg:h-[854px] lg:w-[765px] lg:shrink-0"
+            class="flex flex-col gap-8 rounded-lg bg-white/10 p-6 backdrop-blur-[10px] md:p-12 lg:h-[854px] lg:w-[765px]"
           >
             <div class="flex flex-col gap-6 md:gap-12">
               <p
@@ -255,7 +255,7 @@ function submit(): void {
 
             <!-- Contact form -->
             <form
-              class="flex min-h-0 flex-1 flex-col gap-[21px]"
+              class="flex min-h-0 flex-1 flex-col gap-6"
               novalidate
               @submit.prevent="submit"
             >
@@ -272,7 +272,7 @@ function submit(): void {
                 />
               </div>
 
-              <div class="grid gap-6 sm:grid-cols-2">
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div>
                   <label
                     for="name"
@@ -280,11 +280,11 @@ function submit(): void {
                     >{{ t("forms.contact.name") }}</label
                   >
                   <div
-                    class="flex items-center gap-2 rounded-sm border bg-paper/80 px-4 py-3 transition-colors hover:border-neutral-200 focus-within:border-ink"
+                    class="flex items-center gap-2 rounded-sm border bg-paper/80 p-3 transition-colors hover:border-neutral-200 focus-within:border-ink"
                     :class="
                       form.errors.name
                         ? '!border-[#c94a4a] !bg-[#fdf5f5]'
-                        : 'border-gold-200'
+                        : 'border-gold-300'
                     "
                   >
                     <UserRound
@@ -297,7 +297,7 @@ function submit(): void {
                       v-model="form.name"
                       type="text"
                       :placeholder="t('forms.contact.name_placeholder')"
-                      class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
+                      class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none placeholder:text-neutral-500 focus:ring-0"
                       :aria-invalid="form.errors.name ? 'true' : undefined"
                       :aria-describedby="
                         form.errors.name ? 'name-error' : undefined
@@ -321,11 +321,11 @@ function submit(): void {
                     >{{ t("forms.contact.brand") }}</label
                   >
                   <div
-                    class="flex items-center gap-2 rounded-sm border bg-paper/80 px-4 py-3 transition-colors hover:border-neutral-200 focus-within:border-ink"
+                    class="flex items-center gap-2 rounded-sm border bg-paper/80 p-3 transition-colors hover:border-neutral-200 focus-within:border-ink"
                     :class="
                       form.errors.brand_name
                         ? '!border-[#c94a4a] !bg-[#fdf5f5]'
-                        : 'border-gold-200'
+                        : 'border-gold-300'
                     "
                   >
                     <BadgeCheck
@@ -338,7 +338,7 @@ function submit(): void {
                       v-model="form.brand_name"
                       type="text"
                       :placeholder="t('forms.contact.brand_placeholder')"
-                      class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
+                      class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none placeholder:text-neutral-500 focus:ring-0"
                       :aria-invalid="
                         form.errors.brand_name ? 'true' : undefined
                       "
@@ -358,7 +358,7 @@ function submit(): void {
                 </div>
               </div>
 
-              <div class="grid gap-6 sm:grid-cols-2">
+              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
                 <div ref="countryPicker" class="relative min-w-0">
                   <label
                     for="phone"
@@ -370,7 +370,7 @@ function submit(): void {
                     :class="
                       form.errors.phone
                         ? '!border-[#c94a4a] !bg-[#fdf5f5]'
-                        : 'border-gold-200'
+                        : 'border-gold-300'
                     "
                   >
                     <button
@@ -400,7 +400,7 @@ function submit(): void {
                       v-model="form.phone"
                       type="tel"
                       :placeholder="t('forms.contact.phone_placeholder')"
-                      class="min-w-0 flex-1 border-0 bg-transparent px-1 pe-4 py-3 text-body-md shadow-none focus:ring-0"
+                      class="min-w-0 flex-1 border-0 bg-transparent px-1 pe-4 py-3 text-body-md shadow-none placeholder:text-neutral-500 focus:ring-0"
                       dir="ltr"
                       :aria-invalid="form.errors.phone ? 'true' : undefined"
                       :aria-describedby="
@@ -428,7 +428,7 @@ function submit(): void {
                         v-model="countrySearch"
                         type="search"
                         :placeholder="t('forms.contact.country_search')"
-                        class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none focus:ring-0"
+                        class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none placeholder:text-neutral-500 focus:ring-0"
                         autofocus
                       />
                     </label>
@@ -480,7 +480,7 @@ function submit(): void {
                     :class="
                       form.errors.service_ids
                         ? '!border-[#c94a4a] !bg-[#fdf5f5]'
-                        : 'border-gold-200'
+                        : 'border-gold-300'
                     "
                     :aria-expanded="servicesOpen"
                     aria-controls="service-options"
@@ -558,11 +558,11 @@ function submit(): void {
                   v-model="form.message"
                   rows="4"
                   :placeholder="t('forms.contact.message_placeholder')"
-                  class="min-h-[80px] w-full flex-1 resize-none rounded-sm border bg-paper/80 px-4 py-3 text-body-md transition-colors hover:border-neutral-200 focus:border-ink"
+                  class="min-h-[80px] w-full flex-1 resize-none rounded-sm border bg-paper/80 p-3 text-body-md shadow-none transition-colors placeholder:text-neutral-500 hover:border-neutral-200 focus:border-ink focus:ring-0"
                   :class="
                     form.errors.message
                       ? '!border-[#c94a4a] !bg-[#fdf5f5]'
-                      : 'border-gold-200'
+                      : 'border-gold-300'
                   "
                   :aria-invalid="form.errors.message ? 'true' : undefined"
                   :aria-describedby="
@@ -583,7 +583,7 @@ function submit(): void {
               <button
                 type="submit"
                 :disabled="form.processing"
-                class="mt-2 inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-opacity hover:opacity-90 disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
+                class="inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-opacity hover:opacity-90 disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
               >
                 {{
                   form.processing
@@ -596,7 +596,7 @@ function submit(): void {
 
           <!-- Details + socials column — Figma 1288:4130 -->
           <div
-            class="mx-5 flex flex-col justify-between gap-14 lg:mx-0 lg:h-[724px] lg:w-[423px] lg:shrink-0 lg:gap-16"
+            class="mx-5 flex flex-col justify-between gap-14 lg:mx-0 lg:h-[724px] lg:w-[423px] lg:gap-16"
           >
             <!-- Contact details panel — Figma 466:1216 -->
             <div

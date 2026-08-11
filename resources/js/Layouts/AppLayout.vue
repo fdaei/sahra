@@ -54,10 +54,7 @@ const announcement = computed(() => flash.value.success ?? flash.value.error ?? 
     </Transition>
   </main>
 
-  <AppFooter
-    v-if="!isErrorPage"
-    :class="['Home', 'Contact'].includes(page.component) ? '' : 'max-md:hidden'"
-  />
+  <AppFooter v-if="!isErrorPage" />
 
   <!-- Flash region. aria-live so success/error is announced without focus. -->
   <div
