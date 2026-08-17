@@ -34,14 +34,21 @@ defineProps<{ minimal?: boolean }>()
 
 const mobileOpen = ref(false)
 
-const items = computed(() => page.props.navigation.header.filter((i) => !i.isCta))
-const cta = computed(() => page.props.navigation.header.find((i) => i.isCta) ?? null)
+// `navigation`, `locale` and `settings` are normally guaranteed by
+// HandleInertiaRequests::share(), but the header (unlike the footer) still
+// renders on the Error page, whose props can be missing all three — see the
+// comment in Pages/Error.vue.
+const navItems = computed(() => page.props.navigation?.header ?? [])
+const items = computed(() => navItems.value.filter((i) => !i.isCta))
+const cta = computed(() => navItems.value.find((i) => i.isCta) ?? null)
+const currentLocale = computed(() => page.props.locale?.current ?? 'en')
+const siteName = computed(() => page.props.settings?.siteName ?? 'Sahra')
 
 function isActive(url: string): boolean {
   const current = new URL(page.url, window.location.origin).pathname
   const target = new URL(url, window.location.origin).pathname
 
-  const homePath = `/${page.props.locale.current}`
+  const homePath = `/${currentLocale.value}`
   if (target === homePath) return current === homePath
 
   return current === target || current.startsWith(`${target}/`)
@@ -49,7 +56,20 @@ function isActive(url: string): boolean {
 </script>
 
 <template>
-  <header class="fixed inset-inline-0 top-0 z-header backdrop-blur-header bg-white/5">
+  <!--
+    The header is `fixed`, so it stays glued to the viewport top while the
+    rest of the page scrolls underneath it. Every other section on a page
+    (e.g. ProjectsShowcase's mobile carousel) is free to scroll its own
+    content up into that same y-band, and at whatever scroll offset lands a
+    link there, `elementFromPoint` resolved to this header's row div instead
+    of the link — the row is `w-full`, so its hit box covered the entire
+    header height edge-to-edge even over the visually-empty stretch between
+    the logo and the hamburger. `pointer-events-none` on the header removes
+    that full-width hit box; only the actually-interactive children opt back
+    in with `pointer-events-auto`, so the header keeps working while it no
+    longer blocks taps on whatever has scrolled underneath its empty space.
+  -->
+  <header class="pointer-events-none fixed inset-inline-0 top-0 z-header backdrop-blur-header bg-white/5">
     <!--
       The Figma header 1419:9339 is `hug` sizing inside a 1440 frame:
       96 + logo 140 + gap 262 + objects 846 + 96 = 1440 exactly. Without a
@@ -63,20 +83,20 @@ function isActive(url: string): boolean {
       :class="minimal ? 'justify-between' : 'lg:gap-[262px]'"
     >
       <Link
-        :href="`/${page.props.locale.current}`"
-        class="w-[120px] shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold lg:w-[140px]"
-        :aria-label="page.props.settings.siteName"
+        :href="`/${currentLocale}`"
+        class="pointer-events-auto w-[120px] shrink-0 rounded-sm focus-visible:ring-2 focus-visible:ring-gold lg:w-[140px]"
+        :aria-label="siteName"
       >
         <BrandLogo
           variant="full"
           :height="56"
-          :label="page.props.settings.siteName"
+          :label="siteName"
           class="h-[48px] w-[120px] lg:h-[56px] lg:w-[140px]"
         />
       </Link>
 
       <div
-        class="hidden items-center lg:flex"
+        class="pointer-events-auto hidden items-center lg:flex"
         :class="minimal ? 'ms-auto' : 'w-[846px] justify-between'"
       >
         <!-- menu: gap-24 (space24) — Figma "I1419:9339;159:453" -->
@@ -113,7 +133,7 @@ function isActive(url: string): boolean {
       <button
         v-if="!minimal"
         type="button"
-        class="touch-target ms-auto -me-2 inline-flex size-11 items-center justify-center rounded-sm text-ink lg:hidden"
+        class="touch-target pointer-events-auto ms-auto -me-2 inline-flex size-11 items-center justify-center rounded-sm text-ink lg:hidden"
         :aria-label="t('common.open_menu')"
         aria-haspopup="dialog"
         :aria-expanded="mobileOpen"

@@ -16,7 +16,8 @@ import type { SharedProps } from '@/types'
 
 const page = usePage<SharedProps>()
 
-const flash = computed(() => page.props.flash)
+// Falls back when `flash` wasn't shared — see the comment in Pages/Error.vue.
+const flash = computed(() => page.props.flash ?? { success: null, error: null })
 const isErrorPage = computed(() => page.component === 'Error')
 
 /*

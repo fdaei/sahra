@@ -470,7 +470,7 @@ useSectionReveal();
   <!-- Packages — Figma 1419:9323 -->
   <PackagesSection
     v-if="packages"
-    class="max-md:!h-[1997px] lg:mt-[126px]"
+    class="lg:mt-[126px]"
     :section="packages"
   />
 

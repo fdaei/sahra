@@ -28,7 +28,15 @@ const key = computed(() => (known.includes(props.status) ? String(props.status) 
 const title = computed(() => t(`errors.${key.value}.title`))
 const message = computed(() => t(`errors.${key.value}.message`))
 
-const homeUrl = computed(() => `/${page.props.locale.current}`)
+/*
+ | The Error page can be rendered by bootstrap/app.php's exception responder
+ | for exceptions thrown before HandleInertiaRequests::share() runs (e.g. a
+ | session/database failure in StartSession, which is earlier in the `web`
+ | middleware group) — in that case `locale`/`alternates` are never shared,
+ | so this falls back instead of throwing and blanking the whole page.
+ */
+const currentLocale = computed(() => page.props.locale?.current ?? 'en')
+const homeUrl = computed(() => `/${currentLocale.value}`)
 </script>
 
 <template>
@@ -37,7 +45,7 @@ const homeUrl = computed(() => `/${page.props.locale.current}`)
       title,
       description: message,
       image: null,
-      canonical: page.props.alternates[page.props.locale.current],
+      canonical: page.props.alternates?.[currentLocale] ?? null,
       type: 'website',
       noindex: true,
     }"

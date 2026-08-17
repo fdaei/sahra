@@ -6,6 +6,10 @@
 /storage/*.key
 /storage/pail
 /vendor
+/bootstrap/cache/*.php
+!/bootstrap/cache/.gitkeep
+/database/*.sqlite
+/database/*.sqlite-journal
 .env
 .env.backup
 .env.production

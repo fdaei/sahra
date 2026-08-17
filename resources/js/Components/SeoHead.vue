@@ -26,8 +26,32 @@ const props = withDefaults(
 
 const page = usePage<SharedProps>()
 
-const settings = computed(() => page.props.settings)
-const locale = computed(() => page.props.locale)
+// SeoHead renders first on every page, including Error.vue — whose props can
+// be missing `settings`/`locale` when the triggering exception happened
+// before HandleInertiaRequests::share() ran (see the comment in
+// Pages/Error.vue). Fall back to the same defaults SiteSettings::forFrontend()
+// and share() use server-side, instead of throwing and blanking the page.
+const settings = computed(
+  () =>
+    page.props.settings ?? {
+      siteName: 'Sahra',
+      tagline: '',
+      description: '',
+      contact: { whatsapp: '', phone: '', email: '', location: '', workingWith: '' },
+      socialLinks: [],
+      seo: { defaultTitle: 'Sahra', defaultDescription: '', defaultImage: null, organizationName: 'Sahra' },
+    },
+)
+const locale = computed(
+  () =>
+    page.props.locale ?? {
+      current: 'en',
+      direction: 'ltr',
+      font: 'sans',
+      htmlLang: 'en',
+      supported: [],
+    },
+)
 
 const title = computed(() => props.meta.title || settings.value.seo.defaultTitle)
 

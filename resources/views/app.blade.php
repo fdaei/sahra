@@ -25,7 +25,6 @@
     <meta name="theme-color" content="#231F20">
 
     {{-- Self-hosted fonts: see docs/ASSET-MANIFEST.md §10 --}}
-    <link rel="preconnect" href="{{ config('app.url') }}">
     @if ($config['font'] === 'arabic')
         <link rel="preload" href="/fonts/doran/DoranFaNum-Regular.ttf" as="font" type="font/ttf" crossorigin>
         <link rel="preload" href="/fonts/doran/DoranFaNum-Medium.ttf" as="font" type="font/ttf" crossorigin>
