@@ -12,7 +12,7 @@ resource mapping.
 
 ## 1. Requirements
 
-- PHP 8.3+
+- PHP 8.2+
 - Composer 2
 - Node 20+
 - MySQL 8 or PostgreSQL 14+

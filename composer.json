@@ -5,13 +5,20 @@
     "keywords": ["laravel", "inertia", "vue", "filament", "multilingual"],
     "license": "proprietary",
     "require": {
-        "php": "^8.3",
+        "php": "^8.2",
         "filament/filament": "^3.2",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^12.61.1",
         "laravel/tinker": "^2.9",
+        "openspout/openspout": "~4.28.5",
         "spatie/laravel-permission": "^6.9",
         "spatie/laravel-sitemap": "^7.3",
+        "symfony/clock": "^7.2",
+        "symfony/css-selector": "^7.2",
+        "symfony/dom-crawler": "^7.2",
+        "symfony/event-dispatcher": "^7.2",
+        "symfony/string": "^7.2",
+        "symfony/translation": "^7.2",
         "tightenco/ziggy": "^2.4"
     },
     "require-dev": {
@@ -22,7 +29,8 @@
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.5",
         "pestphp/pest": "^3.5",
-        "pestphp/pest-plugin-laravel": "^3.0"
+        "pestphp/pest-plugin-laravel": "^3.0",
+        "symfony/yaml": "^7.2"
     },
     "autoload": {
         "psr-4": {
@@ -69,6 +77,9 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
+        "platform": {
+            "php": "8.2.99"
+        },
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
