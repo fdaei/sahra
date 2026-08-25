@@ -182,7 +182,7 @@ function showMoreInsights(): void {
             >
               {{ t("common.read_article") }}
               <ArrowUpRight
-                class="size-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 rtl:-scale-x-100 md:size-6"
+                class="size-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1 md:size-6"
                 :stroke-width="1.5"
                 aria-hidden="true"
               />

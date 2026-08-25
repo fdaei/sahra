@@ -37,6 +37,11 @@ const props = withDefaults(
      * gap-4, text block + a small bordered pill CTA ("Get checklist" variant,
      * no icon) bottom-aligned in a row. Renders below `md`; the desktop
      * banner below still owns `md:` and up.
+     *
+     * Only the BOTTOM padding is dropped (`max-md:pb-0`), never `py-0`: the
+     * section's own `pt-14` is what separates the card from the black
+     * services orbit directly above it on Home, and the next section
+     * (ProjectsShowcase) supplies the matching 56px below with its `py-14`.
      */
     mobileOffcanvas?: boolean;
   }>(),
@@ -108,7 +113,7 @@ onBeforeUnmount(() => {
   <section
     :class="[
       inline ? '' : 'py-14 md:py-18 lg:py-24',
-      mobileOffcanvas ? 'max-md:py-0' : '',
+      mobileOffcanvas ? 'max-md:pb-0' : '',
     ]"
   >
     <!--

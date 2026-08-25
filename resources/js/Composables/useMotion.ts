@@ -33,8 +33,18 @@ function resolve(target: MotionTarget): HTMLElement | null {
  * unmount. Reverting restores the inline styles GSAP wrote, so a reveal that
  * has already played leaves the element at its natural (visible) state.
  */
-function useEffectScope(fn: (ctx: { scope: HTMLElement | null }) => void, target?: MotionTarget): void {
+function useEffectScope(
+  fn: (ctx: { scope: HTMLElement | null }) => void | (() => void),
+  target?: MotionTarget,
+): void {
   let ctx: gsap.Context | null = null
+  /*
+   | `fn` may return its own teardown. A gsap.context only captures what was
+   | created synchronously inside it, so anything that builds tweens LATER —
+   | a matchMedia that fires on a breakpoint change, for instance — has to
+   | hand back a disposer of its own or it outlives the component.
+   */
+  let dispose: (() => void) | undefined
 
   onMounted(() => {
     if (prefersReducedMotion()) return
@@ -42,13 +52,42 @@ function useEffectScope(fn: (ctx: { scope: HTMLElement | null }) => void, target
     const scope = target ? resolve(target) : null
     if (target && !scope) return
 
-    ctx = gsap.context(() => fn({ scope }), scope ?? undefined)
+    ctx = gsap.context(() => {
+      dispose = fn({ scope }) ?? undefined
+    }, scope ?? undefined)
   })
 
   onUnmounted(() => {
+    dispose?.()
+    dispose = undefined
     ctx?.revert()
     ctx = null
   })
+}
+
+/*
+ | Where a reveal fires, as a share of viewport height. Shared by the opt-in
+ | A7 reveal below and the page-wide A7b one further down.
+ |
+ | The near-bottom default assumes the block is roughly viewport-sized, so
+ | crossing the line means "the reader is about to see this". That assumption
+ | breaks on narrow screens: sections that are ~1 viewport tall on desktop
+ | become 1.3x to 2.8x the viewport once they stack, and the 0.7s tween then
+ | completes while the reader is still looking at the block's first ~80px.
+ | Measured on the live site at 390x664, sections revealed with 6-18% of
+ | themselves on screen — the motion was running, just never where anyone
+ | could see it.
+ |
+ | A block taller than the viewport can never animate "as it arrives" from a
+ | near-bottom trigger, so it fires later instead, once a substantial band of
+ | it is actually on screen.
+ */
+const REVEAL_START = 'top 88%'
+const REVEAL_START_TALL = 'top 65%'
+
+/** True when `el` is too tall to read as a single arriving gesture. */
+function isTallerThanViewport(el: HTMLElement): boolean {
+  return el.getBoundingClientRect().height > window.innerHeight * 0.9
 }
 
 /**
@@ -75,7 +114,14 @@ export function useSectionReveal(target?: MotionTarget): void {
         opacity: 1,
         duration: MOTION.duration.reveal,
         ease: MOTION.ease.brand,
-        scrollTrigger: { trigger: el, start: 'top 85%', once: true },
+        scrollTrigger: {
+          trigger: el,
+          // Same tall-block handling as the page-level reveal — several of
+          // these opted-in blocks (Work/Show's 620px and 488px panels) are
+          // taller than a phone viewport.
+          start: () => (isTallerThanViewport(el) ? REVEAL_START_TALL : REVEAL_START),
+          once: true,
+        },
       })
     }
 
@@ -83,16 +129,62 @@ export function useSectionReveal(target?: MotionTarget): void {
       const children = Array.from(group.querySelectorAll<HTMLElement>('[data-reveal]'))
       if (children.length === 0) continue
 
-      gsap.to(children, {
-        y: 0,
-        opacity: 1,
-        duration: MOTION.duration.reveal,
-        ease: MOTION.ease.brand,
-        stagger: MOTION.stagger.cards,
-        scrollTrigger: { trigger: group, start: 'top 85%', once: true },
-      })
+      /*
+       | One trigger per VISUAL ROW, not one per group.
+       |
+       | Triggering the whole group off the container only reads correctly
+       | while the container fits the viewport. On a narrow screen these grids
+       | collapse to `grid-cols-1`, so a four-card group becomes a ~700px
+       | column in a ~660px viewport: the container's top crosses the line
+       | while cards 3 and 4 are still hundreds of px below the fold, and they
+       | finish their tween entirely off-screen. Measured on the live site,
+       | those two cards revealed at 0% visible — which is exactly what "the
+       | animations don't run on mobile" looks like to a reader.
+       |
+       | Bucketing by document Y restores the intent at every breakpoint: a
+       | 2-col grid still staggers its pair as one gesture, and a 1-col stack
+       | becomes N rows of one, each arriving on its own trigger.
+       */
+      for (const row of visualRows(children)) {
+        gsap.to(row, {
+          y: 0,
+          opacity: 1,
+          duration: MOTION.duration.reveal,
+          ease: MOTION.ease.brand,
+          stagger: MOTION.stagger.cards,
+          scrollTrigger: {
+            trigger: row[0],
+            start: () => (isTallerThanViewport(row[0]) ? REVEAL_START_TALL : REVEAL_START),
+            once: true,
+          },
+        })
+      }
     }
   }, target)
+}
+
+/*
+ | Deliberately coarse: grid items in one row can differ by a fraction of a
+ | pixel from sub-pixel layout, and cards of unequal height still share a row
+ | when their tops align.
+ */
+const ROW_TOLERANCE = 8
+
+/** Bucket elements into visual rows by their position in the document. */
+function visualRows(elements: HTMLElement[]): HTMLElement[][] {
+  const rows = new Map<number, HTMLElement[]>()
+
+  for (const el of elements) {
+    // Document-relative, so the buckets survive being measured mid-scroll.
+    const y = el.getBoundingClientRect().top + window.scrollY
+    const key = Math.round(y / ROW_TOLERANCE)
+    const row = rows.get(key)
+
+    if (row) row.push(el)
+    else rows.set(key, [el])
+  }
+
+  return [...rows.entries()].sort(([a], [b]) => a - b).map(([, row]) => row)
 }
 
 /*
@@ -203,7 +295,14 @@ export function useAutoReveal(pageKey: Ref<string>): void {
             duration: MOTION.duration.reveal,
             ease: MOTION.ease.brand,
             clearProps: 'transform,opacity',
-            scrollTrigger: { trigger: el, start: 'top 88%', once: true },
+            scrollTrigger: {
+              trigger: el,
+              // Function form so a resize or orientation change re-measures:
+              // a block that was viewport-sized in landscape is a tall stack
+              // in portrait, and vice versa.
+              start: () => (isTallerThanViewport(el) ? REVEAL_START_TALL : REVEAL_START),
+              once: true,
+            },
           },
         )
       }
@@ -324,25 +423,54 @@ export function useCounters(target?: MotionTarget): void {
  * section scrolls (−8°→8°, linear, no easing: it is tied to scroll position,
  * not time). Direction flips in RTL so the ring turns with the reading order.
  */
-export function useScrubRotate(target: MotionTarget, degrees = 8): void {
+export function useScrubRotate(
+  target: MotionTarget,
+  options: { degrees?: number; media?: string } = {},
+): void {
+  const { degrees = 8, media } = options
+
   useEffectScope(({ scope }) => {
     if (!scope) return
-    const sweep = degrees * directionFactor()
 
-    gsap.fromTo(
-      scope,
-      { rotation: -sweep },
-      {
-        rotation: sweep,
-        ease: MOTION.ease.none,
-        scrollTrigger: {
-          trigger: scope,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
+    const spin = (): void => {
+      const sweep = degrees * directionFactor()
+
+      gsap.fromTo(
+        scope,
+        { rotation: -sweep },
+        {
+          rotation: sweep,
+          ease: MOTION.ease.none,
+          scrollTrigger: {
+            trigger: scope,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
         },
-      },
-    )
+      )
+    }
+
+    if (!media) {
+      spin()
+      return
+    }
+
+    /*
+     | Breakpoint-scoped rotation.
+     |
+     | A stage can swap which ring it draws at a breakpoint, leaving the other
+     | at `display: none`. A ScrollTrigger measured on a display:none element
+     | gets a zero-height rect, so its start and end collapse onto the same
+     | scroll position and the scrub never advances — the ring that IS on
+     | screen sits perfectly still. matchMedia builds the tween only while its
+     | query matches and reverts it (killing the trigger) when it stops, so
+     | rotating through a resize or an orientation change stays correct.
+     */
+    const mm = gsap.matchMedia()
+    mm.add(media, () => spin())
+
+    return () => mm.revert()
   }, target)
 }
 

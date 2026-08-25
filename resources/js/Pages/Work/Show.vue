@@ -1,7 +1,8 @@
 <script setup lang="ts">
 /**
  * Single project — Figma 639:1617 (desktop, LTR) / 1323:7541 (RTL) /
- * 1555:10866 (mobile).
+ * 1626:12562 (mobile — the frame docs/FIGMA-AUDIT.md §4 lists, 1555:10866, is
+ * the Services mobile frame; goals live at 1642:11100).
  *
  * Frame geometry taken from the file:
  *   page          1361:7175  column, align center, gap 224, content starts y=184
@@ -25,6 +26,7 @@ import projectArcRings from "~img/decor/arc-rings-project.svg";
 import deliverablesCardBg from "~img/decor/deliverables-card-bg.png";
 import {
   ArrowRight,
+  BadgeCheck,
   CalendarDays,
   Building2,
   Instagram,
@@ -254,10 +256,23 @@ useSectionReveal(pageRoot);
             <li
               v-for="(card, i) in project.goals"
               :key="i"
-              class="flex h-36 flex-col gap-4 rounded-sm border border-gold-300 bg-neutral-50/30 p-6 shadow-[2px_2px_10px_rgba(0,0,0,0.05)] md:h-auto md:gap-6 md:border-x-0 md:border-b-0 md:border-t-[3px] md:border-t-gold md:py-12 md:shadow-none"
+              class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:border-x-0 md:border-b-0 md:py-12"
             >
+              <!--
+                Goal card leading mark. The mobile card (`Goal card` variant
+                1560:13006, instances 1626:12790…93) carries a 24px gold
+                badge-check — the exported glyph is lucide `badge-check`,
+                stroke #BD933B — on every card, not a number. The desktop frame
+                numbers them (36/500 gold), so both are kept, one per
+                breakpoint.
+              -->
+              <BadgeCheck
+                class="size-6 shrink-0 text-gold md:hidden"
+                :stroke-width="1.5"
+                aria-hidden="true"
+              />
               <span
-                class="text-[22px] font-medium leading-none text-gold md:text-[36px]"
+                class="hidden font-medium leading-none text-gold md:block md:text-[36px]"
               >
                 {{ String(i + 1).padStart(2, "0") }}
               </span>

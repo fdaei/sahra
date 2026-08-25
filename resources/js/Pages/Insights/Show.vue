@@ -158,7 +158,7 @@ const linkedInShare = computed(
       <div
         class="flex flex-col gap-[38px] lg:flex-row lg:items-start lg:justify-between lg:gap-10"
       >
-        <div class="flex h-[181px] max-w-[612px] flex-col gap-6 md:h-auto">
+        <div class="flex min-h-[181px] max-w-[612px] flex-col gap-6 md:min-h-0">
           <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-[40px]">
             {{ post.title }}
           </h1>
@@ -170,7 +170,7 @@ const linkedInShare = computed(
           </p>
         </div>
 
-        <dl v-if="meta.length > 0" class="grid h-[106px] w-full max-w-[346px] shrink-0 grid-cols-2 grid-rows-2 gap-x-[92px] gap-y-[26px] md:flex md:h-auto md:w-auto md:flex-col md:gap-6">
+        <dl v-if="meta.length > 0" class="grid min-h-[106px] w-full max-w-[346px] shrink-0 grid-cols-2 grid-rows-2 gap-x-[92px] gap-y-[26px] md:flex md:min-h-0 md:w-auto md:flex-col md:gap-6">
           <div v-for="row in meta" :key="row.label" class="flex flex-col gap-1">
             <dt class="flex items-center gap-2">
               <component
@@ -199,7 +199,7 @@ const linkedInShare = computed(
       />
     </div>
 
-    <div class="mt-[35px] flex h-[85px] flex-col gap-4 md:hidden">
+    <div class="mt-[35px] flex min-h-[85px] flex-col gap-4 md:hidden">
       <p class="text-[14px] font-medium leading-[21px] text-neutral-900">{{ t('blog.share') }}</p>
       <div class="flex gap-4">
         <button
@@ -224,12 +224,19 @@ const linkedInShare = computed(
       <!-- Balancing rail: present in the frame (1222:4343) at zero opacity. -->
       <div class="hidden w-[119px] shrink-0 lg:block" aria-hidden="true" />
 
-      <div class="flex w-full max-w-[826px] flex-col gap-[182px] md:gap-18">
+      <!--
+       | Article column. The mobile frame (1543:11175) sizes its two article
+       | blocks at 1001px and 514px around a 182px gap, but those are the
+       | heights of *that frame's* placeholder copy. Real posts vary, so a
+       | fixed height either leaves a hole or lets the text run out of its box
+       | and over the related strip below. Heights stay content-driven here;
+       | take rhythm from the frame, never absolute heights.
+      -->
+      <div class="flex w-full max-w-[826px] flex-col gap-10 md:gap-18">
         <template v-for="(part, index) in articleParts" :key="index">
           <article
             v-if="part.type === 'html'"
             class="prose prose-neutral max-w-none max-md:[&_h3]:mb-6 max-md:[&_h3]:mt-10 max-md:[&_h3]:text-[20px] max-md:[&_h3]:font-medium max-md:[&_h3]:leading-[30px] max-md:[&_h3:first-child]:mt-0 max-md:[&_h3:first-child]:leading-[33px] max-md:[&_p]:m-0 max-md:[&_p]:text-[14px] max-md:[&_p]:leading-[21px] prose-headings:font-medium prose-a:text-gold prose-a:no-underline hover:prose-a:underline"
-            :class="index === 0 ? 'max-md:h-[1001px]' : 'max-md:h-[514px]'"
             v-html="part.html"
           />
 
@@ -310,7 +317,7 @@ const linkedInShare = computed(
     </div>
 
     <!-- Related — Figma 1220:4342, "blog card" 1228:4645 -->
-    <section v-if="post.related.length > 0" class="mt-16 flex h-[468px] flex-col gap-10 overflow-hidden md:mt-0 md:h-auto md:gap-12">
+    <section v-if="post.related.length > 0" class="mt-16 flex flex-col gap-10 md:mt-0 md:gap-12">
       <h2 class="text-[22px] font-semibold leading-normal text-neutral-900 md:text-[40px]">
         {{ t("blog.related") }}
       </h2>

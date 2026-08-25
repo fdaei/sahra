@@ -236,9 +236,18 @@ useSectionReveal();
       the clear half follows the text — unflipped it collides with the copy.
       Hence its own layer rather than a background on the section: flipping
       the section would flip the hero text with it.
+
+      Mobile (1419:9191) is a SEPARATE composition, not a crop: the frame is
+      402x765 and the artwork is re-stacked vertically — ring and dune curve
+      anchored bottom-right, the clear space above them rather than beside.
+      The desktop asset is 1024x704 landscape with everything in its right
+      half, so scaling it into a portrait viewport pushes the whole
+      composition off the right edge. Hence a per-breakpoint asset swap.
+      Both use bg-[length:100%_100%]: each asset already matches its frame's
+      aspect ratio, so this fills exactly with no crop.
     -->
     <div
-      class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview.png')] bg-[length:114%_146%] bg-left-top bg-no-repeat md:bg-[length:100%_100%] md:bg-center rtl:-scale-x-100"
+      class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview-mobile.webp')] bg-[length:100%_100%] bg-center bg-no-repeat md:bg-[url('/images/sahra/hero-brand-preview.png')] rtl:-scale-x-100"
       aria-hidden="true"
     ></div>
     <!-- hero texts: x=96 y=176, gap-14 (space56) — Figma 1419:9194 -->
@@ -715,18 +724,18 @@ useSectionReveal();
             stop matching the frame as soon as an excerpt changes length.
           -->
           <div class="flex min-w-0 flex-1 flex-col gap-6 md:justify-between md:gap-0 md:py-0">
-            <div class="flex items-center gap-2 text-body-md text-neutral-700">
-              <CalendarDays class="size-6 text-gold" :stroke-width="1.5" />
+            <div class="flex items-center gap-2 text-[12px] leading-normal text-neutral-700 md:text-body-md">
+              <CalendarDays class="size-4 text-gold md:size-6" :stroke-width="1.5" />
               <span>{{ posts[0].publishedAt }}</span>
             </div>
-            <h3 class="text-title-md font-semibold text-gold">
+            <h3 class="text-[16px] font-semibold leading-normal text-gold md:text-title-md">
               {{ posts[0].title }}
             </h3>
-            <p class="text-body-md text-neutral-700">
+            <p class="text-[13px] leading-normal text-neutral-700 md:text-body-md">
               {{ posts[0].excerpt }}
             </p>
             <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper md:flex md:size-12">
-              <ArrowUpRight class="size-8" :stroke-width="1.25" />
+              <ArrowUpRight class="size-8 rtl:-scale-x-100" :stroke-width="1.25" />
             </span>
           </div>
         </a>
@@ -746,12 +755,14 @@ useSectionReveal();
             />
             <div class="flex flex-col justify-center gap-3 md:gap-6">
               <div
-                class="flex items-center gap-2 text-body-md text-neutral-700"
+                class="flex items-center gap-2 text-[12px] leading-normal text-neutral-700 md:text-body-md"
               >
-                <CalendarDays class="size-6 text-gold" :stroke-width="1.5" />
+                <CalendarDays class="size-4 text-gold md:size-6" :stroke-width="1.5" />
                 <span>{{ post.publishedAt }}</span>
               </div>
-              <h3 class="text-title-md text-neutral-900">{{ post.title }}</h3>
+              <h3 class="text-[14px] font-medium leading-normal text-neutral-900 md:text-title-md">
+                {{ post.title }}
+              </h3>
             </div>
           </a>
         </div>
