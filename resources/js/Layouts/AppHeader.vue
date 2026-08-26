@@ -123,24 +123,27 @@ function isActive(url: string): boolean {
           <Link
             v-if="cta"
             :href="cta.url"
-            class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-title-sm text-paper transition-opacity hover:opacity-90"
+            class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-title-sm text-paper transition-colors hover:bg-gold hover:text-ink"
           >
             {{ cta.label }}
           </Link>
         </div>
       </div>
 
-      <button
-        v-if="!minimal"
-        type="button"
-        class="touch-target pointer-events-auto ms-auto -me-2 inline-flex size-11 items-center justify-center rounded-sm text-ink lg:hidden"
-        :aria-label="t('common.open_menu')"
-        aria-haspopup="dialog"
-        :aria-expanded="mobileOpen"
-        @click="mobileOpen = true"
-      >
-        <MenuIcon class="size-6" aria-hidden="true" />
-      </button>
+      <div v-if="!minimal" class="pointer-events-auto ms-auto flex items-center gap-1 lg:hidden">
+        <LanguageSwitcher />
+
+        <button
+          type="button"
+          class="touch-target -me-2 inline-flex size-11 items-center justify-center rounded-sm text-ink"
+          :aria-label="t('common.open_menu')"
+          aria-haspopup="dialog"
+          :aria-expanded="mobileOpen"
+          @click="mobileOpen = true"
+        >
+          <MenuIcon class="size-6" aria-hidden="true" />
+        </button>
+      </div>
     </div>
   </header>
 

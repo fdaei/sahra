@@ -18,7 +18,45 @@ resource mapping.
 - MySQL 8 or PostgreSQL 14+
 - A queue-capable cache (database driver works fine for development)
 
-## 2. Installation
+## 2. Quick start with Docker
+
+The fastest way to get the whole stack running — app, MariaDB, queue worker,
+and scheduler — with nothing but Docker installed:
+
+```bash
+cp .env.docker.example .env.docker
+docker compose up -d --build
+docker compose exec app php artisan db:seed
+```
+
+That's it — `docker compose up -d --build` builds the Vite assets and the PHP
+image, waits for MariaDB to be healthy, runs migrations once (`migrate`
+service), then starts:
+
+- `app` — Apache + PHP, published at `http://localhost:8000`
+- `queue` — `php artisan queue:work`, needed for contact-form/newsletter
+  notification emails (`QUEUE_CONNECTION=database`)
+- `scheduler` — `php artisan schedule:work`, promotes scheduled content every
+  five minutes (see `routes/console.php`)
+- `db` — MariaDB, data persisted in the `db_data` named volume, forwarded to
+  host port 3306
+
+The env file is deliberately named `.env.docker`, **not** `.env` — this
+project's real `.env` holds production cPanel secrets, and Docker Compose
+auto-loads a file literally named `.env` for variable substitution, so
+reusing that name here would risk mixing the two up. `.env.docker.example`
+ships with a working `APP_KEY` and `MAIL_MAILER=log`, so no extra setup is
+required before `db:seed`. Change `ADMIN_EMAIL` / `ADMIN_PASSWORD` in
+`.env.docker` before seeding if this isn't a throwaway environment. Rebuild
+after pulling code changes with `docker compose up -d --build` again;
+`docker compose logs -f app` tails the web container.
+
+This path bakes the app into an image (no bind-mounted source, no hot
+reload) — it's meant for bringing the project up to look at or demo, not for
+day-to-day development. For active development, use the native workflow
+below (§3–4), which supports Vite HMR.
+
+## 3. Installation
 
 ```bash
 composer install
@@ -53,7 +91,7 @@ then verify nothing is missing:
 php artisan sahra:verify-assets
 ```
 
-## 3. Running locally
+## 4. Running locally
 
 ```bash
 composer run dev
@@ -83,7 +121,7 @@ password: ChangeMe!2026          (or ADMIN_PASSWORD in .env)
 `ADMIN_NAME` in `.env` before your first `db:seed` on a real environment to
 avoid the default ever existing.
 
-## 4. Testing
+## 5. Testing
 
 ```bash
 php artisan test              # Pest: locale routing, publication states,
@@ -93,7 +131,7 @@ npm run test:e2e               # Playwright — requires the app running;
                                # set BASE_URL if not http://localhost:8000
 ```
 
-## 5. Production build & deployment
+## 6. Production build & deployment
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -135,7 +173,7 @@ Environment checklist for production:
       `php artisan sahra:verify-assets` passes
 - [ ] `storage:link` run so `public/storage` resolves
 
-## 6. Project structure
+## 7. Project structure
 
 ```
 app/
@@ -194,7 +232,7 @@ tests/
   Browser/                Playwright — responsive.spec.ts
 ```
 
-## 7. Known limitations
+## 8. Known limitations
 
 See `docs/IMPLEMENTATION-LOG.md` § Known limitations for the full list.
 In short: dependencies were never installed in the authoring environment (no

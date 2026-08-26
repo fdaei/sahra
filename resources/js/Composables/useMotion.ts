@@ -475,6 +475,74 @@ export function useScrubRotate(
 }
 
 /**
+ * Services Venn — one-time burst reveal. The Brand/Product circles rest fully
+ * overlapped; the first time the diagram crosses into view they pull apart to
+ * their resting CSS position while the two orbit rings, the Brand/Product/
+ * core labels, and the service + decorative tags fade in around them. A
+ * single arriving gesture (`once: true`), unlike useScrubRotate's continuous
+ * scrub — this is a burst, not a scrub.
+ *
+ * Reads its targets by data-attribute rather than taking refs for each one,
+ * since a burst touches a whole family of elements (2 circles, 2 rings, 3
+ * labels, N tags) rather than a single pair.
+ *
+ * Not a Figma audit item: this diagram has no source node (see the note atop
+ * ServicesOrbit.vue's Venn markup), so there is nothing to cite here.
+ */
+export function useVennBurst(
+  stage: MotionTarget,
+  options: { distance?: number; axis?: 'x' | 'y'; media?: string } = {},
+): void {
+  const { distance = 160, axis = 'x', media } = options
+
+  useEffectScope(({ scope }) => {
+    if (!scope) return
+
+    const brandEl = scope.querySelector<HTMLElement>('[data-venn-circle="brand"]')
+    const productEl = scope.querySelector<HTMLElement>('[data-venn-circle="product"]')
+    const rings = Array.from(scope.querySelectorAll<HTMLElement>('[data-venn-ring]'))
+    const labels = Array.from(scope.querySelectorAll<HTMLElement>('[data-venn-label]'))
+    const tags = Array.from(scope.querySelectorAll<HTMLElement>('[data-venn-tag]'))
+    if (!brandEl || !productEl) return
+
+    const burst = (): void => {
+      // x needs to flip in RTL (the circles physically swap sides — see the
+      // note on .venn-circle--brand below); a vertical stack has no side to
+      // flip, so the mobile y-axis call always uses the same two signs.
+      const sign = axis === 'x' ? directionFactor() : 1
+
+      gsap
+        .timeline({ scrollTrigger: { trigger: scope, start: REVEAL_START, once: true } })
+        .fromTo(brandEl, { [axis]: distance * sign }, { [axis]: 0, duration: 1, ease: MOTION.ease.brand })
+        .fromTo(productEl, { [axis]: -distance * sign }, { [axis]: 0, duration: 1, ease: MOTION.ease.brand }, '<')
+        .fromTo(
+          rings,
+          { opacity: 0, scale: 0.7 },
+          { opacity: 1, scale: 1, duration: 0.8, ease: MOTION.ease.brand, stagger: 0.1 },
+          '<0.15',
+        )
+        .fromTo(labels, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: MOTION.ease.quick, stagger: 0.05 }, '<0.1')
+        .fromTo(
+          tags,
+          { opacity: 0, y: 12 },
+          { opacity: 1, y: 0, duration: 0.5, ease: MOTION.ease.brand, stagger: MOTION.stagger.cards },
+          '-=0.5',
+        )
+    }
+
+    if (!media) {
+      burst()
+      return
+    }
+
+    const mm = gsap.matchMedia()
+    mm.add(media, () => burst())
+
+    return () => mm.revert()
+  }, stage)
+}
+
+/**
  * A11 — final-CTA glow parallax. Drifts the decorative layer against the
  * scroll so the gold ellipse sits behind the card with depth. Purely
  * decorative, so it is safe to skip entirely under reduced motion.

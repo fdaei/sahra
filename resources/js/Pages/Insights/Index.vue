@@ -315,7 +315,7 @@ function showMoreInsights(): void {
       v-if="restRows.length > visibleRestPosts"
       type="button"
       class="mx-auto inline-flex items-center gap-2 text-body-lg font-medium
-             text-neutral-900 transition-opacity hover:opacity-70"
+             text-neutral-900 transition-colors hover:text-gold"
       @click="showMoreInsights"
     >
       {{ t("common.more_insights") }}
@@ -352,6 +352,6 @@ function showMoreInsights(): void {
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[79px] pt-[72px] md:pb-[304px] md:pt-24"
+    spacing-class="pb-[176px] pt-[176px]"
   />
 </template>

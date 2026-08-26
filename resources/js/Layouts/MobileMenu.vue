@@ -17,7 +17,6 @@ import { Link, usePage } from '@inertiajs/vue3'
 import { onKeyStroke, useScrollLock } from '@vueuse/core'
 import { X } from 'lucide-vue-next'
 import BrandLogo from '@/Components/BrandLogo.vue'
-import LanguageSwitcher from '@/Components/LanguageSwitcher.vue'
 import { useTranslations } from '@/Composables/useTranslations'
 import type { SharedProps } from '@/types'
 
@@ -102,20 +101,16 @@ watch(
         <div class="flex items-center justify-between px-5 py-6">
           <BrandLogo variant="full" :height="40" label="" />
 
-          <div class="flex items-center gap-1">
-            <LanguageSwitcher />
-
-            <button
-              ref="closeButton"
-              type="button"
-              class="touch-target -me-2 inline-flex size-11 items-center justify-center
-                     rounded-sm text-neutral-900"
-              :aria-label="t('common.close_menu')"
-              @click="open = false"
-            >
-              <X class="size-6" aria-hidden="true" />
-            </button>
-          </div>
+          <button
+            ref="closeButton"
+            type="button"
+            class="touch-target -me-2 inline-flex size-11 items-center justify-center
+                   rounded-sm text-neutral-900"
+            :aria-label="t('common.close_menu')"
+            @click="open = false"
+          >
+            <X class="size-6" aria-hidden="true" />
+          </button>
         </div>
 
         <nav class="flex-1 overflow-y-auto px-5" :aria-label="t('common.primary_navigation')">
@@ -140,7 +135,7 @@ watch(
             v-if="cta"
             :href="cta.url"
             class="inline-flex items-center justify-center rounded-sm bg-ink px-6 py-4
-                   text-label-lg text-paper"
+                   text-label-lg text-paper transition-colors hover:bg-gold hover:text-ink"
             @click="open = false"
           >
             {{ cta.label }}

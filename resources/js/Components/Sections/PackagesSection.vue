@@ -177,7 +177,7 @@ defineProps<{
         <a
           v-if="section.primaryCta"
           :href="section.primaryCta.url"
-          class="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-sm border border-paper px-3 py-3 text-body-md text-paper transition-colors hover:bg-white/10 md:min-h-14 md:border-0 md:bg-gold-700 md:px-8 md:py-4 md:text-title-md md:text-ink md:hover:bg-gold-600"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-sm border border-paper px-3 py-3 text-body-md text-paper transition-colors hover:border-gold hover:bg-gold hover:text-ink md:min-h-14 md:px-8 md:py-4 md:text-title-md"
         >
           {{ section.primaryCta.label }}
         </a>

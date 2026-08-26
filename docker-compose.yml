@@ -1,0 +1,105 @@
+# Docker credentials/ports below are fixed on purpose (not read via ${VAR}
+# substitution from a root .env) so this file can never accidentally pick up
+# the project's real .env, which holds production cPanel secrets. The only
+# per-environment values live in .env.docker (see .env.docker.example),
+# loaded explicitly via env_file: below — never the implicit `.env` lookup
+# Compose would otherwise perform.
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: sahra
+      MARIADB_USER: sahra
+      MARIADB_PASSWORD: secret
+      MARIADB_ROOT_PASSWORD: rootsecret
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - '3306:3306'
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: sahra
+      DB_USERNAME: sahra
+      DB_PASSWORD: secret
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - storage_data:/var/www/html/storage
+    entrypoint: ['entrypoint.sh']
+    command: ['php', 'artisan', 'migrate', '--force']
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: sahra
+      DB_USERNAME: sahra
+      DB_PASSWORD: secret
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - '8000:80'
+    volumes:
+      - storage_data:/var/www/html/storage
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: sahra
+      DB_USERNAME: sahra
+      DB_PASSWORD: secret
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - storage_data:/var/www/html/storage
+    command: ['php', 'artisan', 'queue:work', '--tries=3']
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: sahra
+      DB_USERNAME: sahra
+      DB_PASSWORD: secret
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    volumes:
+      - storage_data:/var/www/html/storage
+    command: ['php', 'artisan', 'schedule:work']
+
+volumes:
+  db_data:
+  storage_data:

@@ -277,7 +277,7 @@ const teamRows = computed(() => {
           <div
             v-for="(item, i) in howWeThink.items"
             :key="i"
-            class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:border-x-0 md:border-b-0 md:py-12"
+            class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:py-12"
           >
             <!--
               Goal card icon — Figma 1061:2072. The default
@@ -356,7 +356,7 @@ const teamRows = computed(() => {
              rows added an entire extra card row and made the page ~250px too
              tall at 402px. -->
         <div class="marquee-mask relative z-10 overflow-hidden lg:hidden">
-          <div class="marquee-track gap-4" style="--marquee-duration: 32s">
+          <div class="marquee-track gap-4" style="--marquee-duration: 48s">
             <figure
               v-for="(member, i) in mobileTeamTrack.items"
               :key="i"
@@ -397,7 +397,7 @@ const teamRows = computed(() => {
             <div
               class="marquee-track gap-4 md:gap-6 lg:gap-[26px]"
               :class="rowIndex % 2 === 0 ? 'marquee-track--reverse' : ''"
-              :style="{ '--marquee-duration': rowIndex % 2 === 0 ? '60s' : '68s' }"
+              :style="{ '--marquee-duration': rowIndex % 2 === 0 ? '90s' : '100s' }"
             >
               <figure
                 v-for="(member, i) in row.items"
@@ -441,6 +441,6 @@ const teamRows = computed(() => {
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[353px] pt-24 md:pb-[280px]"
+    spacing-class="pb-[176px] pt-[176px]"
   />
 </template>

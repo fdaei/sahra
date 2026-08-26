@@ -63,6 +63,10 @@ final class ManageSettings extends Page implements HasForms
         'seo_default_description' => true,
         'seo_default_image' => false,
         'seo_organization_name' => true,
+        'google_analytics_id' => false,
+        'google_tag_manager_id' => false,
+        'google_search_console_verification' => false,
+        'hotjar_site_id' => false,
     ];
 
     public static function canAccess(): bool
@@ -156,6 +160,31 @@ final class ManageSettings extends Page implements HasForms
                             ->disk('public')
                             ->helperText('Shown when a page has no image. 1200×630 recommended.'),
                     ]),
+
+                Section::make('Integrations & analytics')
+                    ->description('Optional. Leave blank to skip — nothing is rendered on the site until an ID is entered here.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('google_analytics_id')
+                            ->label('Google Analytics (GA4) measurement ID')
+                            ->maxLength(50)
+                            ->placeholder('G-XXXXXXXXXX'),
+
+                        TextInput::make('google_tag_manager_id')
+                            ->label('Google Tag Manager container ID')
+                            ->maxLength(50)
+                            ->placeholder('GTM-XXXXXXX'),
+
+                        TextInput::make('google_search_console_verification')
+                            ->label('Google Search Console verification code')
+                            ->maxLength(200)
+                            ->helperText('The "content" value from the HTML tag verification method, not the whole tag.'),
+
+                        TextInput::make('hotjar_site_id')
+                            ->label('Hotjar site ID')
+                            ->maxLength(50)
+                            ->placeholder('1234567'),
+                    ]),
             ]);
     }
 
@@ -172,7 +201,11 @@ final class ManageSettings extends Page implements HasForms
                 Setting::updateOrCreate(
                     ['key' => $key],
                     [
-                        'group' => str_contains($key, 'seo_') ? 'seo' : 'general',
+                        'group' => match (true) {
+                            str_contains($key, 'seo_') => 'seo',
+                            str_contains($key, 'google_') || str_contains($key, 'hotjar_') => 'integrations',
+                            default => 'general',
+                        },
                         'value' => $value,
                         'is_translatable' => $translatable,
                     ],

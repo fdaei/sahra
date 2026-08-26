@@ -151,7 +151,7 @@ const linkedInShare = computed(
   />
 
   <div
-    class="container-sahra flex flex-col gap-0 pb-0 pt-[160px] md:gap-[144px] md:pb-32 md:pt-[184px] lg:gap-[224px]"
+    class="container-sahra flex flex-col gap-0 pb-0 pt-[160px] md:gap-24 md:pb-32 md:pt-[184px]"
   >
     <!-- Head — Figma 1222:4364 (column, gap 64) -->
     <div class="flex flex-col gap-11 md:gap-16">
@@ -262,9 +262,12 @@ const linkedInShare = computed(
         </div>
       </div>
 
-      <!-- Share rail — Figma 622:1143 -->
+      <!-- Share rail — Figma 622:1143. Sticky so it tracks the viewport
+           past the fixed header (~104px tall) while the article scrolls;
+           `self-start` stops it stretching to the row's full height, which
+           would otherwise make the sticky offset a no-op. -->
       <div
-        class="hidden w-[119px] shrink-0 flex-col items-center gap-6 lg:flex"
+        class="hidden w-[119px] shrink-0 flex-col items-center gap-6 lg:sticky lg:top-32 lg:flex lg:self-start"
       >
         <p class="text-center text-label-lg text-neutral-900">
           {{ t("blog.share") }}
@@ -373,7 +376,7 @@ const linkedInShare = computed(
   <CtaBanner
     v-if="finalCta"
     :section="finalCta"
-    spacing-class="pb-[109px] pt-[76px] md:pb-[277px] md:pt-24"
+    spacing-class="pb-[176px] pt-[176px]"
   />
 </template>
 

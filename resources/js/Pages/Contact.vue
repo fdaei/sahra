@@ -10,7 +10,7 @@
  */
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
-import { getCountryDataList, getEmojiFlag } from "countries-list";
+import { getCountryDataList } from "countries-list";
 import {
   BadgeCheck,
   Building2,
@@ -117,7 +117,7 @@ const countries = computed(() => {
       country.phone.map((phone) => ({
         id: `${country.iso2}-${phone}`,
         code: `+${phone}`,
-        flag: getEmojiFlag(country.iso2),
+        flagClass: `fi fi-${country.iso2.toLowerCase()}`,
         name: displayNames.of(country.iso2) || country.name,
         iso2: country.iso2,
       })),
@@ -380,9 +380,11 @@ function submit(): void {
                       aria-controls="country-options"
                       @click="countryOpen = !countryOpen"
                     >
-                      <span class="text-lg" aria-hidden="true">{{
-                        selectedCountry.flag
-                      }}</span>
+                      <span
+                        class="shrink-0 overflow-hidden rounded-[2px] text-lg"
+                        :class="selectedCountry.flagClass"
+                        aria-hidden="true"
+                      />
                       <ChevronDown
                         class="size-4 text-neutral-700 transition-transform"
                         :class="countryOpen ? 'rotate-180' : ''"
@@ -440,9 +442,11 @@ function submit(): void {
                         class="flex h-12 w-full items-center gap-2 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
                         @click="chooseCountry(country)"
                       >
-                        <span class="text-lg" aria-hidden="true">{{
-                          country.flag
-                        }}</span>
+                        <span
+                          class="shrink-0 overflow-hidden rounded-[2px] text-lg"
+                          :class="country.flagClass"
+                          aria-hidden="true"
+                        />
                         <span>{{ country.name }} ({{ country.code }})</span>
                       </button>
                       <p
@@ -583,7 +587,7 @@ function submit(): void {
               <button
                 type="submit"
                 :disabled="form.processing"
-                class="inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-opacity hover:opacity-90 disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
+                class="inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-colors hover:bg-gold hover:text-ink disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
               >
                 {{
                   form.processing

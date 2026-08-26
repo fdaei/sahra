@@ -36,7 +36,7 @@ Test at: 320, 360, 375, 390, 414, 480, 768, 820, 1024, 1280, 1366, 1440,
 
 | Element | Mobile (≤640) | **Tablet (768–1023, derived)** | Desktop (≥1024) |
 |---|---|---|---|
-| Hero | Single column, CTA buttons stack full-width | Single column, CTAs side-by-side (room exists at 768) | Two-column-feel via centered content over full-bleed image |
+| Hero | Single column, CTAs side-by-side (trimmed padding/font so both labels fit one row) | Single column, CTAs side-by-side | Two-column-feel via centered content over full-bleed image |
 | KPI strip | 1 column stacked | 3 columns (fits at 768 — each stat ~220px) | 3 columns |
 | Services cloud | Chips wrap, orbit rings hidden (decorative, no info loss) | Chips wrap in 2 rows, orbit shown at reduced scale | Full orbit + chips |
 | Projects showcase | Rows stack above image | **Derived:** rows stack above image (2-col grid would compress each row's text below comfortable measure — same decision as mobile) | Two columns: rows beside image |

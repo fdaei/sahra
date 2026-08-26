@@ -151,11 +151,17 @@ const testimonialTrack = computed(() => {
   return [...half, ...half];
 });
 
-/* Figma orders the project CTA first and gives it the solid treatment. */
+/*
+ | Figma orders the project CTA first and gives it the solid treatment.
+ | Mobile padding/font are trimmed from the desktop values (px-8/14px) so
+ | both labels fit side by side on the 402px frame instead of wrapping to
+ | two full-width rows — `flex-wrap` on the parent stays as a safety net
+ | for an admin-authored label long enough to still overflow.
+ */
 const heroCtaSolid =
-  "flex items-center gap-1 rounded-sm bg-ink px-8 py-[13px] text-[14px] font-medium text-paper transition-opacity hover:opacity-90 md:py-4 md:text-title-md";
+  "flex items-center gap-1 whitespace-nowrap rounded-sm bg-ink px-4 py-[10px] text-[13px] font-medium text-paper transition-colors hover:bg-gold hover:text-ink md:px-8 md:py-4 md:text-title-md";
 const heroCtaOutline =
-  "flex items-center gap-1 rounded-sm border border-ink bg-paper px-8 py-[12px] text-[14px] font-medium text-ink transition-colors hover:bg-neutral-50 md:py-[15px] md:text-title-md";
+  "flex items-center gap-1 whitespace-nowrap rounded-sm border border-ink bg-paper px-4 py-[9px] text-[13px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-[15px] md:text-title-md";
 
 const heroCtas = computed(() => {
   const primary = hero.value?.primaryCta ?? null;
@@ -329,7 +335,7 @@ useSectionReveal();
         `heroCtas` keeps the authored primary/secondary order; the primary
         project action receives the solid treatment.
       -->
-      <div class="flex flex-wrap items-center gap-[10px]">
+      <div class="flex flex-wrap items-center gap-2 md:gap-[10px]">
         <a
           v-for="(cta, i) in heroCtas"
           :key="cta.url"
@@ -398,8 +404,15 @@ useSectionReveal();
     28 / black-900. Logo rail 1419:9208: row, gap 48, each logo in a
     128×128 centred box at 80px wide. `shade` 1419:9215 is a 90deg
     white→transparent→white overlay (`.marquee-mask`).
+
+    Mobile pt/pb verified against the mobile frame 1419:9191: KPI
+    (Frame 96151, y648 h77) → this section (Frame 96153, y813) is an 88px
+    gap; this section (bottom y950) → services orbit (Frame 96284, y1042)
+    is a 92px gap. Was pt-115/pb-0 (mismatched — pb was implicitly 0 since
+    the next section's own dark background starts flush at its frame edge)
+    before this fix.
   -->
-  <section class="section h-[317px] pb-0 pt-[115px] md:h-auto md:pb-24 md:pt-0 lg:mt-[19px] lg:pb-28">
+  <section class="section pb-[92px] pt-[88px] md:pb-24 md:pt-0 lg:mt-[19px] lg:pb-28">
     <div class="container-narrow flex flex-col gap-8">
       <h2 class="text-center text-[16px] font-medium leading-normal text-neutral-600 md:text-[22px]">
         {{ sections.trust_proof?.title }}
@@ -479,14 +492,14 @@ useSectionReveal();
   <!-- Packages — Figma 1419:9323 -->
   <PackagesSection
     v-if="packages"
-    class="lg:mt-[126px]"
+    class="max-md:-mt-6 lg:mt-[126px]"
     :section="packages"
   />
 
   <!-- Why us — Figma 1419:9230 -->
   <section
     v-if="whyUs"
-    class="h-[957px] overflow-hidden py-14 md:h-auto md:py-24 lg:mt-[92px] lg:py-28"
+    class="py-14 md:py-24 lg:mt-[92px] lg:py-28"
   >
     <div class="container-sahra">
       <div
@@ -734,7 +747,7 @@ useSectionReveal();
             <p class="text-[13px] leading-normal text-neutral-700 md:text-body-md">
               {{ posts[0].excerpt }}
             </p>
-            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper md:flex md:size-12">
+            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper transition-colors group-hover:bg-gold group-hover:text-ink md:flex md:size-12">
               <ArrowUpRight class="size-8 rtl:-scale-x-100" :stroke-width="1.25" />
             </span>
           </div>
@@ -744,15 +757,17 @@ useSectionReveal();
             v-for="(post, index) in posts.slice(1, 3)"
             :key="post.slug"
             :href="post.url"
-            class="grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"
+            class="group grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"
             :class="index === 0 ? 'border-b border-neutral-200 pb-6' : ''"
           >
-            <img
-              v-if="post.image"
-              :src="post.image.src"
-              :alt="post.image.alt"
-              class="aspect-square size-[120px] rounded-sm object-cover md:size-[188px]"
-            />
+            <div class="aspect-square size-[120px] overflow-hidden rounded-sm md:size-[188px]">
+              <img
+                v-if="post.image"
+                :src="post.image.src"
+                :alt="post.image.alt"
+                class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.04]"
+              />
+            </div>
             <div class="flex flex-col justify-center gap-3 md:gap-6">
               <div
                 class="flex items-center gap-2 text-[12px] leading-normal text-neutral-700 md:text-body-md"
@@ -771,7 +786,7 @@ useSectionReveal();
   </section>
 
   <!-- FAQ — Figma 1419:9272 -->
-  <section v-if="faqSection" class="h-[891px] py-14 md:h-auto md:py-24 lg:-mt-[98px] lg:py-28">
+  <section v-if="faqSection" class="py-14 md:py-24 lg:-mt-[98px] lg:py-28">
     <!--
       Section 1419:9272 is a column [eyebrow, content] at gap 48; the content
       row 1419:9274 is gap 32 with a fixed 497 left column. The eyebrow spans
@@ -809,6 +824,7 @@ useSectionReveal();
           <details
             v-for="(faq, i) in faqs"
             :key="i"
+            name="faq-accordion"
             :open="i === 1"
             class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-4 md:p-8"
             data-reveal
