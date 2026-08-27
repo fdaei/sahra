@@ -63,7 +63,7 @@ defineProps<{
 <template>
   <section
     :dir="page.props.locale.direction"
-    :class="spacingClass || 'pb-[224px] pt-24'"
+    :class="spacingClass || 'pb-[176px] pt-[176px]'"
   >
     <div class="container-sahra">
       <div
@@ -113,8 +113,8 @@ defineProps<{
             <a
               v-if="section.primaryCta"
               :href="section.primaryCta.url"
-              class="final-cta-button inline-flex w-fit items-center gap-1 self-start rounded-sm bg-gold px-3 py-3
-                     text-body-md text-ink transition-opacity hover:opacity-90 md:px-6 md:text-title-sm"
+              class="final-cta-button inline-flex w-fit items-center gap-1 self-start rounded-sm bg-paper px-3 py-3
+                     text-body-md text-ink transition-colors hover:bg-gold md:px-6 md:text-title-sm"
             >
               {{ section.primaryCta.label }}
               <ArrowRight class="hidden size-5 shrink-0 rtl:-scale-x-100 md:block md:size-6" aria-hidden="true" />

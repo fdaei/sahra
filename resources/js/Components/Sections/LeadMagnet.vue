@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
         <button
           v-if="section.primaryCta"
           type="button"
-          class="relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:bg-white hover:text-ink"
+          class="relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-ink"
           @click="openModal"
         >
           {{ section.primaryCta.label }}
@@ -245,7 +245,7 @@ onBeforeUnmount(() => {
           <button
             v-if="section.primaryCta"
             type="button"
-            class="inline-flex shrink-0 items-center justify-center rounded-sm border border-white font-normal leading-normal text-white transition-colors duration-300 hover:bg-white hover:text-ink"
+            class="inline-flex shrink-0 items-center justify-center rounded-sm border border-white font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-ink"
             :class="inline ? 'px-6 py-3 text-[18px]' : 'px-8 py-4 text-[20px]'"
             @click="openModal"
           >
@@ -300,7 +300,7 @@ onBeforeUnmount(() => {
             </h2>
             <a
               :href="`/${page.props.locale.current}/contact`"
-              class="mt-8 inline-flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[18px] text-white"
+              class="mt-8 inline-flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-ink"
             >
               {{ t("forms.newsletter.consultation") }}
               <ArrowUpRight
@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
 
               <button
                 type="submit"
-                class="mx-auto rounded-sm bg-ink px-6 py-3 text-[18px] text-white disabled:opacity-60"
+                class="mx-auto rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-ink disabled:opacity-60"
                 :disabled="form.processing"
               >
                 {{ t("forms.newsletter.submit") }}

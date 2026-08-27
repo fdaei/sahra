@@ -11,6 +11,13 @@
     $direction = $config['direction'];
     $htmlLang  = $config['html_lang'];
     $fontClass = $config['font'] === 'arabic' ? 'font-arabic' : 'font-sans';
+
+    /**
+     * Analytics/tracking IDs, entered in Filament → Site settings →
+     * Integrations & analytics. Each snippet is skipped entirely when its ID
+     * is blank, so an unconfigured integration renders nothing.
+     */
+    $integrations = \App\Support\SiteSettings::integrations();
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $htmlLang }}" dir="{{ $direction }}" class="{{ $fontClass }} antialiased">
@@ -18,6 +25,19 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    @if (filled($integrations['gtmId']))
+        {{-- Google Tag Manager --}}
+        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer',{{ Illuminate\Support\Js::from($integrations['gtmId']) }});</script>
+    @endif
+
+    @if (filled($integrations['gscVerification']))
+        <meta name="google-site-verification" content="{{ $integrations['gscVerification'] }}">
+    @endif
 
     <link rel="icon" href="/favicon.ico" sizes="32x32">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
@@ -42,11 +62,42 @@
               href="{{ $page['props']['alternates'][config('locales.default')] ?? url('/') }}">
     @endisset
 
+    @if (filled($integrations['gaId']))
+        {{-- Google Analytics (GA4) --}}
+        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $integrations['gaId'] }}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', {{ Illuminate\Support\Js::from($integrations['gaId']) }});
+        </script>
+    @endif
+
+    @if (filled($integrations['hotjarId']))
+        {{-- Hotjar --}}
+        <script>
+            (function(h,o,t,j,a,r){
+                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+                h._hjSettings={hjid:{{ (int) $integrations['hotjarId'] }},hjsv:6};
+                a=o.getElementsByTagName('head')[0];
+                r=o.createElement('script');r.async=1;
+                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+                a.appendChild(r);
+            })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+        </script>
+    @endif
+
     @routes
     @vite(['resources/js/app.ts'])
     @inertiaHead
 </head>
 <body class="bg-paper text-neutral-900">
+    @if (filled($integrations['gtmId']))
+        {{-- Google Tag Manager (noscript) --}}
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $integrations['gtmId'] }}"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    @endif
+
     {{-- Skip link — first focusable element, revealed on focus --}}
     <a href="#main"
        class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:inline-start-4 focus:z-modal

@@ -210,7 +210,7 @@ useSectionReveal(pageRoot);
         <!-- The Challenge — Figma 1294:4818 -->
         <section
           v-if="project.challenge"
-          class="will-reveal mt-1 flex min-h-[277px] flex-col gap-8 md:mt-0 md:min-h-0 md:gap-10 lg:flex-row lg:justify-between"
+          class="will-reveal mt-8 flex min-h-[277px] flex-col gap-8 md:mt-0 md:min-h-0 md:gap-10 lg:flex-row lg:justify-between"
           data-reveal
         >
           <h2 class="text-[22px] font-semibold text-neutral-900 md:text-[40px]">
@@ -293,7 +293,7 @@ useSectionReveal(pageRoot);
         <!-- Strategy — 2×2, numbered, gold titles, hairline separators -->
         <section
           v-if="project.strategy.length > 0"
-          class="will-reveal mt-[90px] flex h-[620px] flex-col gap-12 md:mt-0 md:h-auto md:gap-10 lg:flex-row lg:justify-between"
+          class="will-reveal mt-[90px] flex flex-col gap-12 md:mt-0 md:gap-10 lg:flex-row lg:justify-between"
           data-reveal
         >
           <h2
@@ -301,9 +301,7 @@ useSectionReveal(pageRoot);
           >
             {{ t("work.strategy") }}
           </h2>
-          <ol
-            class="grid h-[539px] w-full max-w-[860px] grid-cols-2 grid-rows-[280px_259px] md:h-auto md:grid-rows-none"
-          >
+          <ol class="grid w-full max-w-[860px] grid-cols-2">
             <li
               v-for="(card, i) in project.strategy"
               :key="i"
@@ -339,7 +337,7 @@ useSectionReveal(pageRoot);
             <li
               v-for="(card, i) in project.deliverables"
               :key="i"
-              class="deliverables-card relative flex min-h-[248px] flex-col gap-8 overflow-hidden rounded-sm border border-gold-300 bg-paper p-6 shadow-[2px_2px_10px_rgba(0,0,0,0.05)] md:min-h-[306px] md:gap-12 md:py-10"
+              class="deliverables-card relative flex min-h-[248px] flex-col gap-8 overflow-hidden rounded-sm border border-gold-300 bg-paper p-6 shadow-[2px_2px_10px_rgba(0,0,0,0.05)] md:min-h-[306px] md:gap-12 md:py-6"
             >
               <img
                 :src="deliverablesCardBg"
@@ -542,7 +540,7 @@ useSectionReveal(pageRoot);
     <CtaBanner
       v-if="finalCta"
       :section="finalCta"
-      spacing-class="pb-[344px] pt-[58px] md:pb-[286px] md:pt-24"
+      spacing-class="pb-[176px] pt-[176px]"
     />
   </div>
 </template>

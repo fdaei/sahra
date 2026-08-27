@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import orbitInner from '~img/decor/service-orbit-inner.svg'
-import orbitMobile from '~img/decor/service-orbit-mobile.svg'
-import orbitOuter from '~img/decor/service-orbit-outer.svg'
-import { useScrubRotate } from '@/Composables/useMotion'
+import orbitRing from '~img/decor/service-orbit-outer.svg'
+import { useVennBurst } from '@/Composables/useMotion'
 import { useTranslations } from '@/Composables/useTranslations'
 import type { ServiceItem } from '@/types'
 
@@ -33,18 +31,16 @@ const serviceLabel = (services: ServiceItem[], needle: string, fallback: string)
   serviceFor(services, needle)?.title ?? fallback
 
 /*
- | The four orbiting pills, in the MOBILE frame's column order
- | (1731:12357: Branding, Social, Marketing Design, Content Production).
+ | The four pills, grouped by which circle of the Venn they sit inside:
+ | Branding + Social build the BRAND circle, Marketing Design + Content
+ | Production fill the PRODUCT circle. That grouping is this component's own
+ | (there is no CMS field for it) — it is what lets four real services stand
+ | inside a two-circle diagram without inventing a fifth taxonomy.
  |
- | Desktop is unaffected by this order — each pill is absolutely placed by its
- | `--modifier` class at its own frame coordinate — so the mobile stack, which
- | is the only place the array order is visible, gets to define it. That also
- | makes it the reading order for assistive tech in both layouts.
- |
- | The label is authored content; the third tuple member is the translation key
- | used when no service row matches the needle for the active locale. It must
- | stay a key rather than a literal — a hardcoded English fallback would put
- | Latin text inside the fa/ar orbit.
+ | The label is authored content; the third tuple member is the translation
+ | key used when no service row matches the needle for the active locale. It
+ | must stay a key rather than a literal — a hardcoded English fallback would
+ | put Latin text inside the fa/ar orbit.
  */
 const pills = computed(() =>
   (
@@ -62,27 +58,38 @@ const pills = computed(() =>
 )
 
 /*
- | A4 — the two dashed rings rotate −8°→8° as the section crosses the viewport,
- | scrubbed to scroll position with no easing. Each ring is rotated in place
- | (about its own centre) rather than via a shared wrapper, because the rings
- | are absolutely positioned at different diameters and a wrapper transform
- | would move them off their concentric centre.
+ | Decorative-only tags either side of the Venn, gesturing at the breadth of
+ | a full-service agency beyond the four pills the CMS actually backs. Never
+ | linked, never hoverable, aria-hidden — see the `ghost_*` keys in
+ | lang/{locale}/services.php for what belongs here vs. the CMS.
  */
-const outerRing = ref<HTMLElement | null>(null)
-const innerRing = ref<HTMLElement | null>(null)
-const mobileRing = ref<HTMLElement | null>(null)
+const ghostBrand = computed(() => [
+  t('services.ghost_copywriting'),
+  t('services.ghost_market_research'),
+  t('services.ghost_pr_media'),
+])
+const ghostProduct = computed(() => [
+  t('services.ghost_seo'),
+  t('services.ghost_email_marketing'),
+  t('services.ghost_analytics'),
+])
 
 /*
- | The stage draws two rings above 1024px and one flattened export below it,
- | with the unused set at `display: none` (see the media query at the bottom).
- | Each rotation is therefore scoped to the width that actually renders its
- | target: a ScrollTrigger measured on a hidden element has a zero-height rect,
- | so scoping is not an optimisation — an unscoped trigger on the mobile ring
- | would simply never scrub.
+ | The Brand/Product circles rest fully overlapped and burst apart — once,
+ | the first time the diagram scrolls into view — to their resting CSS
+ | position, while the rings/labels/tags fade in around them. Desktop
+ | separates them horizontally; the mobile layout stacks the same two circles
+ | vertically instead (see the media query below), so it bursts on the other
+ | axis. Both calls target the same stage; gsap.matchMedia only ever builds
+ | the timeline whose query currently matches, so exactly one of the two is
+ | live at a time.
  */
-useScrubRotate(outerRing, { media: '(min-width: 1024px)' })
-useScrubRotate(innerRing, { media: '(min-width: 1024px)' })
-useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
+const stage = ref<HTMLElement | null>(null)
+
+useVennBurst(stage, { axis: 'x', media: '(min-width: 1024px)' })
+// Mobile circles rest at top:0/top:190 (see the media query below) — 95px
+// each way from the midpoint lands them exactly coincident at the burst's start.
+useVennBurst(stage, { distance: 95, axis: 'y', media: '(max-width: 1023px)' })
 </script>
 
 <template>
@@ -119,9 +126,14 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
         role="group" so the label is exposed — aria-label on a bare div is
         ignored by AT. Not role="img": the pills inside carry real service
         names and must stay in the accessibility tree.
+
+        This diagram has no Figma source. The file's axis (Marketing -> Growth,
+        1419:9279) was replaced with a bespoke Brand/Product Venn per explicit
+        design direction, so there is no node ID to cite anywhere below.
       -->
-      <div class="orbit-stage mt-12 lg:mt-[72px]" role="group" :aria-label="t('services.orbit_label')">
+      <div ref="stage" class="orbit-stage mt-12 lg:mt-[72px]" role="group" :aria-label="t('services.orbit_label')">
         <div class="orbit-glow" aria-hidden="true" />
+<<<<<<< HEAD
         <div class="orbit-line" aria-hidden="true" />
         <!--
           Rings Ellipse 33 (520) and Ellipse 28 (320). Both are a 2px dashed
@@ -154,24 +166,66 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
         <span class="orbit-endpoint orbit-endpoint--middle-a" aria-hidden="true" />
         <span class="orbit-endpoint orbit-endpoint--middle-b" aria-hidden="true" />
         <span class="orbit-endpoint orbit-endpoint--end" aria-hidden="true" />
+=======
+>>>>>>> 5a3700ef27708a25d2114553fe519056c81e40e8
 
         <!--
-          The axis is a single ordered pair in both frames, but it RUNS ALONG A
-          DIFFERENT AXIS in each: left→right on desktop (1419:9286), and
-          top→bottom on mobile (1731:12368), where Marketing sits above the
-          stack and Growth below it. Same two labels and same reading order —
-          only the direction of travel changes — so both frames are served by
-          this one pair plus the media query, not by duplicated markup.
+          Two dashed rings, burst open (fade + scale) around the circle pair
+          once the diagram enters view. Each lives in its own positioning
+          wrapper and only THAT wrapper ever carries the centring transform —
+          useVennBurst animates the inner span's scale/opacity, and GSAP's
+          transform proxy would otherwise clobber a translate(-50%,-50%) set
+          on the very element it animates. Same trap the ring image below is
+          built around.
         -->
-        <strong class="orbit-axis orbit-axis--marketing">{{ t('services.axis_marketing') }}</strong>
-        <strong class="orbit-axis orbit-axis--growth">{{ t('services.axis_growth') }}</strong>
+        <div class="orbit-ring-wrap orbit-ring-wrap--inner" aria-hidden="true">
+          <span class="orbit-ring" data-venn-ring />
+        </div>
+        <div class="orbit-ring-wrap orbit-ring-wrap--outer" aria-hidden="true">
+          <span class="orbit-ring" data-venn-ring />
+        </div>
 
-        <!-- Vertical dashed connector + its two dots — mobile only (1731:12358). -->
-        <span class="orbit-line-vertical" aria-hidden="true" />
+        <!--
+          Same ring asset (`service-orbit-outer.svg`, the dashed-gold stroke
+          used everywhere on this page) used twice and overlapped, rather than
+          two bespoke exports — desktop places the pair side by side, mobile
+          stacks them, entirely via the media query below, so there is only
+          ever one pair of DOM nodes.
 
-        <span class="orbit-anchor orbit-anchor--core">
+          Each ring lives in its own positioning wrapper and only THAT wrapper
+          ever carries a static transform. useVennBurst writes x/y onto the
+          <img> during the burst and folds any author transform into its own
+          matrix — a centring transform on the animated element itself would
+          be re-applied every frame and drag the ring off its resting spot,
+          the same trap the dashed rings above are built around.
+        -->
+        <div class="venn-circle venn-circle--brand" aria-hidden="true">
+          <img data-venn-circle="brand" :src="orbitRing" alt="" />
+        </div>
+        <div class="venn-circle venn-circle--product" aria-hidden="true">
+          <img data-venn-circle="product" :src="orbitRing" alt="" />
+        </div>
+
+        <strong class="orbit-anchor venn-label venn-label--brand" data-venn-label>{{ t('services.venn_brand') }}</strong>
+        <strong class="orbit-anchor venn-label venn-label--product" data-venn-label>{{ t('services.venn_product') }}</strong>
+
+        <span class="orbit-anchor orbit-anchor--core" data-venn-label>
           <span class="orbit-core">{{ t('services.core') }}</span>
         </span>
+
+        <!--
+          Decorative-only tags gesturing at the wider breadth of the agency —
+          desktop only (mobile hides `.ghost-col`, the same pruning
+          `.service-pill__preview` already gets below). Never linked, never
+          hoverable: aria-hidden, and their text lives in ghostBrand/
+          ghostProduct rather than the accessibility tree.
+        -->
+        <div class="ghost-col ghost-col--brand" aria-hidden="true">
+          <span v-for="label in ghostBrand" :key="label" class="ghost-tag" data-venn-tag>{{ label }}</span>
+        </div>
+        <div class="ghost-col ghost-col--product" aria-hidden="true">
+          <span v-for="label in ghostProduct" :key="label" class="ghost-tag" data-venn-tag>{{ label }}</span>
+        </div>
 
         <!--
           Service card 1419:9295-9298. Each carries an ON_HOVER interaction
@@ -183,10 +237,10 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
 
           The wrapper is `display: contents` on desktop, so each pill stays a
           direct layout child of the stage and keeps its own absolute frame
-          coordinate. Below lg it becomes a real centred flex column (frame
-          1731:12357), which is the only way to stack pills whose heights vary
-          by locale — absolute `top`s per pill would drift the moment an
-          fa/ar label wrapped to two lines.
+          coordinate. Below lg it becomes a real centred flex column, which is
+          the only way to stack pills whose heights vary by locale — absolute
+          `top`s per pill would drift the moment an fa/ar label wrapped to two
+          lines.
         -->
         <div class="orbit-pills">
           <div
@@ -194,8 +248,12 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
             :key="pill.modifier"
             class="orbit-anchor service-pill"
             :class="`service-pill--${pill.modifier}`"
+            data-venn-tag
           >
-            <span class="service-pill__label">{{ pill.label }}</span>
+            <span class="service-pill__label">
+              <span class="service-pill__dot" aria-hidden="true" />
+              {{ pill.label }}
+            </span>
 
             <span v-if="pill.image" class="service-pill__preview" aria-hidden="true">
               <img :src="pill.image.src" :alt="''" loading="lazy" decoding="async" />
@@ -261,74 +319,16 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
   height: 330px;
   transform: translateX(-50%);
   border-radius: 50%;
-  /* Ellipse 1419:9280 — gold at 40%, blur 200. Both were under-set (20%/112). */
+  /* Ellipse 1419:9280 — gold at 40%, blur 200. */
   background: rgb(var(--color-gold-rgb) / 40%);
   filter: blur(200px);
 }
 
 /*
- | Everything inside the stage is placed with logical insets, not left/right.
- | The composition is a directional diagram — it runs Marketing -> Growth along
- | the axis — so under fa/ar the whole orbit mirrors and the progression reads
- | right-to-left with the rest of the page. The offsets below are the LTR Figma
- | frame's; the browser mirrors them.
+ | Everything inside the stage is placed with logical insets, not left/right,
+ | so the whole Venn mirrors under fa/ar and Brand/Product swap sides with the
+ | rest of the page rather than staying pinned to the LTR layout.
  */
-/*
- | Axis line 1419:9292 — x=157, y=263, w=824.02, 2px stroke, dash 4/4, gold/600.
- |
- | Painted as a repeating gradient rather than `border-top: dotted`, because a
- | CSS dotted/dashed border has no controllable dash length: the browser picks
- | it from the stroke width, which gave a 2/2 dot pattern against the file's
- | 4/4. The 2px band is centred on y=263, hence top 262.
- */
-.orbit-line {
-  position: absolute;
-  top: 262px;
-  inset-inline-start: 157px;
-  width: 824.02px;
-  height: 2px;
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--color-gold-600) 0 4px,
-    transparent 4px 8px
-  );
-}
-
-/*
- | ===========================================================================
- | RING PLACEMENT — this is what makes the endpoint dots meet the circles.
- | ===========================================================================
- |
- | Both rings used to be centred on the stage (`left/top: 50%` +
- | `translate(-50%,-50%)`), which puts their centre at x=550.5 in the 1101-wide
- | group. The file does NOT centre them: Ellipse 33 (outer, 520) sits at
- | x=309,y=0 and Ellipse 28 (inner, 320) at x=409,y=107, so both are centred at
- | x=569 — 18.5px to the trailing side of the stage centre.
- |
- | That offset was the whole defect. The four endpoint dots were already at
- | their exact file coordinates, so a mis-placed ring made them look scattered:
- |
- |   inner circle, centre (569,267) r160, crossed at y=262
- |     -> x = 569 ∓ √(160² − 5²) = 409.1 / 728.9
- |     -> dots 1419:9291 (409,262) and 1419:9299 (730,262)   ✓ on the circle
- |   the two 12px dots are the LINE's endpoints (157 / 981), not ring points.
- |
- | So the dots stay put and the rings move onto them. Positioning is logical
- | (`inset-inline-start`) so the whole diagram still mirrors under fa/ar.
- |
- | No `transform` here on purpose: useScrubRotate() writes `rotation` onto
- | these elements, and GSAP folds any author transform into its own matrix —
- | a `translate(-50%,-50%)` would be re-applied on every scrub tick and drag
- | the ring off centre as it turns.
- */
-.orbit-circle {
-  position: absolute;
-}
-
-/* Desktop draws the two separate rings; the flattened mobile export is idle. */
-.orbit-circle--mobile {
-  display: none;
-}
 
 /* Fills its wrapper, and carries no transform of its own — see the markup. */
 .orbit-circle--mobile > img {
@@ -342,69 +342,82 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
   display: contents;
 }
 
-/* The vertical connector belongs to the mobile frame only. */
-.orbit-line-vertical {
-  display: none;
+/*
+ | Both rings are centred on the stage's own centre (x=550.5, y=260 — same
+ | point `.orbit-anchor--core` anchors on below). translate(-50%,-50%) lives
+ | on the wrapper, never on `.orbit-ring` itself, for the same reason the ring
+ | image below keeps its centring transform off the animated element: GSAP
+ | writes a full transform matrix for scale/opacity and would silently drop
+ | a translate() set via CSS on that same node.
+ */
+.orbit-ring-wrap {
+  position: absolute;
+  z-index: 0;
+  inset-inline-start: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
 }
 
-.orbit-circle--outer {
-  inset-inline-start: 309px;
-  top: 0;
-  width: 520px;
-  height: 520px;
-}
+.orbit-ring-wrap--inner { width: 300px; height: 300px; }
+.orbit-ring-wrap--outer { width: 500px; height: 500px; }
 
-.orbit-circle--inner {
-  inset-inline-start: 409px;
-  top: 107px;
-  width: 320px;
-  height: 320px;
+.orbit-ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1px dashed rgb(255 255 255 / 22%);
 }
 
 /*
- | Axis labels 1419:9287 / 1419:9288 — Poppins SemiBold 24/36, white, and both
- | are CENTER-aligned inside a fixed text box (Marketing 125 wide at x=0,
- | Growth 89 wide at x=1012, i.e. flush to the trailing edge).
- |
- | `min-width` rather than `width`: the file's box widths are measured from the
- | English strings, and the longer fa/ar labels must be allowed to grow instead
- | of wrapping inside a 89px box.
+ | Two 480px circles overlapped by 160px at rest, centred as a pair on the
+ | stage's own centre (x=550.5) — 390 and 710 either side of it. The wrapper
+ | carries all static positioning; the <img> inside is left transform-free
+ | because useVennBurst writes x/y onto it during the burst (see the note in
+ | the markup above).
  */
-.orbit-axis {
+.venn-circle {
   position: absolute;
-  top: 245px;
+  top: 20px;
+  width: 480px;
+  height: 480px;
+}
+
+.venn-circle > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.venn-circle--brand { inset-inline-start: 150px; }
+.venn-circle--product { inset-inline-start: 470px; }
+
+/*
+ | Brand/Product labels sit inside each circle's own (non-overlapping) half,
+ | vertically centred on the stage. `.orbit-anchor` gives them the same
+ | zero-width, flex-centred anchor the pills and core chip use, so a longer
+ | fa/ar label grows outward from its exact centre point instead of from a
+ | fixed-width box's leading edge.
+ */
+.venn-label {
+  top: 250px;
+  white-space: nowrap;
   font-size: 24px;
   font-weight: 600;
   line-height: 36px;
-  text-align: center;
   color: var(--color-paper);
 }
 
-.orbit-axis--marketing { inset-inline-start: 0; min-width: 125px; }
-.orbit-axis--growth { inset-inline-end: 0; min-width: 89px; }
-
-.orbit-endpoint {
-  position: absolute;
-  top: 257px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--color-gold);
-  box-shadow: 0 0 8px rgb(var(--color-gold-rgb) / 55%);
-}
-
-.orbit-endpoint--start { inset-inline-start: 157px; }
-.orbit-endpoint--middle-a { inset-inline-start: 404px; width: 10px; height: 10px; }
-.orbit-endpoint--middle-b { inset-inline-start: 725px; width: 10px; height: 10px; }
-.orbit-endpoint--end { inset-inline-start: 971px; }
+.venn-label--brand { inset-inline-start: 310px; }
+.venn-label--product { inset-inline-start: 790px; }
 
 /*
  | A zero-width point that its content overflows equally on both sides, so the
- | label is *centred* on the orbit coordinate rather than starting at it. The
- | pills were anchored by their leading edge, which is fine for the English
- | labels the frame was drawn with but let the longer fa/ar ones grow outwards
- | until they crossed the outer ring. Centring is also direction-agnostic —
- | no translateX to flip under RTL.
+ | label is *centred* on the coordinate rather than starting at it. Anchoring
+ | by the leading edge is fine for English but lets a longer fa/ar label grow
+ | outwards until it crosses the circle's stroke. Centring is also
+ | direction-agnostic — no translateX to flip under RTL.
  */
 .orbit-anchor {
   position: absolute;
@@ -434,6 +447,7 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 8px;
   text-align: center;
   white-space: nowrap;
   padding: 8px 16px;
@@ -444,6 +458,20 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
   line-height: 27px;
   color: var(--color-paper);
 }
+
+/* One accent per pill, drawn from the existing gold/neutral token set rather
+   than inventing a new palette — same four tokens the rest of the page uses. */
+.service-pill__dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 999px;
+}
+
+.service-pill--social .service-pill__dot { background: var(--color-gold); }
+.service-pill--branding .service-pill__dot { background: var(--color-gold-500); }
+.service-pill--design .service-pill__dot { background: var(--color-paper); }
+.service-pill--content .service-pill__dot { background: var(--color-neutral-200); }
 
 /*
  | Hover variant 501:722 — a 216x116 radius-8 panel under the pill, pulled up
@@ -492,19 +520,18 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
   }
 }
 
-/* Frame coordinates, converted from the pill's leading edge to its centre. */
-.service-pill--social { inset-inline-start: 456.5px; top: 98px; }
-.service-pill--branding { inset-inline-start: 703px; top: 176px; }
-.service-pill--content { inset-inline-start: 441.5px; top: 299px; }
-.service-pill--design { inset-inline-start: 732px; top: 321px; }
-
 /*
- | The rings and the horizontal axis share x=569 as their actual centre
- | (the 1101px stage itself is centred at x=550.5). Anchor the core label to
- | that shared geometry so it sits exactly at the line/ring intersection.
- | Keeping this logical also mirrors the complete diagram correctly in RTL.
+ | Pills sit inside their own circle's non-overlapping half, offset above and
+ | below the label band (top 250 / bottom ~286) so neither collides with
+ | Brand/Product or with the lens-shaped overlap between x=470 and x=630.
  */
-.orbit-anchor--core { inset-inline-start: 569px; top: 245px; }
+.service-pill--social { inset-inline-start: 250px; top: 110px; }
+.service-pill--branding { inset-inline-start: 330px; top: 390px; }
+.service-pill--design { inset-inline-start: 770px; top: 110px; }
+.service-pill--content { inset-inline-start: 850px; top: 390px; }
+
+/* The stage's own centre (550.5) is also the Venn's lens centre. */
+.orbit-anchor--core { inset-inline-start: 550px; top: 250px; }
 
 .orbit-core {
   white-space: nowrap;
@@ -518,163 +545,124 @@ useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
 }
 
 /*
+ | Ghost tags fill the stage's own margin either side of the circle pair
+ | (150px on the desktop stage — see `.venn-circle--brand`'s inset above), so
+ | they sit inside the stage's own coordinate space rather than needing
+ | `.services-orbit`'s `overflow: hidden` relaxed. `space-around` distributes
+ | three tags evenly without hand-tuning three separate top offsets per side.
+ */
+.ghost-col {
+  position: absolute;
+  z-index: 1;
+  top: 40px;
+  bottom: 40px;
+  width: 130px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.ghost-col--brand { inset-inline-start: 4px; }
+.ghost-col--product { inset-inline-end: 4px; }
+
+.ghost-tag {
+  padding: 6px 10px;
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 999px;
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: center;
+  color: rgb(255 255 255 / 40%);
+}
+
+/*
  |=============================================================================
- | MOBILE — frame 1731:12370 / group 1731:12369 (Home mobile 1419:9191)
+ | MOBILE
  |=============================================================================
  |
- | This is NOT the desktop diagram scaled down, and it is not the 2-up pill
- | grid that used to stand in for it. The mobile frame keeps the full orbit
- | but ROTATES THE AXIS a quarter turn:
- |
- |            desktop 1101x520              mobile 500x500
- |            Marketing ——•——•—— Growth     Marketing
- |            pills scattered on the ring        |
- |                                            [Branding]
- |                                       [Social Media support]
- |                                        [Marketing Design]
- |                                       [Content Production]
- |                                               |
- |                                            Growth
- |
- | Frame coordinates inside the 500x500 group (all verified on the node):
- |
- |   rings        1731:12365   0,0    502x502  (inner r150, outer r250)
- |   axis+pills   1731:12368   149,22 202x436
- |     axis col   1731:12364   +65,0   72 wide · column · centre · gap 8
- |                             [Marketing 14/500] [10x378 line] [Growth]
- |     pills col  1731:12357   +0,68  202 wide · column · centre · gap 24
- |
- | so, measured from the top of the 500 stage:
- |   Marketing  top 22   (h 21)
- |   line       top 51   (h 378)   -> ends 429
- |   Growth     top 437  (h 21)
- |   pills      top 90,  centred, 202 wide
- |
- | The group is placed at x=-49 in the 402 frame, i.e. dead centre with a 49px
- | bleed each side — the rings are MEANT to run off both edges and be clipped
- | by the section. Hence `left: 50%` + `translateX(-50%)` on a fixed 500 box
- | rather than a fluid width: shrinking the rings to fit would close the
- | composition up and lose the bleed the frame is drawn around.
+ | The desktop Venn runs left -> right (Brand, then Product, meeting in the
+ | middle); mobile turns the same pair a quarter turn so it reads top -> bottom
+ | instead, the same axis flip the rest of the page's mobile frames use for
+ | horizontal diagrams. The two circles are the same DOM nodes as desktop,
+ | repositioned and rescaled here rather than duplicated.
  */
 @media (max-width: 1023px) {
   .services-orbit {
     min-height: auto;
   }
 
+  /* Decorative-only, and sized for the desktop stage's 1101px width — the
+     mobile stack has neither the room nor, once the pills are a real column
+     below the Venn rather than scattered anchors, the same "burst" reading. */
+  .ghost-col,
+  .orbit-ring-wrap {
+    display: none;
+  }
+
   /*
-   | The stage becomes a plain 500-tall positioning context spanning the
-   | column. Height is fixed because every child inside is placed against the
-   | frame's own 500px coordinate space.
+   | 260px circles overlapped by 70px vertically (0-260 and 190-450), plus a
+   | pills column below, need more room than the desktop stage's 520 — sized
+   | generously rather than to the exact content height because the pill
+   | column's own height varies with the active locale's line count.
    */
   .orbit-stage {
-    /* Centre the diagram against the viewport, not the padded content track.
-       This also avoids a visible offset when a parent/container gutter is
-       asymmetric because of direction or scrollbar compensation. */
     left: auto;
     width: 100vw;
-    height: 500px;
+    height: 800px;
     margin-inline-start: calc(50% - 50vw);
     margin-inline-end: 0;
     transform: none;
   }
 
-  /* Desktop rings off, flattened mobile export on, centred with its bleed. */
-  .orbit-circle--outer,
-  .orbit-circle--inner {
-    display: none;
-  }
-
-  .orbit-circle--mobile {
-    display: block;
-    inset-inline-start: auto;
-    left: 50%;
-    top: 50%;
-    width: 500px;
-    height: 500px;
-    max-width: none;
-    transform: translate(-50%, -50%);
-  }
-
-  /* Horizontal axis line, its four dots and the core chip are desktop-only. */
-  .orbit-line,
-  .orbit-endpoint,
-  .orbit-anchor--core {
-    display: none;
-  }
-
   /*
-   | Axis labels move to the top and bottom of the stack. Both are centred on
-   | the stage's midline, so they are placed physically (50% + translateX) —
-   | a vertical axis has no leading/trailing side to mirror under RTL.
+   | Centred with `inset-inline: 0` + `margin-inline: auto` rather than
+   | `left: 50%` + `translateX(-50%)` — a vertical stack has no leading or
+   | trailing side to mirror under RTL, so either technique would centre it
+   | correctly, but mixing a physical inset with the logical one the desktop
+   | rule above already set on this element (`inset-inline-start: 150/470px`)
+   | puts both in the SAME cascade slot per the logical-properties spec: the
+   | last declaration wins the edge outright rather than overriding just the
+   | axis, which cancelled the centring and pinned both circles to the
+   | stage's static position. `inset-inline` never collides with it.
    */
-  .orbit-axis {
-    display: block;
-    inset-inline: auto;
-    left: 50%;
-    width: auto;
-    min-width: 72px;
-    transform: translateX(-50%);
-    font-size: 14px;
+  .venn-circle {
+    top: auto;
+    inset-inline: 0;
+    margin-inline: auto;
+    width: 260px;
+    height: 260px;
+  }
+
+  .venn-circle--brand { top: 0; }
+  .venn-circle--product { top: 190px; }
+
+  .venn-label {
+    inset-inline-start: 50%;
+    font-size: 16px;
     font-weight: 500;
-    line-height: 21px;
+    line-height: 24px;
   }
 
-  .orbit-axis--marketing {
-    top: 22px;
-  }
+  .venn-label--brand { top: 80px; }
+  .venn-label--product { top: 350px; }
 
-  .orbit-axis--growth {
-    top: 437px;
+  .orbit-anchor--core {
+    inset-inline-start: 50%;
+    top: 215px;
   }
 
   /*
-   | Connector 1731:12358 — a 378px dashed run with a 10px gold dot capping
-   | each end. Same 4/4 dash and gold/600 stroke as the desktop axis, turned
-   | 90°, so it is painted the same way (a repeating gradient, because a CSS
-   | dashed border cannot control dash length).
-   */
-  .orbit-line-vertical {
-    display: block;
-    position: absolute;
-    top: 51px;
-    left: 50%;
-    width: 2px;
-    height: 378px;
-    transform: translateX(-50%);
-    background-image: repeating-linear-gradient(
-      to bottom,
-      var(--color-gold-600) 0 4px,
-      transparent 4px 8px
-    );
-  }
-
-  .orbit-line-vertical::before,
-  .orbit-line-vertical::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--color-gold);
-    box-shadow: 0 0 8px rgb(var(--color-gold-rgb) / 55%);
-    transform: translateX(-50%);
-  }
-
-  .orbit-line-vertical::before { top: -5px; }
-  .orbit-line-vertical::after { bottom: -5px; }
-
-  /*
-   | Pills column 1731:12357. `width: fit-content` with a 202px floor rather
-   | than a hard 202: the file stretches its widest card ("Social Media
-   | support") to define that width, so letting the widest pill in the ACTIVE
-   | locale set it reproduces the same result in English and stays centred and
-   | unclipped when the fa/ar labels are longer.
+   | Pills column, same component as desktop's — just a real centred flex
+   | column below the Venn instead of four absolutely-scattered anchors.
+   | `width: fit-content` with a 202px floor rather than a hard 202: the
+   | widest card in the active locale defines the column width, so it stays
+   | centred and unclipped whether that is English or a longer fa/ar label.
    */
   .orbit-pills {
     display: flex;
     position: absolute;
-    top: 90px;
+    top: 490px;
     left: 50%;
     z-index: 2;
     flex-direction: column;

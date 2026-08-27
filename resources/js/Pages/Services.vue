@@ -150,6 +150,6 @@ defineProps<{
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[194px] pt-24 md:pb-[204px] lg:pt-[224px]"
+    spacing-class="pb-[176px] pt-[176px]"
   />
 </template>

@@ -88,7 +88,7 @@ function loadMore(): void {
     224 (content -> final CTA), 120 (heading row -> grid), 96 (grid -> More).
     They are separate auto-layout levels in the file and stay separate here.
   -->
-  <div class="container-sahra flex flex-col gap-12 pb-0 pt-[160px] md:gap-[120px] md:pb-32 md:pt-[184px]">
+  <div class="container-sahra flex flex-col gap-12 pb-0 pt-[160px] md:pb-32 md:pt-[184px] lg:gap-[120px]">
     <!-- Heading + filters — Figma 1219:4240: space-between, items-center -->
     <div class="flex flex-col gap-16 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
       <!-- "Main title & tag" 1005:1609 — eyebrow, gap 48, then title over
@@ -205,7 +205,7 @@ function loadMore(): void {
       v-if="hasMore || (!showMobileOverflow && projects.length > 4)"
       type="button"
       class="inline-flex items-center gap-1 text-body-md font-medium text-neutral-900 md:gap-2 md:text-body-lg
-             transition-opacity hover:opacity-70"
+             transition-colors hover:text-gold"
       @click="loadMore"
     >
       {{ t('common.more_works') }}
@@ -218,6 +218,6 @@ function loadMore(): void {
   <CtaBanner
     v-if="sections.final_cta"
     :section="sections.final_cta"
-    spacing-class="pb-[270px] pt-[76px] md:pb-[145px] md:pt-24"
+    spacing-class="pb-[176px] pt-[176px]"
   />
 </template>

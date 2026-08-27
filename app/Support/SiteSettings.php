@@ -101,6 +101,23 @@ final class SiteSettings
     }
 
     /**
+     * Third-party analytics/tracking IDs, entered in Filament and read
+     * server-side into the Inertia root view — never routed through JS props
+     * since they need to load before Vue hydrates.
+     *
+     * @return array{gaId: ?string, gtmId: ?string, gscVerification: ?string, hotjarId: ?string}
+     */
+    public static function integrations(): array
+    {
+        return [
+            'gaId'            => self::get('google_analytics_id'),
+            'gtmId'           => self::get('google_tag_manager_id'),
+            'gscVerification' => self::get('google_search_console_verification'),
+            'hotjarId'        => self::get('hotjar_site_id'),
+        ];
+    }
+
+    /**
      * @return array<int, array{platform: string, label: string, url: string, icon: string}>
      */
     public static function socialLinks(): array

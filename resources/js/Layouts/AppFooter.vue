@@ -67,7 +67,7 @@ function columnHeading(index: number, fallback: string): string {
         </div>
 
           <div
-            class="grid grid-cols-2 gap-x-10 gap-y-1 md:gap-y-10
+            class="grid grid-cols-2 gap-x-10 gap-y-10
                    lg:flex lg:shrink-0 lg:items-start lg:gap-[88px]"
           >
             <!-- Menu columns -->
