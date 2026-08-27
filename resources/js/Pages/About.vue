@@ -370,7 +370,7 @@ const teamRows = computed(() => {
                   :alt="i >= mobileTeamTrack.uniqueCount ? '' : member.image.alt"
                   :width="member.image.width"
                   :height="member.image.height"
-                  class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"
+                  class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand hover:scale-[1.06] hover:grayscale-0 focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"
                 />
               </div>
               <div v-else class="aspect-square w-full rounded-sm bg-neutral-100" />

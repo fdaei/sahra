@@ -1300,82 +1300,82 @@
     "semantic_hash": "2fbe333765a057981149092acce060e9"
   },
   "public/js/filament/filament/app.js": {
-    "mtime": 1787221198.0439148,
+    "mtime": 1785448898.318244,
     "ast_hash": "055af451d117e11009c5600efa7e0247",
     "semantic_hash": "055af451d117e11009c5600efa7e0247"
   },
   "public/js/filament/filament/echo.js": {
-    "mtime": 1787221198.044032,
+    "mtime": 1785448898.3183343,
     "ast_hash": "9a7993fa9a704f0e97d5c701b08e6bce",
     "semantic_hash": "9a7993fa9a704f0e97d5c701b08e6bce"
   },
   "public/js/filament/forms/components/color-picker.js": {
-    "mtime": 1787221198.0421052,
+    "mtime": 1785448898.3170853,
     "ast_hash": "4393c422493e0e6143a80d58647ff2b7",
     "semantic_hash": "4393c422493e0e6143a80d58647ff2b7"
   },
   "public/js/filament/forms/components/date-time-picker.js": {
-    "mtime": 1787221198.042272,
+    "mtime": 1785448898.3171833,
     "ast_hash": "81dde65996cea522022e7e01f12aa195",
     "semantic_hash": "81dde65996cea522022e7e01f12aa195"
   },
   "public/js/filament/forms/components/file-upload.js": {
-    "mtime": 1787221198.0424843,
+    "mtime": 1785448898.3173718,
     "ast_hash": "e6b4d840b25668da2a477ea8b2cdf026",
     "semantic_hash": "e6b4d840b25668da2a477ea8b2cdf026"
   },
   "public/js/filament/forms/components/key-value.js": {
-    "mtime": 1787221198.0425954,
+    "mtime": 1785448898.3174503,
     "ast_hash": "b23b4554a7073f7911cb39a35b88f4e9",
     "semantic_hash": "b23b4554a7073f7911cb39a35b88f4e9"
   },
   "public/js/filament/forms/components/markdown-editor.js": {
-    "mtime": 1787221198.042819,
+    "mtime": 1785448898.317598,
     "ast_hash": "69b95c6980262efcf7a49aa01859a7c2",
     "semantic_hash": "69b95c6980262efcf7a49aa01859a7c2"
   },
   "public/js/filament/forms/components/rich-editor.js": {
-    "mtime": 1787221198.0429897,
+    "mtime": 1785448898.3177288,
     "ast_hash": "3c0f7f9d1c1c13febc0e4d0a5c3698b5",
     "semantic_hash": "3c0f7f9d1c1c13febc0e4d0a5c3698b5"
   },
   "public/js/filament/forms/components/select.js": {
-    "mtime": 1787221198.0431046,
+    "mtime": 1785448898.3178186,
     "ast_hash": "c51957de2de3f9c1553ddf8c40ffcbf1",
     "semantic_hash": "c51957de2de3f9c1553ddf8c40ffcbf1"
   },
   "public/js/filament/forms/components/tags-input.js": {
-    "mtime": 1787221198.0432322,
+    "mtime": 1785448898.3178904,
     "ast_hash": "0c2de9797b4b240e4c0f706863491e03",
     "semantic_hash": "0c2de9797b4b240e4c0f706863491e03"
   },
   "public/js/filament/forms/components/textarea.js": {
-    "mtime": 1787221198.0433345,
+    "mtime": 1785448898.317929,
     "ast_hash": "abb98c0edb3e7228142c14a8422ef7c6",
     "semantic_hash": "abb98c0edb3e7228142c14a8422ef7c6"
   },
   "public/js/filament/notifications/notifications.js": {
-    "mtime": 1787221198.044139,
+    "mtime": 1785448898.3184333,
     "ast_hash": "f873fe0caab22e4a8740d51d4f31a6da",
     "semantic_hash": "f873fe0caab22e4a8740d51d4f31a6da"
   },
   "public/js/filament/support/support.js": {
-    "mtime": 1787221198.0443048,
+    "mtime": 1785448898.3185482,
     "ast_hash": "7a114a87d2fcdefefc3e4f9012dbdbbb",
     "semantic_hash": "7a114a87d2fcdefefc3e4f9012dbdbbb"
   },
   "public/js/filament/tables/components/table.js": {
-    "mtime": 1787221198.0434456,
+    "mtime": 1785448898.3179874,
     "ast_hash": "414ff611c888683f502c4f14f7191def",
     "semantic_hash": "414ff611c888683f502c4f14f7191def"
   },
   "public/js/filament/widgets/components/chart.js": {
-    "mtime": 1787221198.0436387,
+    "mtime": 1785448898.3180838,
     "ast_hash": "f214520fae0f668a51d73056581cd884",
     "semantic_hash": "f214520fae0f668a51d73056581cd884"
   },
   "public/js/filament/widgets/components/stats-overview/stat/chart.js": {
-    "mtime": 1787221198.0438108,
+    "mtime": 1785448898.3181596,
     "ast_hash": "42945d911451ca2ed6a66f6380dcfce0",
     "semantic_hash": "42945d911451ca2ed6a66f6380dcfce0"
   },
@@ -1400,8 +1400,8 @@
     "semantic_hash": ""
   },
   "resources/js/Components/Sections/LeadMagnet.vue": {
-    "mtime": 1787221067.5083277,
-    "ast_hash": "911a817420649dc0215b514723beca06",
+    "mtime": 1786807439.0244172,
+    "ast_hash": "7cecdfbc9f6021d614a9d135374f19eb",
     "semantic_hash": ""
   },
   "resources/js/Components/Sections/PackagesSection.vue": {
@@ -1415,8 +1415,8 @@
     "semantic_hash": ""
   },
   "resources/js/Components/Sections/ProjectsShowcase.vue": {
-    "mtime": 1787221080.0299785,
-    "ast_hash": "2b2324f89c594e86dd4c8e9f07eb9b6c",
+    "mtime": 1787218184.0913153,
+    "ast_hash": "0d53a0f08e5e4d746b5473b318654a3c",
     "semantic_hash": ""
   },
   "resources/js/Components/SeoHead.vue": {
@@ -1435,8 +1435,8 @@
     "semantic_hash": "85739381889ce0263ecb625e784791d8"
   },
   "resources/js/Composables/useMotion.ts": {
-    "mtime": 1787221197.014874,
-    "ast_hash": "d568bcfe095e3c4fd58c724f258e3429",
+    "mtime": 1787219813.974625,
+    "ast_hash": "5d62c70dbb76e425c54fbcdc1a9ae2be",
     "semantic_hash": ""
   },
   "resources/js/Composables/useTranslations.ts": {
@@ -1480,8 +1480,8 @@
     "semantic_hash": ""
   },
   "resources/js/Pages/Home.vue": {
-    "mtime": 1787221642.3215432,
-    "ast_hash": "3bc3ef54d98691be8f9e976a817eef43",
+    "mtime": 1787219570.459707,
+    "ast_hash": "f1ff308c232e39d9874b315f70c67e66",
     "semantic_hash": ""
   },
   "resources/js/Pages/Insights/Index.vue": {
@@ -1510,8 +1510,8 @@
     "semantic_hash": ""
   },
   "resources/js/Pages/Work/Show.vue": {
-    "mtime": 1787220286.9040308,
-    "ast_hash": "25400eb170989ab1e9c79b1f89631558",
+    "mtime": 1787219329.5880752,
+    "ast_hash": "bd29528001e0b5c8582cbb92cf475b32",
     "semantic_hash": ""
   },
   "resources/js/app.ts": {

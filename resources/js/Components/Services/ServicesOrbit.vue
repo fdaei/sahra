@@ -70,9 +70,19 @@ const pills = computed(() =>
  */
 const outerRing = ref<HTMLElement | null>(null)
 const innerRing = ref<HTMLElement | null>(null)
+const mobileRing = ref<HTMLElement | null>(null)
 
-useScrubRotate(outerRing)
-useScrubRotate(innerRing)
+/*
+ | The stage draws two rings above 1024px and one flattened export below it,
+ | with the unused set at `display: none` (see the media query at the bottom).
+ | Each rotation is therefore scoped to the width that actually renders its
+ | target: a ScrollTrigger measured on a hidden element has a zero-height rect,
+ | so scoping is not an optimisation — an unscoped trigger on the mobile ring
+ | would simply never scrub.
+ */
+useScrubRotate(outerRing, { media: '(min-width: 1024px)' })
+useScrubRotate(innerRing, { media: '(min-width: 1024px)' })
+useScrubRotate(mobileRing, { media: '(max-width: 1023px)' })
 </script>
 
 <template>
@@ -128,7 +138,17 @@ useScrubRotate(innerRing)
           1101x520 stage and do not rescale onto the 500x500 mobile one.
           Swapped by media query below; only ever one of the two sets is drawn.
         -->
-        <img :src="orbitMobile" class="orbit-circle orbit-circle--mobile" alt="" aria-hidden="true" />
+        <!--
+          The centring lives on the wrapper, the rotation on the <img> inside.
+          useScrubRotate rebuilds its target's matrix on every scrub tick and
+          folds any author transform into it, so a `translate(-50%, -50%)` on
+          the rotated element itself would be re-applied each tick and walk the
+          ring off centre as it turns — the same trap the note above the
+          `.orbit-circle` rules describes.
+        -->
+        <div class="orbit-circle orbit-circle--mobile" aria-hidden="true">
+          <img ref="mobileRing" :src="orbitMobile" alt="" />
+        </div>
 
         <span class="orbit-endpoint orbit-endpoint--start" aria-hidden="true" />
         <span class="orbit-endpoint orbit-endpoint--middle-a" aria-hidden="true" />
@@ -308,6 +328,13 @@ useScrubRotate(innerRing)
 /* Desktop draws the two separate rings; the flattened mobile export is idle. */
 .orbit-circle--mobile {
   display: none;
+}
+
+/* Fills its wrapper, and carries no transform of its own — see the markup. */
+.orbit-circle--mobile > img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /* The pills are absolutely placed on desktop — the wrapper must not box them. */

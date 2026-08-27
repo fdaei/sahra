@@ -56,6 +56,7 @@ Derived files to generate locally from `logo-mark.svg`:
 | Node ID | Asset | Format | Scale | Target path | Alt text (en) |
 |---|---|---|---|---|---|
 | `1419:9193` | Hero background — gold dunes & horizon line | **WebP** + PNG fallback | 2× (2880×1808) | `storage/app/public/pages/home-hero.webp` | Golden desert dunes meeting the horizon at sunrise |
+| `1419:9191` | Hero background — mobile composition (ring + dune curve anchored bottom-right) | **WebP** | 2× (804×1530) | `public/images/sahra/hero-brand-preview-mobile.webp` | Decorative — `aria-hidden`, no alt |
 | `1419:9229` | Home projects showcase image | **WebP** | 2× (1060×1326) | `storage/app/public/pages/home-projects.webp` | Featured Sahra brand campaign artwork |
 
 ## 3. Client logos (trust proof strip)

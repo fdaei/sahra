@@ -21,6 +21,9 @@ const activeIndex = ref(0);
 const mobileActiveIndex = ref(0);
 const isPaused = ref(false);
 const isVisible = ref(false);
+// Touch devices emit compatibility mouse/focus events on tap; pausing on those
+// froze the carousel for good, so hover/focus only pause a real pointer.
+const supportsHover = ref(false);
 const sectionRoot = ref<HTMLElement | null>(null);
 const mobileCarousel = ref<HTMLElement | null>(null);
 let rotationTimer: number | null = null;
@@ -40,6 +43,36 @@ const canRotate = computed(() => props.projects.length > 1);
 
 function selectProject(index: number): void {
   activeIndex.value = index;
+}
+
+function selectDesktopProject(index: number): void {
+  if (!props.projects.length) return;
+
+  activeIndex.value =
+    (index + props.projects.length) % props.projects.length;
+  startRotation();
+}
+
+function handleMouseEnter(): void {
+  if (!supportsHover.value) return;
+  isPaused.value = true;
+}
+
+function handleFocusIn(event: FocusEvent): void {
+  const target = event.target as HTMLElement | null;
+  if (!target) return;
+
+  // Only a keyboard focus ring holds the carousel still — a tap focuses the
+  // dot buttons too, and that must not stop the automatic paging. Browsers
+  // without `:focus-visible` support throw on the selector, and there the old
+  // pause-on-any-focus behaviour is the right fallback.
+  try {
+    if (!target.matches(":focus-visible")) return;
+  } catch {
+    // ignore — treat as a focus worth pausing for
+  }
+
+  isPaused.value = true;
 }
 
 function selectMobileProject(index: number): void {
@@ -134,12 +167,17 @@ watch(
 onMounted(() => {
   mobileMedia = window.matchMedia("(max-width: 1023px)");
   mobileMedia.addEventListener("change", startRotation);
+  supportsHover.value = window.matchMedia(
+    "(hover: hover) and (pointer: fine)",
+  ).matches;
 
   observer = new IntersectionObserver(
     ([entry]) => {
       isVisible.value = entry?.isIntersecting ?? false;
     },
-    { threshold: 0.35 },
+    // The section is taller than a phone viewport, so a high threshold could
+    // never be met on mobile and the rotation would never start.
+    { threshold: 0.15 },
   );
 
   if (sectionRoot.value) observer.observe(sectionRoot.value);
@@ -159,9 +197,9 @@ onBeforeUnmount(() => {
     ref="sectionRoot"
     class="overflow-hidden py-14 md:py-24 lg:py-28"
     aria-labelledby="projects-showcase-title"
-    @mouseenter="isPaused = true"
+    @mouseenter="handleMouseEnter"
     @mouseleave="isPaused = false"
-    @focusin="isPaused = true"
+    @focusin="handleFocusIn"
     @focusout="isPaused = false"
   >
     <div class="container-sahra">
@@ -225,7 +263,7 @@ onBeforeUnmount(() => {
                     class="inline-flex shrink-0 items-center gap-1 text-[14px] font-medium leading-none text-neutral-900"
                   >
                     {{ t("work.view_case_study") }}
-                    <ArrowUpRight class="size-4" :stroke-width="1.5" />
+                    <ArrowUpRight class="size-4 rtl:-scale-x-100" :stroke-width="1.5" />
                   </a>
                 </div>
 
@@ -329,7 +367,7 @@ onBeforeUnmount(() => {
                     class="hidden shrink-0 items-center gap-2 text-body-lg font-medium text-neutral-900 hover:text-gold sm:flex"
                   >
                     {{ t("work.view_case_study") }}
-                    <ArrowUpRight class="size-5" :stroke-width="1.5" />
+                    <ArrowUpRight class="size-5 rtl:-scale-x-100" :stroke-width="1.5" />
                   </a>
                 </span>
 
@@ -368,7 +406,7 @@ onBeforeUnmount(() => {
                   class="mt-4 inline-flex items-center gap-2 text-body-lg font-medium text-neutral-900 sm:hidden"
                 >
                   {{ t("work.view_case_study") }}
-                  <ArrowUpRight class="size-5" :stroke-width="1.5" />
+                  <ArrowUpRight class="size-5 rtl:-scale-x-100" :stroke-width="1.5" />
                 </a>
               </div>
 
@@ -378,37 +416,61 @@ onBeforeUnmount(() => {
             </article>
           </div>
 
-          <div
-            class="order-2 aspect-[362/453] w-full overflow-hidden rounded-lg bg-neutral-50 lg:order-2 lg:aspect-[530/663]"
-          >
+          <div class="order-2 flex min-w-0 flex-col gap-6 lg:order-2">
+            <div
+              class="aspect-[362/453] w-full overflow-hidden rounded-lg bg-neutral-50 lg:aspect-[530/663]"
+            >
+              <!--
+                One shared panel, not one per tab: the design cross-fades a
+                single image well rather than stacking four. The id must
+                therefore be stable — keying it to activeIndex left every
+                inactive tab's aria-controls pointing at a node that does not
+                exist. aria-labelledby still tracks the active tab.
+              -->
+              <Transition name="project-image" mode="out-in">
+                <a
+                  v-if="activeProject"
+                  id="project-panel"
+                  :key="activeProject.slug"
+                  :href="activeProject.url"
+                  role="tabpanel"
+                  :aria-labelledby="`project-tab-${activeIndex}`"
+                  class="block size-full"
+                >
+                  <img
+                    v-if="activeProject.image"
+                    :src="activeProject.image.src"
+                    :srcset="activeProject.image.srcset"
+                    :alt="activeProject.image.alt"
+                    class="size-full object-cover"
+                    :width="activeProject.image.width"
+                    :height="activeProject.image.height"
+                  />
+                </a>
+              </Transition>
+            </div>
+
             <!--
-              One shared panel, not one per tab: the design cross-fades a
-              single image well rather than stacking four. The id must
-              therefore be stable — keying it to activeIndex left every
-              inactive tab's aria-controls pointing at a node that does not
-              exist. aria-labelledby still tracks the active tab.
+              Same progress dots the mobile frame uses, mirrored under the
+              desktop image well so the rotation is legible there too.
             -->
-            <Transition name="project-image" mode="out-in">
-              <a
-                v-if="activeProject"
-                id="project-panel"
-                :key="activeProject.slug"
-                :href="activeProject.url"
-                role="tabpanel"
-                :aria-labelledby="`project-tab-${activeIndex}`"
-                class="block size-full"
-              >
-                <img
-                  v-if="activeProject.image"
-                  :src="activeProject.image.src"
-                  :srcset="activeProject.image.srcset"
-                  :alt="activeProject.image.alt"
-                  class="size-full object-cover"
-                  :width="activeProject.image.width"
-                  :height="activeProject.image.height"
-                />
-              </a>
-            </Transition>
+            <div
+              v-if="projects.length > 1"
+              class="flex min-h-6 items-center justify-center gap-2"
+              role="group"
+              :aria-label="t('common.pagination')"
+            >
+              <button
+                v-for="(project, index) in projects"
+                :key="`dot-${project.slug}`"
+                type="button"
+                class="h-[10px] rounded-round bg-neutral-300 transition-[width,background-color] duration-300 ease-out hover:bg-neutral-400"
+                :class="activeIndex === index ? 'w-5 bg-gold-600 hover:bg-gold-600' : 'w-[10px]'"
+                :aria-label="`${index + 1}: ${project.title}`"
+                :aria-current="activeIndex === index ? 'true' : undefined"
+                @click="selectDesktopProject(index)"
+              />
+            </div>
           </div>
         </div>
       </div>
