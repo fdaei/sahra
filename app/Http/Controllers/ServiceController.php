@@ -37,6 +37,7 @@ final class ServiceController extends Controller
 
             'services' => Service::query()
                 ->forDisplay()
+                ->onServicesPage()
                 ->get()
                 ->map(fn (Service $s): array => ContentTransformer::service($s))
                 ->all(),

@@ -38,6 +38,9 @@ final class Service extends Model
         'published_at',
         'sort_order',
         'show_on_home',
+        'show_on_services_page',
+        'home_orbit_group',
+        'external_url',
         'icon',
         'image_path',
     ];
@@ -57,6 +60,7 @@ final class Service extends Model
             'status' => PublicationStatus::class,
             'published_at' => 'datetime',
             'show_on_home' => 'boolean',
+            'show_on_services_page' => 'boolean',
             'sort_order' => 'integer',
         ];
     }
@@ -84,7 +88,14 @@ final class Service extends Model
 
     public function scopeOnHome(Builder $query): Builder
     {
-        return $query->where('show_on_home', true);
+        return $query
+            ->where('show_on_home', true)
+            ->whereNotNull('home_orbit_group');
+    }
+
+    public function scopeOnServicesPage(Builder $query): Builder
+    {
+        return $query->where('show_on_services_page', true);
     }
 
     /**

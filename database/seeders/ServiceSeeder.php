@@ -127,7 +127,12 @@ final class ServiceSeeder extends Seeder
                     'status' => PublicationStatus::Published,
                     'published_at' => now(),
                     'sort_order' => $index,
-                    'show_on_home' => true,
+                    'show_on_home' => $index === 0,
+                    'show_on_services_page' => true,
+                    'home_orbit_group' => $index === 0 ? 'active' : null,
+                    'external_url' => $index === 0
+                        ? 'https://www.ramotion.com/branding/'
+                        : null,
                     'icon' => $data['icon'],
                     'image_path' => $data['image'],
                 ],
@@ -138,6 +143,76 @@ final class ServiceSeeder extends Seeder
                 'fa' => $data['fa'],
                 'ar' => $data['ar'],
             ]);
+        }
+
+        $orbitItems = [
+            ['design-systems', 'Design systems', 'active', 'https://www.ramotion.com/design-systems/', 'projects/kerman-motors.webp'],
+            ['app-design', 'App design', 'active', 'https://www.ramotion.com/app-design/', 'projects/cheshmeh.webp'],
+            ['brand-strategy', 'Brand strategy', 'active', 'https://www.ramotion.com/brand-strategy/', 'posts/brand-direction.webp'],
+            ['ui-ux-design', 'UI/UX design', 'active', 'https://www.ramotion.com/ui-ux-design/', 'projects/fakhar-clinic.webp'],
+            ['web-design', 'Web design', 'active', 'https://www.ramotion.com/web-design/', 'projects/baghche.webp'],
+            ['web-app-development', 'Web App development', 'active', 'https://www.ramotion.com/web-app-development/', 'projects/plus-protein.webp'],
+            ['printing-services', 'Printing services', 'brand', null, null],
+            ['packaging-design', 'Packaging design', 'brand', null, null],
+            ['pr-campaigns', 'PR Campaigns', 'brand', null, null],
+            ['video-productions', 'Video productions', 'brand', null, null],
+            ['data-science', 'Data science', 'product', null, null],
+            ['production-planning', 'Production planning', 'product', null, null],
+            ['gtm-strategy', 'GTM strategy', 'product', null, null],
+            ['smm', 'SMM', 'product', null, null],
+            ['product-writing', 'Product writing', 'product', null, null],
+        ];
+
+        foreach ($orbitItems as $index => [$slug, $title, $group, $url, $image]) {
+            $service = Service::withTrashed()
+                ->whereHas(
+                    'translations',
+                    fn ($query) => $query
+                        ->where('locale', config('locales.fallback'))
+                        ->where('slug', $slug),
+                )
+                ->first();
+
+            if ($service === null) {
+                $service = Service::create([
+                    'status' => PublicationStatus::Published,
+                    'published_at' => now(),
+                    'sort_order' => $index + 1,
+                    'show_on_home' => true,
+                    'show_on_services_page' => false,
+                    'home_orbit_group' => $group,
+                    'external_url' => $url,
+                    'image_path' => $image,
+                ]);
+            } else {
+                if ($service->trashed()) {
+                    $service->restore();
+                }
+
+                $service->update([
+                    'status' => PublicationStatus::Published,
+                    'published_at' => now(),
+                    'sort_order' => $index + 1,
+                    'show_on_home' => true,
+                    'show_on_services_page' => false,
+                    'home_orbit_group' => $group,
+                    'external_url' => $url,
+                    'image_path' => $image,
+                ]);
+            }
+
+            $translations = [];
+            foreach (array_keys(config('locales.supported')) as $locale) {
+                $translations[$locale] = [
+                    'title' => $title,
+                    'slug' => $slug,
+                    'description' => null,
+                    'features' => [],
+                    'image_alt' => $image === null ? null : $title,
+                ];
+            }
+
+            $service->setTranslations($translations);
         }
     }
 }

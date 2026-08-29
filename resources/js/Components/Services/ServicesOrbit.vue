@@ -41,7 +41,15 @@ let revealTimer: number | null = null;
  | reference's cluster is balanced about the centre line. Logical inset, so it
  | mirrors in RTL.
  */
-const nudges = [0, 140, -140, 0];
+const activePositions = [
+  { x: 50, y: 27 },
+  { x: 35, y: 39 },
+  { x: 65, y: 39 },
+  { x: 31, y: 53 },
+  { x: 50, y: 53 },
+  { x: 38, y: 68 },
+  { x: 64, y: 68 },
+];
 
 const accents = [
   "var(--color-gold)",
@@ -50,12 +58,16 @@ const accents = [
   "var(--color-gold-500)",
 ];
 const cards = computed(() =>
-  props.services.map((service, index) => ({
+  props.services
+    .filter((service) => service.homeOrbitGroup === "active")
+    .map((service, index) => ({
     ...service,
+    href:
+      service.externalUrl ||
+      `/${page.props.locale.current}/services#${service.slug}`,
     accent: accents[index % accents.length],
-    nudge: nudges[index % nudges.length],
-    href: `/${page.props.locale.current}/services#${service.key}`,
-  })),
+    position: activePositions[index % activePositions.length],
+    })),
 );
 /*
  | How far each outer entry leans toward the centre, in px, by row.
@@ -68,22 +80,30 @@ const cards = computed(() =>
  | The product side has five entries in four rows, so its first two share the
  | top row's value.
  */
-const brandFan = [62, 12, -48, 22];
-const productFan = [52, 52, 7, -43, 27];
+const brandPositions = [
+  { x: 18, y: 23 },
+  { x: 11, y: 38 },
+  { x: 14, y: 64 },
+  { x: 21, y: 79 },
+];
+const productPositions = [
+  { x: 82, y: 21 },
+  { x: 90, y: 36 },
+  { x: 86, y: 61 },
+  { x: 80, y: 76 },
+  { x: 88, y: 87 },
+];
 
-const brandGhosts = computed(() => [
-  t("services.ghost_copywriting"),
-  t("services.ghost_market_research"),
-  t("services.ghost_pr_media"),
-  t("services.ghost_email_marketing"),
-]);
-const productGhosts = computed(() => [
-  t("services.ghost_seo"),
-  t("services.ghost_analytics"),
-  t("services.ghost_email_marketing"),
-  t("services.ghost_copywriting"),
-  t("services.ghost_market_research"),
-]);
+const brandGhosts = computed(() =>
+  props.services
+    .filter((service) => service.homeOrbitGroup === "brand")
+    .map((service) => service.title),
+);
+const productGhosts = computed(() =>
+  props.services
+    .filter((service) => service.homeOrbitGroup === "product")
+    .map((service) => service.title),
+);
 
 onMounted(() => {
   if (
@@ -163,7 +183,10 @@ onBeforeUnmount(() => {
               v-for="(label, index) in brandGhosts"
               :key="label"
               class="ghost-service"
-              :style="{ '--fan': `${brandFan[index % brandFan.length]}px` }"
+              :style="{
+                '--x': `${brandPositions[index % brandPositions.length].x}%`,
+                '--y': `${brandPositions[index % brandPositions.length].y}%`,
+              }"
             >
               <strong>{{ label }}</strong>
             </div>
@@ -175,7 +198,8 @@ onBeforeUnmount(() => {
               class="service-card"
               :style="{
                 '--accent': service.accent,
-                '--nudge': `${service.nudge}px`,
+                '--x': `${service.position.x}%`,
+                '--y': `${service.position.y}%`,
                 '--delay': `${index * 70}ms`,
               }"
             >
@@ -225,7 +249,10 @@ onBeforeUnmount(() => {
               v-for="(label, index) in productGhosts"
               :key="label"
               class="ghost-service"
-              :style="{ '--fan': `${productFan[index % productFan.length]}px` }"
+              :style="{
+                '--x': `${productPositions[index % productPositions.length].x}%`,
+                '--y': `${productPositions[index % productPositions.length].y}%`,
+              }"
             >
               <strong>{{ label }}</strong>
             </div>
@@ -479,6 +506,169 @@ onBeforeUnmount(() => {
     width: min(100%, 390px);
     margin-inline: auto;
     gap: 12px;
+  }
+}
+
+/* Capability-map layout. Geometry only: motion and interactions stay intact. */
+.services-cloud {
+  min-height: auto;
+  background: #f7f7f7;
+  color: var(--color-ink);
+}
+.services-cloud::after {
+  display: none;
+}
+.services-cloud :is(h2, p) {
+  color: var(--color-ink) !important;
+}
+.cloud-diagram {
+  position: relative;
+  width: min(100%, 980px);
+  height: 560px;
+  min-height: 560px;
+  margin: 68px auto 0;
+  overflow: visible;
+}
+.cloud-diagram :deep(.mastery-stage) {
+  width: 100%;
+  height: 100%;
+}
+.services-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.side-col,
+.mastery-col {
+  display: contents;
+}
+.ghost-service,
+.service-card {
+  position: absolute;
+  inset-inline-start: var(--x);
+  top: var(--y);
+  width: max-content;
+  height: 38px;
+  translate: -50% -50%;
+}
+.ghost-service {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 220px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--color-ink-rgb) / 13%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 72%);
+  color: rgb(var(--color-ink-rgb) / 34%);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0;
+  transform: translateX(0) scale(0.96);
+}
+.side-col--brand .ghost-service,
+.side-col--product .ghost-service {
+  inset-inline-end: auto;
+  transform: translateX(0) scale(0.96);
+}
+.is-visible .ghost-service {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+.service-card {
+  display: block;
+  max-width: 250px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 0.5s ease var(--delay),
+    transform 0.8s cubic-bezier(0.89, 0.34, 0.2, 0.83) var(--delay);
+}
+.is-visible .service-card {
+  opacity: 1;
+  transform: scale(1);
+}
+.service-card__title {
+  height: 38px;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+.service-card__title strong {
+  color: var(--color-paper);
+}
+.service-card__icon {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  background: currentColor;
+}
+.service-card__arrow {
+  width: 10px;
+  height: 10px;
+  margin-inline-start: 3px;
+}
+.service-card__content {
+  bottom: 38px;
+}
+
+@media (max-width: 1023px) {
+  .cloud-diagram {
+    width: min(100%, 760px);
+    height: 500px;
+    min-height: 500px;
+    margin-top: 48px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .ghost-service {
+    font-size: 12px;
+    padding-inline: 10px;
+  }
+  .service-card__title {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 639px) {
+  .cloud-diagram {
+    height: 500px;
+    min-height: 500px;
+    margin-top: 36px;
+  }
+  .side-col {
+    display: none;
+  }
+  .mastery-col {
+    position: absolute;
+    inset: 102px 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    justify-items: center;
+  }
+  .service-card {
+    position: relative;
+    inset: auto;
+    top: auto;
+    translate: none;
+  }
+  .service-card__content {
+    display: none;
   }
 }
 @media (max-width: 520px) {
@@ -768,6 +958,135 @@ onBeforeUnmount(() => {
   }
   .service-card__content {
     display: none;
+  }
+}
+
+/* Keep the coordinate map last so the legacy measured-grid rules cannot win. */
+.cloud-diagram {
+  width: min(100%, 980px);
+  height: 560px;
+  min-height: 560px;
+  margin: 68px auto 0;
+  overflow: visible;
+}
+.services-grid {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  translate: none;
+}
+.side-col,
+.mastery-col {
+  display: contents;
+}
+.ghost-service,
+.service-card {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-inline-end: auto;
+  top: var(--y);
+  width: max-content;
+  height: 38px;
+  translate: -50% -50%;
+}
+.ghost-service {
+  max-width: 220px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--color-ink-rgb) / 13%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 72%);
+  color: rgb(var(--color-ink-rgb) / 34%);
+  font-size: 14px;
+  transform: scale(0.96);
+}
+.side-col--brand .ghost-service,
+.side-col--product .ghost-service {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-inline-end: auto;
+  transform: scale(0.96);
+}
+.is-visible .ghost-service {
+  transform: scale(1);
+}
+.service-card {
+  max-width: 250px;
+  border-radius: 999px;
+  inset-inline-start: var(--x);
+  transform: scale(0.82);
+}
+.is-visible .service-card {
+  transform: scale(1);
+}
+.service-card__title {
+  height: 38px;
+  gap: 9px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.service-card__icon {
+  width: 12px;
+  height: 12px;
+}
+.service-card__arrow {
+  width: 10px;
+  height: 10px;
+  margin-inline-start: 3px;
+}
+.service-card__content {
+  bottom: 38px;
+}
+
+@media (max-width: 1023px) {
+  .cloud-diagram {
+    width: min(100%, 760px);
+    height: 500px;
+    min-height: 500px;
+    margin-top: 48px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .services-grid {
+    inset: 0;
+    top: 0;
+    display: block;
+    height: 100%;
+  }
+  .side-col,
+  .mastery-col {
+    display: contents;
+  }
+}
+
+@media (max-width: 639px) {
+  .cloud-diagram {
+    margin-top: 36px;
+  }
+  .side-col {
+    display: none;
+  }
+  .mastery-col {
+    position: absolute;
+    inset: 102px 0 auto;
+    display: grid;
+    width: 100%;
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 38px;
+    gap: 12px;
+    margin: 0;
+    justify-items: center;
+  }
+  .service-card {
+    position: relative;
+    inset: auto;
+    top: auto;
+    translate: none;
   }
 }
 </style>

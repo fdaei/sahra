@@ -149,6 +149,8 @@ export interface ServiceItem {
   title: string
   description: string
   features: string[]
+  homeOrbitGroup: 'active' | 'brand' | 'product' | null
+  externalUrl: string | null
   icon: string | null
   image: MediaImage | null
 }

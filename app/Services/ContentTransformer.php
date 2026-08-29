@@ -147,6 +147,8 @@ final class ContentTransformer
             'title' => (string) $service->getTranslation('title'),
             'description' => (string) $service->getTranslation('description'),
             'features' => (array) ($service->getTranslation('features') ?? []),
+            'homeOrbitGroup' => $service->home_orbit_group,
+            'externalUrl' => $service->external_url,
             'icon' => IconUrl::resolve($service->icon),
             'image' => MediaTransformer::make(
                 $service->image_path,

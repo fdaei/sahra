@@ -65,6 +65,11 @@ const axis = computed(() => ({
   y: shape.value.cy,
 }));
 
+const rings = computed(() => ({
+  inner: Math.min(138, width.value * 0.141),
+  outer: Math.min(240, width.value * 0.245),
+}));
+
 useMasteryOpen(stage, progress);
 </script>
 
@@ -85,13 +90,13 @@ useMasteryOpen(stage, progress);
           data-mastery="ring-inner"
           :cx="shape.cx"
           :cy="shape.cy"
-          r="181"
+          :r="rings.inner"
         />
         <circle
           data-mastery="ring-outer"
           :cx="shape.cx"
           :cy="shape.cy"
-          r="313"
+          :r="rings.outer"
         />
       </g>
 
@@ -238,13 +243,13 @@ useMasteryOpen(stage, progress);
   translate: 0 -50%;
 }
 .mastery-label--product {
-  inset-inline-end: 20px;
+  inset-inline-end: 0;
   top: calc(50% + 5px);
   translate: 0 -50%;
 }
 .mastery-label--core {
   inset-inline-start: 50%;
-  top: 40px;
+  top: 8px;
   translate: -50% 0;
   max-width: 7em;
 }
