@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\MenuResource\RelationManagers;
 
+use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\MenuItem;
 use Filament\Forms\Components\Section;
@@ -66,6 +67,8 @@ final class ItemsRelationManager extends RelationManager
                         ])
                         ->default('_self')
                         ->native(false),
+
+                    SvgIconUpload::make('icon', 'Button icon'),
 
                     Select::make('parent_id')
                         ->label('Parent item')

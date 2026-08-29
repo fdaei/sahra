@@ -9,6 +9,7 @@ use App\Support\NavigationBuilder;
 use App\Support\SiteSettings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Tighten\Ziggy\Ziggy;
 
 /**
  * Shares the props every page needs: active locale + direction, the header and
@@ -38,15 +39,15 @@ final class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
 
             'locale' => [
-                'current'   => $locale,
+                'current' => $locale,
                 'direction' => $config['direction'],
-                'font'      => $config['font'],
-                'htmlLang'  => $config['html_lang'],
+                'font' => $config['font'],
+                'htmlLang' => $config['html_lang'],
                 'supported' => collect(config('locales.supported'))
                     ->map(fn (array $c, string $code): array => [
-                        'code'      => $code,
-                        'name'      => $c['name'],
-                        'native'    => $c['native'],
+                        'code' => $code,
+                        'name' => $c['name'],
+                        'native' => $c['native'],
                         'direction' => $c['direction'],
                     ])
                     ->values()
@@ -66,21 +67,22 @@ final class HandleInertiaRequests extends Middleware
 
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
-                'error'   => fn () => $request->session()->get('error'),
+                'error' => fn () => $request->session()->get('error'),
+                'leadMagnet' => fn () => $request->session()->get('lead_magnet'),
             ],
 
             'auth' => [
                 'user' => $request->user()
                     ? [
-                        'id'    => $request->user()->id,
-                        'name'  => $request->user()->name,
+                        'id' => $request->user()->id,
+                        'name' => $request->user()->name,
                         'email' => $request->user()->email,
                     ]
                     : null,
             ],
 
             'ziggy' => fn (): array => [
-                ...(new \Tighten\Ziggy\Ziggy)->toArray(),
+                ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
         ]);

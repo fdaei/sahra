@@ -10,6 +10,7 @@ use App\Models\PostCategory;
 use App\Services\ContentTransformer;
 use App\Services\MediaTransformer;
 use App\Services\SeoBuilder;
+use App\Support\IconUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -146,7 +147,11 @@ final class PostController extends Controller
     {
         $path = $post->lead_magnet_file_path;
 
-        if (blank($path) || ! Storage::disk('local')->exists($path)) {
+        if (
+            blank($path)
+            || ! Storage::disk('local')->exists($path)
+            || (! $post->lead_magnet_allow_download && ! $post->lead_magnet_send_email)
+        ) {
             return null;
         }
 
@@ -158,6 +163,8 @@ final class PostController extends Controller
             'primaryCta' => [
                 'label' => (string) ($post->getTranslation('lead_magnet_cta_label') ?: ($fallback['primaryCta']['label'] ?? __('forms.newsletter.submit'))),
                 'url' => '',
+                'icon' => IconUrl::resolve($post->lead_magnet_cta_icon)
+                    ?? ($fallback['primaryCta']['icon'] ?? null),
             ],
             'image' => $post->lead_magnet_image_path
                 ? MediaTransformer::make(
@@ -168,7 +175,13 @@ final class PostController extends Controller
                 : ($fallback['image'] ?? null),
             'colors' => $fallback['colors'] ?? [],
             'submitUrl' => route('insights.lead-magnet.store', ['post' => $slug], absolute: false),
-            'downloadUrl' => route('insights.lead-magnet.download', ['post' => $slug], absolute: false),
+            'downloadUrl' => $post->lead_magnet_allow_download
+                ? route('insights.lead-magnet.download', ['post' => $slug], absolute: false)
+                : null,
+            'delivery' => [
+                'download' => (bool) $post->lead_magnet_allow_download,
+                'email' => (bool) $post->lead_magnet_send_email,
+            ],
         ];
     }
 }

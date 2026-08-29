@@ -23,8 +23,10 @@ const icons: Record<string, typeof Link2> = {
 }
 
 const component = computed(() => icons[props.icon] ?? Link2)
+const isImage = computed(() => props.icon.startsWith('/') || /^https?:\/\//.test(props.icon))
 </script>
 
 <template>
-  <component :is="component" aria-hidden="true" />
+  <img v-if="isImage" :src="props.icon" alt="" aria-hidden="true" />
+  <component v-else :is="component" aria-hidden="true" />
 </template>

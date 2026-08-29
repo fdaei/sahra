@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ButtonIcon from '@/Components/ButtonIcon.vue'
 import { computed, nextTick, onBeforeUnmount, ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { ArrowUpRight, Mail, UserRound, X } from "lucide-vue-next";
@@ -8,7 +9,7 @@ import type { SharedProps } from "@/types";
 interface LeadMagnetSection {
   title: string;
   description: string;
-  primaryCta: { label: string; url: string } | null;
+  primaryCta: { label: string; url: string; icon?: string | null } | null;
   colors?: {
     title?: string | null;
     description?: string | null;
@@ -21,6 +22,10 @@ interface LeadMagnetSection {
   } | null;
   submitUrl?: string;
   downloadUrl?: string;
+  delivery?: {
+    download: boolean;
+    email: boolean;
+  };
 }
 
 const props = withDefaults(
@@ -52,6 +57,11 @@ const { t } = useTranslations();
 const page = usePage<SharedProps>();
 const isOpen = ref(false);
 const isComplete = ref(false);
+const deliveryResult = ref({
+  downloaded: false,
+  emailed: false,
+  email_failed: false,
+});
 const dialog = ref<HTMLElement | null>(null);
 const form = useForm({
   name: "",
@@ -69,6 +79,11 @@ const downloadUrl = computed(
 
 function openModal(): void {
   isComplete.value = false;
+  deliveryResult.value = {
+    downloaded: false,
+    emailed: false,
+    email_failed: false,
+  };
   isOpen.value = true;
   document.body.style.overflow = "hidden";
   nextTick(() => dialog.value?.focus());
@@ -97,7 +112,12 @@ function submit(): void {
   form.post(newsletterUrl.value, {
     preserveScroll: true,
     onSuccess: () => {
-      downloadChecklist();
+      deliveryResult.value = page.props.flash.leadMagnet || {
+        downloaded: Boolean(props.section.delivery?.download),
+        emailed: false,
+        email_failed: false,
+      };
+      if (deliveryResult.value.downloaded) downloadChecklist();
       isComplete.value = true;
       form.reset();
     },
@@ -152,10 +172,11 @@ onBeforeUnmount(() => {
         <button
           v-if="section.primaryCta"
           type="button"
-          class="relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-ink"
+          class="relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-white"
           @click="openModal"
         >
           {{ section.primaryCta.label }}
+          <ButtonIcon :name="section.primaryCta.icon" />
         </button>
       </div>
     </div>
@@ -245,11 +266,12 @@ onBeforeUnmount(() => {
           <button
             v-if="section.primaryCta"
             type="button"
-            class="inline-flex shrink-0 items-center justify-center rounded-sm border border-white font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-ink"
+            class="inline-flex shrink-0 items-center justify-center rounded-sm border border-white font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:text-gold"
             :class="inline ? 'px-6 py-3 text-[18px]' : 'px-8 py-4 text-[20px]'"
             @click="openModal"
           >
             {{ section.primaryCta.label }}
+            <ButtonIcon :name="section.primaryCta.icon" />
           </button>
         </div>
       </div>
@@ -295,12 +317,32 @@ onBeforeUnmount(() => {
               id="checklist-success-title"
               class="max-w-[520px] text-center text-[24px] font-medium leading-normal text-neutral-900"
             >
-              {{ t("forms.newsletter.downloaded") }}<br />
-              {{ t("forms.newsletter.sent") }}
+              <template v-if="deliveryResult.downloaded">
+                {{ t("forms.newsletter.downloaded") }}
+              </template>
+              <br
+                v-if="
+                  deliveryResult.downloaded &&
+                  (deliveryResult.emailed || deliveryResult.email_failed)
+                "
+              />
+              <template v-if="deliveryResult.emailed">
+                {{ t("forms.newsletter.emailed") }}
+              </template>
+              <template v-else-if="deliveryResult.email_failed">
+                {{ t("forms.newsletter.email_failed") }}
+              </template>
+              <template
+                v-else-if="
+                  !deliveryResult.downloaded && !section.delivery?.email
+                "
+              >
+                {{ t("forms.newsletter.sent") }}
+              </template>
             </h2>
             <a
               :href="`/${page.props.locale.current}/contact`"
-              class="mt-8 inline-flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-ink"
+              class="mt-8 inline-flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-white"
             >
               {{ t("forms.newsletter.consultation") }}
               <ArrowUpRight
@@ -400,7 +442,7 @@ onBeforeUnmount(() => {
 
               <button
                 type="submit"
-                class="mx-auto rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-ink disabled:opacity-60"
+                class="mx-auto rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-white disabled:opacity-60"
                 :disabled="form.processing"
               >
                 {{ t("forms.newsletter.submit") }}

@@ -28,6 +28,7 @@ export interface NavItem {
   url: string
   target: '_self' | '_blank'
   isCta: boolean
+  icon?: string | null
   children: NavItem[]
 }
 
@@ -89,6 +90,11 @@ export interface SharedProps {
   flash: {
     success: string | null
     error: string | null
+    leadMagnet: {
+      downloaded: boolean
+      emailed: boolean
+      email_failed: boolean
+    } | null
   }
   auth: {
     user: { id: number; name: string; email: string } | null
@@ -133,6 +139,7 @@ export interface CardItem {
 export interface ResultStat {
   label: string
   value: string
+  icon: string | null
 }
 
 export interface ServiceItem {
@@ -142,6 +149,7 @@ export interface ServiceItem {
   title: string
   description: string
   features: string[]
+  icon: string | null
   image: MediaImage | null
 }
 

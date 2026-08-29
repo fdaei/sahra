@@ -88,7 +88,7 @@ const homeUrl = computed(() => `/${currentLocale.value}`)
         <Link
           :href="homeUrl"
           class="inline-flex items-center gap-1 rounded-sm bg-ink px-8 py-4
-                 text-title-lg text-paper transition-colors hover:bg-gold hover:text-ink"
+                 text-title-lg text-paper transition-colors hover:bg-gold hover:text-white"
         >
           {{ t('errors.back_home') }}
           <ArrowRight class="size-6 shrink-0 rtl:-scale-x-100" aria-hidden="true" />

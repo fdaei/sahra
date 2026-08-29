@@ -31,25 +31,25 @@ final class SiteSettings
     public static function forFrontend(string $locale): array
     {
         return [
-            'siteName'    => self::get('site_name', $locale, 'Sahra'),
-            'tagline'     => self::get('tagline', $locale, ''),
+            'siteName' => self::get('site_name', $locale, 'Sahra'),
+            'tagline' => self::get('tagline', $locale, ''),
             'description' => self::get('footer_description', $locale, ''),
 
             'contact' => [
-                'whatsapp'    => self::get('contact_whatsapp', $locale, ''),
-                'phone'       => self::get('contact_phone', $locale, ''),
-                'email'       => self::get('contact_email', $locale, ''),
-                'location'    => self::get('contact_location', $locale, ''),
+                'whatsapp' => self::get('contact_whatsapp', $locale, ''),
+                'phone' => self::get('contact_phone', $locale, ''),
+                'email' => self::get('contact_email', $locale, ''),
+                'location' => self::get('contact_location', $locale, ''),
                 'workingWith' => self::get('contact_working_with', $locale, ''),
             ],
 
             'socialLinks' => self::socialLinks(),
 
             'seo' => [
-                'defaultTitle'       => self::get('seo_default_title', $locale, 'Sahra'),
+                'defaultTitle' => self::get('seo_default_title', $locale, 'Sahra'),
                 'defaultDescription' => self::get('seo_default_description', $locale, ''),
-                'defaultImage'       => self::mediaUrl(self::get('seo_default_image', $locale, null)),
-                'organizationName'   => self::get('seo_organization_name', $locale, 'Sahra'),
+                'defaultImage' => self::mediaUrl(self::get('seo_default_image', $locale, null)),
+                'organizationName' => self::get('seo_organization_name', $locale, 'Sahra'),
             ],
         ];
     }
@@ -110,10 +110,10 @@ final class SiteSettings
     public static function integrations(): array
     {
         return [
-            'gaId'            => self::get('google_analytics_id'),
-            'gtmId'           => self::get('google_tag_manager_id'),
+            'gaId' => self::get('google_analytics_id'),
+            'gtmId' => self::get('google_tag_manager_id'),
             'gscVerification' => self::get('google_search_console_verification'),
-            'hotjarId'        => self::get('hotjar_site_id'),
+            'hotjarId' => self::get('hotjar_site_id'),
         ];
     }
 
@@ -131,9 +131,9 @@ final class SiteSettings
                 ->get()
                 ->map(fn (SocialLink $l): array => [
                     'platform' => $l->platform,
-                    'label'    => $l->label,
-                    'url'      => $l->url,
-                    'icon'     => $l->icon,
+                    'label' => $l->label,
+                    'url' => $l->url,
+                    'icon' => IconUrl::resolve($l->icon) ?? '',
                 ])
                 ->all(),
         );

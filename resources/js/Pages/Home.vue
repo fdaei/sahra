@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ButtonIcon from '@/Components/ButtonIcon.vue'
 /**
  * Home page — Figma node 1419:9192 (desktop, 1440×10821) / 1419:9191 (mobile).
  *
@@ -85,8 +86,8 @@ interface SectionContent {
     "eyebrow" | "title" | "subtitle" | "description" | "content",
     string | null
   >;
-  primaryCta: { label: string; url: string } | null;
-  secondaryCta: { label: string; url: string } | null;
+  primaryCta: { label: string; url: string; icon?: string | null } | null;
+  secondaryCta: { label: string; url: string; icon?: string | null } | null;
   image: { src: string; alt: string; width: number; height: number } | null;
   items: SectionItemContent[];
 }
@@ -104,6 +105,7 @@ const props = defineProps<{
 
 const page = usePage<SharedProps>();
 const hero = computed(() => props.sections.hero);
+const heroImage = computed(() => hero.value?.image ?? null);
 const kpi = computed(() => props.sections.kpi);
 const process = computed(() => props.sections.process);
 const packages = computed(() => props.sections.packages);
@@ -159,9 +161,9 @@ const testimonialTrack = computed(() => {
  | for an admin-authored label long enough to still overflow.
  */
 const heroCtaSolid =
-  "flex items-center gap-1 whitespace-nowrap rounded-sm bg-ink px-4 py-[10px] text-[13px] font-medium text-paper transition-colors hover:bg-gold hover:text-ink md:px-8 md:py-4 md:text-title-md";
+  "flex items-center gap-1 whitespace-nowrap rounded-sm bg-ink px-4 py-[10px] text-[13px] font-medium text-paper transition-colors hover:bg-gold hover:text-white md:px-8 md:py-4 md:text-title-md";
 const heroCtaOutline =
-  "flex items-center gap-1 whitespace-nowrap rounded-sm border border-ink bg-paper px-4 py-[9px] text-[13px] font-medium text-ink transition-colors hover:bg-neutral-50 md:px-8 md:py-[15px] md:text-title-md";
+  "flex items-center gap-1 whitespace-nowrap rounded-sm border border-ink bg-paper px-4 py-[9px] text-[13px] font-medium text-ink transition-colors hover:border-gold hover:text-gold md:px-8 md:py-[15px] md:text-title-md";
 
 const heroCtas = computed(() => {
   const primary = hero.value?.primaryCta ?? null;
@@ -170,7 +172,7 @@ const heroCtas = computed(() => {
   const ordered = [primary, secondary];
 
   return ordered.filter(
-    (cta): cta is { label: string; url: string } => cta !== null,
+    (cta): cta is { label: string; url: string; icon?: string | null } => cta !== null,
   );
 });
 
@@ -252,7 +254,16 @@ useSectionReveal();
       Both use bg-[length:100%_100%]: each asset already matches its frame's
       aspect ratio, so this fills exactly with no crop.
     -->
+    <img
+      v-if="heroImage"
+      :src="heroImage.src"
+      :alt="heroImage.alt"
+      :width="heroImage.width"
+      :height="heroImage.height"
+      class="absolute inset-0 size-full object-cover"
+    />
     <div
+      v-else
       class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview-mobile.webp')] bg-[length:100%_100%] bg-center bg-no-repeat md:bg-[url('/images/sahra/hero-brand-preview.png')] rtl:-scale-x-100"
       aria-hidden="true"
     ></div>
@@ -343,6 +354,7 @@ useSectionReveal();
           :class="i === 0 ? heroCtaSolid : heroCtaOutline"
         >
           {{ cta.label }}
+          <ButtonIcon :name="cta.icon" />
         </a>
       </div>
     </div>
@@ -376,7 +388,15 @@ useSectionReveal();
         data-reveal
       >
         <div class="flex items-center justify-center gap-1 md:gap-4">
+          <img
+            v-if="item.icon"
+            :src="item.icon"
+            alt=""
+            class="size-4 object-contain md:size-8"
+            aria-hidden="true"
+          />
           <component
+            v-else
             :is="kpiIcons[i] || TrendingUp"
             class="size-4 text-gold md:size-8"
             :stroke-width="1.5"
@@ -435,13 +455,13 @@ useSectionReveal();
             <span
               v-for="(client, i) in clients"
               :key="`${copy}-${i}`"
-              class="flex size-32 shrink-0 items-center justify-center"
+              class="group flex size-32 shrink-0 items-center justify-center"
               :aria-hidden="copy === 2 ? 'true' : undefined"
             >
               <img
                 :src="client.logo"
                 :alt="copy === 2 ? '' : client.name"
-                class="w-20 object-contain"
+                class="size-full object-contain p-2 grayscale transition-[filter] duration-300 ease-out group-hover:grayscale-0 group-focus-within:grayscale-0"
               />
             </span>
           </template>
@@ -492,7 +512,7 @@ useSectionReveal();
   <!-- Packages — Figma 1419:9323 -->
   <PackagesSection
     v-if="packages"
-    class="max-md:-mt-6 lg:mt-[126px]"
+    class="max-md:mt-[80px] lg:mt-[126px]"
     :section="packages"
   />
 
@@ -539,8 +559,15 @@ useSectionReveal();
             class="will-reveal flex min-h-[140px] flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
             data-reveal
           >
+            <img
+              v-if="item.icon"
+              :src="item.icon"
+              alt=""
+              class="size-6 object-contain md:size-8"
+              aria-hidden="true"
+            />
             <svg
-              v-if="item.title.trim().toLocaleLowerCase() === 'end-to-end support'"
+              v-else-if="item.title.trim().toLocaleLowerCase() === 'end-to-end support'"
               class="size-6 md:size-8"
               viewBox="0 0 10 10"
               fill="none"
@@ -747,7 +774,7 @@ useSectionReveal();
             <p class="text-[13px] leading-normal text-neutral-700 md:text-body-md">
               {{ posts[0].excerpt }}
             </p>
-            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper transition-colors group-hover:bg-gold group-hover:text-ink md:flex md:size-12">
+            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper transition-colors group-hover:bg-gold group-hover:text-white md:flex md:size-12">
               <ArrowUpRight class="size-8 rtl:-scale-x-100" :stroke-width="1.25" />
             </span>
           </div>

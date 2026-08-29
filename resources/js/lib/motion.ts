@@ -1,7 +1,27 @@
 import { gsap } from 'gsap'
+import { CustomEase } from 'gsap/CustomEase'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-gsap.registerPlugin(ScrollTrigger)
+gsap.registerPlugin(ScrollTrigger, CustomEase)
+
+/*
+ | The one curve GSAP has no named equivalent for.
+ |
+ | `power4.out` is close to cubic-bezier(0.22, 1, 0.36, 1) but not the same: it
+ | leaves more of its travel to the tail, which reads as a drift rather than the
+ | firm settle the venn opening needs. A CustomEase built from the cubic's own
+ | control points is exact, and the `C` command below IS that cubic — the two
+ | control points and the (1,1) endpoint, verbatim.
+ */
+CustomEase.create('sahraOpen', 'M0,0 C0.22,1 0.36,1 1,1')
+
+/*
+ | The services diagram's own curve, read off the motion reference's keyframe
+ | easing (out {x:0.171,y:0.338}, in {x:0.426,y:1}) rather than chosen. It
+ | leaves the middle slowly and arrives long and flat, which is what keeps the
+ | material feeling heavy as it pulls apart.
+ */
+CustomEase.create('sahraSpread', 'M0,0 C0.171,0.338 0.426,1 1,1')
 
 /*
  | Centralised motion constants.
@@ -16,6 +36,13 @@ export const MOTION = {
     brand: 'power3.out',
     /** Snappier, for small state changes. */
     quick: 'power2.out',
+    /**
+     * cubic-bezier(0.22, 1, 0.36, 1). Long, restrained ease-out for motion
+     * that has to feel deliberate rather than snappy — the venn opening.
+     */
+    open: 'sahraOpen',
+    /** cubic-bezier(0.171, 0.338, 0.426, 1) — the services diagram opening. */
+    spread: 'sahraSpread',
     /** Linear — marquees and scrub only. */
     none: 'none',
   },
@@ -24,6 +51,10 @@ export const MOTION = {
     reveal: 0.7,
     counter: 2,
     hover: 0.4,
+    /** The venn's horizontal opening — the longest single gesture on the site. */
+    open: 0.9,
+    /** Services diagram, opening Venn to finished orbit. 128 frames at 60fps. */
+    mastery: 2.13,
     /*
      | Component state swaps. Unlike the scroll effects, these ARE stored in
      | the file: the Service card (1419:9295 -> 501:722) and testimonial card

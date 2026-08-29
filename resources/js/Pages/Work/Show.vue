@@ -256,7 +256,7 @@ useSectionReveal(pageRoot);
             <li
               v-for="(card, i) in project.goals"
               :key="i"
-              class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:border-x-0 md:border-b-0 md:py-12"
+              class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:py-12"
             >
               <!--
                 Goal card leading mark. The mobile card (`Goal card` variant
@@ -337,7 +337,7 @@ useSectionReveal(pageRoot);
             <li
               v-for="(card, i) in project.deliverables"
               :key="i"
-              class="deliverables-card relative flex min-h-[248px] flex-col gap-8 overflow-hidden rounded-sm border border-gold-300 bg-paper p-6 shadow-[2px_2px_10px_rgba(0,0,0,0.05)] md:min-h-[306px] md:gap-12 md:py-6"
+              class="deliverables-card relative flex flex-col gap-8 overflow-hidden rounded-sm border border-gold-300 bg-paper p-6 shadow-[2px_2px_10px_rgba(0,0,0,0.05)] md:min-h-[306px] md:gap-12 md:py-6"
             >
               <img
                 :src="deliverablesCardBg"
@@ -446,7 +446,7 @@ useSectionReveal(pageRoot);
               class="flex flex-col gap-4 rounded-sm bg-gold-100 px-6 py-4 md:px-8"
             >
               <img
-                :src="resultIcons[i] || resultIcons[0]"
+                :src="stat.icon || resultIcons[i] || resultIcons[0]"
                 alt=""
                 class="size-8 object-contain object-left"
                 aria-hidden="true"

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use App\Enums\SectionType;
+use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\PageSection;
 use Filament\Forms\Components\ColorPicker;
@@ -116,6 +117,14 @@ final class SectionsRelationManager extends RelationManager
                     ->maxLength(300),
             ]),
 
+            Section::make('Button icons')
+                ->description('Optional icons displayed beside the translated button labels.')
+                ->columns(2)
+                ->schema([
+                    SvgIconUpload::make('primary_cta_icon', 'Primary button icon'),
+                    SvgIconUpload::make('secondary_cta_icon', 'Secondary button icon'),
+                ]),
+
             Section::make('Text colours')
                 ->description('Optional. Empty values keep the website’s default design colour.')
                 ->columns([
@@ -213,10 +222,7 @@ final class SectionsRelationManager extends RelationManager
                             ->helperText('Packages: e.g. "Best for growing brands".'),
                     ]),
 
-                    TextInput::make('icon')
-                        ->label('Icon name')
-                        ->maxLength(50)
-                        ->helperText('A lucide-vue-next icon, e.g. "check-circle".'),
+                    SvgIconUpload::make('icon', 'Item icon'),
                 ]),
         ]);
     }

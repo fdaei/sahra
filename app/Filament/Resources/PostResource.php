@@ -7,7 +7,9 @@ namespace App\Filament\Resources;
 use App\Enums\PublicationStatus;
 use App\Filament\Resource;
 use App\Filament\Resources\PostResource\Pages;
+use App\Filament\Resources\PostResource\RelationManagers\LeadMagnetDeliveriesRelationManager;
 use App\Filament\Support\PublicationFields;
+use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -183,6 +185,14 @@ final class PostResource extends Resource
                                     'application/zip',
                                     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                                 ]),
+                            Toggle::make('lead_magnet_allow_download')
+                                ->label('Download file after submission')
+                                ->default(true)
+                                ->helperText('When enabled, the visitor’s browser downloads the file.'),
+                            Toggle::make('lead_magnet_send_email')
+                                ->label('Email file to visitor')
+                                ->default(false)
+                                ->helperText('When enabled, the same file is attached to an email. Delivery success and response code are logged below.'),
                             FileUpload::make('lead_magnet_image_path')
                                 ->label('Banner background')
                                 ->image()
@@ -192,6 +202,7 @@ final class PostResource extends Resource
                         ]),
                 ]),
             ]),
+            SvgIconUpload::make('lead_magnet_cta_icon', 'Download button icon'),
         ]);
     }
 
@@ -285,6 +296,11 @@ final class PostResource extends Resource
             'create' => Pages\CreatePost::route('/create'),
             'edit' => Pages\EditPost::route('/{record}/edit'),
         ];
+    }
+
+    public static function getRelations(): array
+    {
+        return [LeadMagnetDeliveriesRelationManager::class];
     }
 
     public static function getEloquentQuery(): Builder

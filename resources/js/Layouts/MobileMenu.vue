@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ButtonIcon from '@/Components/ButtonIcon.vue'
 /**
  * Mobile navigation panel.
  *
@@ -135,10 +136,11 @@ watch(
             v-if="cta"
             :href="cta.url"
             class="inline-flex items-center justify-center rounded-sm bg-ink px-6 py-4
-                   text-label-lg text-paper transition-colors hover:bg-gold hover:text-ink"
+                   text-label-lg text-paper transition-colors hover:bg-gold hover:text-white"
             @click="open = false"
           >
             {{ cta.label }}
+            <ButtonIcon :name="cta.icon" />
           </Link>
         </div>
       </div>

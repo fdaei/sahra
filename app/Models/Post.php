@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection;
 
@@ -38,7 +39,10 @@ final class Post extends Model implements HasLocalisedSlugs
         'is_featured',
         'cover_path',
         'lead_magnet_file_path',
+        'lead_magnet_allow_download',
+        'lead_magnet_send_email',
         'lead_magnet_image_path',
+        'lead_magnet_cta_icon',
         'reading_minutes',
     ];
 
@@ -64,6 +68,8 @@ final class Post extends Model implements HasLocalisedSlugs
             'status' => PublicationStatus::class,
             'published_at' => 'datetime',
             'is_featured' => 'boolean',
+            'lead_magnet_allow_download' => 'boolean',
+            'lead_magnet_send_email' => 'boolean',
             'reading_minutes' => 'integer',
         ];
     }
@@ -88,6 +94,11 @@ final class Post extends Model implements HasLocalisedSlugs
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(PostTag::class, 'post_post_tag');
+    }
+
+    public function leadMagnetDeliveries(): HasMany
+    {
+        return $this->hasMany(LeadMagnetDelivery::class);
     }
 
     /* -------------------------------------------------------------- routing */

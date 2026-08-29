@@ -203,7 +203,7 @@ onBeforeUnmount(() => {
     @focusout="isPaused = false"
   >
     <div class="container-sahra">
-      <div class="flex flex-col gap-10 lg:gap-24">
+      <div class="flex flex-col gap-20 lg:gap-24">
         <header class="flex flex-col gap-8 lg:gap-12">
           <div
             class="inline-flex w-fit items-center gap-1 font-display text-[16px] leading-none text-gold md:text-[24px]"

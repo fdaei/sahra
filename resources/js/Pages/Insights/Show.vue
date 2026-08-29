@@ -199,7 +199,10 @@ const linkedInShare = computed(
       />
     </div>
 
-    <div class="mt-[35px] flex min-h-[85px] flex-col gap-4 md:hidden">
+    <!-- Keep mobile sharing controls visible immediately below the 96px fixed header. -->
+    <div
+      class="mt-[35px] flex min-h-[85px] flex-col gap-4 max-md:sticky max-md:top-24 max-md:z-20 max-md:bg-paper max-md:pb-3 md:hidden"
+    >
       <p class="text-[14px] font-medium leading-[21px] text-neutral-900">{{ t('blog.share') }}</p>
       <div class="flex gap-4">
         <button

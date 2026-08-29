@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\Menu;
 use App\Models\MenuItem;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -73,7 +74,7 @@ final class NavigationBuilder
     }
 
     /**
-     * @param  \Illuminate\Support\Collection<int, MenuItem>  $all
+     * @param  Collection<int, MenuItem>  $all
      * @return array<string, mixed>
      */
     private static function transform(MenuItem $item, $all, string $locale): array
@@ -85,11 +86,12 @@ final class NavigationBuilder
             ->all();
 
         return [
-            'id'       => $item->id,
-            'label'    => $item->getTranslation('label', $locale),
-            'url'      => $item->resolveUrl($locale),
-            'target'   => $item->target,
-            'isCta'    => $item->is_cta,
+            'id' => $item->id,
+            'label' => $item->getTranslation('label', $locale),
+            'url' => $item->resolveUrl($locale),
+            'target' => $item->target,
+            'isCta' => $item->is_cta,
+            'icon' => IconUrl::resolve($item->icon),
             'children' => $children,
         ];
     }

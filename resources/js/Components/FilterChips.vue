@@ -56,7 +56,7 @@ function classesFor(slug: string | null): string {
     role="group"
     class="flex gap-4"
     :class="direction === 'column'
-      ? 'items-center overflow-x-auto md:items-start lg:flex-col lg:overflow-visible'
+      ? 'mt-16 mb-12 items-center overflow-x-auto md:mt-0 md:mb-0 md:items-start lg:flex-col lg:overflow-visible'
       : 'flex-wrap items-center gap-x-8'"
   >
     <Link

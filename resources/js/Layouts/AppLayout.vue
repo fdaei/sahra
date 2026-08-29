@@ -74,7 +74,7 @@ const announcement = computed(() => flash.value.success ?? flash.value.error ?? 
     leave-to-class="translate-y-4 opacity-0"
   >
     <div
-      v-if="flash.success || flash.error"
+      v-if="(flash.success && page.component !== 'Contact') || flash.error"
       class="fixed inset-inline-0 bottom-6 z-modal mx-auto w-fit max-w-[90vw] rounded-sm
              px-6 py-4 text-body-md shadow-card pb-safe"
       :class="flash.success ? 'bg-ink text-paper' : 'bg-red-600 text-white'"

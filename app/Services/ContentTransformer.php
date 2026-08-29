@@ -14,6 +14,7 @@ use App\Models\SectionItem;
 use App\Models\Service;
 use App\Models\TeamMember;
 use App\Models\Testimonial;
+use App\Support\IconUrl;
 use App\Support\Numerals;
 use Illuminate\Support\Collection;
 
@@ -146,6 +147,7 @@ final class ContentTransformer
             'title' => (string) $service->getTranslation('title'),
             'description' => (string) $service->getTranslation('description'),
             'features' => (array) ($service->getTranslation('features') ?? []),
+            'icon' => IconUrl::resolve($service->icon),
             'image' => MediaTransformer::make(
                 $service->image_path,
                 $service->getTranslation('image_alt'),
@@ -311,10 +313,12 @@ final class ContentTransformer
             'primaryCta' => self::cta(
                 $section->getTranslation('primary_cta_label'),
                 $section->getTranslation('primary_cta_url'),
+                $section->primary_cta_icon,
             ),
             'secondaryCta' => self::cta(
                 $section->getTranslation('secondary_cta_label'),
                 $section->getTranslation('secondary_cta_url'),
+                $section->secondary_cta_icon,
             ),
             'image' => MediaTransformer::make(
                 $section->image_path,
@@ -358,7 +362,7 @@ final class ContentTransformer
             'badge' => (string) $item->getTranslation('badge'),
             'features' => (array) ($item->getTranslation('features') ?? []),
             'footer' => (string) $item->getTranslation('footer'),
-            'icon' => $item->icon,
+            'icon' => IconUrl::resolve($item->icon),
             'image' => MediaTransformer::make(
                 $item->image_path,
                 $item->getTranslation('image_alt'),
@@ -392,9 +396,9 @@ final class ContentTransformer
     }
 
     /**
-     * ResultStat[] — label + value. Figma 1323:7541 results grid.
+     * ResultStat[] — label + value + optional uploaded icon.
      *
-     * @return array<int, array{label: string, value: string}>
+     * @return array<int, array{label: string, value: string, icon: string|null}>
      */
     private static function resultsFor(Project $project): array
     {
@@ -408,20 +412,21 @@ final class ContentTransformer
             ->map(fn (SectionItem $item): array => [
                 'label' => (string) $item->getTranslation('title'),
                 'value' => (string) $item->getTranslation('value'),
+                'icon' => IconUrl::resolve($item->icon),
             ])
             ->all();
     }
 
     /**
-     * @return array{label: string, url: string}|null
+     * @return array{label: string, url: string, icon: string|null}|null
      */
-    private static function cta(?string $label, ?string $url): ?array
+    private static function cta(?string $label, ?string $url, ?string $icon = null): ?array
     {
         if ($label === null || $label === '') {
             return null;
         }
 
-        return ['label' => $label, 'url' => $url ?? '#'];
+        return ['label' => $label, 'url' => $url ?? '#', 'icon' => IconUrl::resolve($icon)];
     }
 
     private static function imageContextFor(SectionType $type): string

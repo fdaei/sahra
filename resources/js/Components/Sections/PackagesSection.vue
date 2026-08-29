@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ButtonIcon from '@/Components/ButtonIcon.vue'
 import PackageCheckIcon from "@/Components/Icons/PackageCheckIcon.vue";
 
 interface PackageItem {
@@ -20,7 +21,7 @@ defineProps<{
     subtitle: string;
     description: string;
     content: string;
-    primaryCta: { label: string; url: string } | null;
+    primaryCta: { label: string; url: string; icon?: string | null } | null;
     items: PackageItem[];
   };
 }>();
@@ -177,9 +178,10 @@ defineProps<{
         <a
           v-if="section.primaryCta"
           :href="section.primaryCta.url"
-          class="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-sm border border-paper px-3 py-3 text-body-md text-paper transition-colors hover:border-gold hover:bg-gold hover:text-ink md:min-h-14 md:px-8 md:py-4 md:text-title-md"
+          class="inline-flex min-h-11 shrink-0 items-center justify-center gap-1 rounded-sm border border-paper px-3 py-3 text-body-md text-paper transition-colors hover:border-gold hover:bg-gold hover:text-white md:min-h-14 md:px-8 md:py-4 md:text-title-md"
         >
           {{ section.primaryCta.label }}
+          <ButtonIcon :name="section.primaryCta.icon" />
         </a>
       </div>
     </div>

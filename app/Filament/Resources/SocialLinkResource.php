@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Filament\Resource;
 use App\Filament\Resources\SocialLinkResource\Pages;
+use App\Filament\Support\SvgIconUpload;
 use App\Models\SocialLink;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
-use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -53,10 +54,8 @@ final class SocialLinkResource extends Resource
                         ->maxLength(500)
                         ->columnSpanFull(),
 
-                    TextInput::make('icon')
-                        ->required()
-                        ->maxLength(50)
-                        ->helperText('lucide-vue-next icon name, e.g. "instagram".'),
+                    SvgIconUpload::make('icon', 'Social icon')
+                        ->required(),
 
                     TextInput::make('sort_order')->numeric()->default(0),
 

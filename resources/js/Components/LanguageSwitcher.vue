@@ -78,8 +78,8 @@ const currentLabel = computed(
           :dir="option.direction"
           :aria-current="isCurrent(option.code) ? 'true' : undefined"
           class="flex w-full items-center justify-between gap-3 px-4 py-3 text-start
-                 text-body-md transition-colors hover:bg-gold-100
-                 focus-visible:bg-gold-100 focus-visible:outline-none"
+                 text-body-md transition-colors hover:bg-gold hover:text-white
+                 focus-visible:bg-gold focus-visible:text-white focus-visible:outline-none"
           :class="isCurrent(option.code) ? 'text-gold' : 'text-neutral-800'"
           @click="close"
         >

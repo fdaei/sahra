@@ -33,6 +33,9 @@ const iconKeys = [
 
 const iconKey = (item: ProcessItem, index: number): string =>
   item.icon && iconKeys.includes(item.icon) ? item.icon : iconKeys[index];
+
+const isUploadedIcon = (icon: string | null): icon is string =>
+  Boolean(icon && (icon.startsWith('/') || /^https?:\/\//.test(icon)));
 </script>
 
 <template>
@@ -73,7 +76,16 @@ const iconKey = (item: ProcessItem, index: number): string =>
                 class="relative hidden size-10 shrink-0 items-center justify-center rounded-round p-1 drop-shadow-[1px_1px_5px_rgba(0,0,0,0.08)] md:flex"
               >
                 <img
-                  v-if="singleAssetIcons[iconKey(item, index)]"
+                  v-if="isUploadedIcon(item.icon)"
+                  :src="item.icon"
+                  alt=""
+                  class="size-9 object-contain"
+                  width="36"
+                  height="36"
+                />
+
+                <img
+                  v-else-if="singleAssetIcons[iconKey(item, index)]"
                   :src="singleAssetIcons[iconKey(item, index)]"
                   alt=""
                   class="size-9 object-contain"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ButtonIcon from '@/Components/ButtonIcon.vue'
 /**
  * Site header — rebuilt 1:1 from Figma node 1419:9339 (1440×104).
  *
@@ -123,9 +124,10 @@ function isActive(url: string): boolean {
           <Link
             v-if="cta"
             :href="cta.url"
-            class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-title-sm text-paper transition-colors hover:bg-gold hover:text-ink"
+            class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-title-sm text-paper transition-colors hover:bg-gold hover:text-white"
           >
             {{ cta.label }}
+            <ButtonIcon :name="cta.icon" />
           </Link>
         </div>
       </div>

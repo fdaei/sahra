@@ -1,5 +1,6 @@
 import { nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
 import { MOTION, directionFactor, gsap, prefersReducedMotion } from '@/lib/motion'
+import type { BlobProgress } from '@/lib/blob'
 
 /*
  | Scroll- and load-driven motion, audit items A1/A3/A4/A7/A11
@@ -82,6 +83,19 @@ function useEffectScope(
  | near-bottom trigger, so it fires later instead, once a substantial band of
  | it is actually on screen.
  */
+/*
+ | Brand colours the services diagram tweens between.
+ |
+ | GSAP interpolates concrete values, so these mirror the `--color-ink` and
+ | `--color-paper` tokens in app.css rather than reading them at runtime — keep
+ | the two in step. The axis arrives at full ink and settles back to a low
+ | alpha of the same colour, which is what makes it recede without going grey.
+ */
+const INK = '#231F20'
+const PAPER = '#FFFFFF'
+const AXIS_DRAWN = 'rgba(35, 31, 32, 1)'
+const AXIS_RESTING = 'rgba(35, 31, 32, 0.4)'
+
 const REVEAL_START = 'top 88%'
 const REVEAL_START_TALL = 'top 65%'
 
@@ -475,70 +489,143 @@ export function useScrubRotate(
 }
 
 /**
- * Services Venn — one-time burst reveal. The Brand/Product circles rest fully
- * overlapped; the first time the diagram crosses into view they pull apart to
- * their resting CSS position while the two orbit rings, the Brand/Product/
- * core labels, and the service + decorative tags fade in around them. A
- * single arriving gesture (`once: true`), unlike useScrubRotate's continuous
- * scrub — this is a burst, not a scrub.
+ * Services diagram — the opening Venn becoming the orbit composition.
  *
- * Reads its targets by data-attribute rather than taking refs for each one,
- * since a burst touches a whole family of elements (2 circles, 2 rings, 3
- * labels, N tags) rather than a single pair.
+ * One silhouette carries the whole transformation (see lib/blob.ts), so the
+ * three geometry channels below are the animation; everything else resolves
+ * around them. They deliberately run at different lengths: `pinch` is nearly
+ * done while `spread` is barely moving, which is what makes the material melt
+ * together BEFORE it pulls apart, rather than sliding apart as two circles.
  *
- * Not a Figma audit item: this diagram has no source node (see the note atop
- * ServicesOrbit.vue's Venn markup), so there is nothing to cite here.
+ * The silhouette itself is one LINEAR tween. Its shape comes from measured
+ * keyframes (lib/blob.ts), so easing it here would double-apply the reference's
+ * own timing — the snap in the middle of that table is exactly what no single
+ * curve reproduced when this was three eased channels.
+ *
+ * The labels are moved, never swapped: Brand and Product travel out from
+ * inside their circles to the ends of the axis and turn from white to ink;
+ * Service Mastery rises from the overlap to the top of the composition.
+ *
+ * Not a Figma audit item: the file draws the finished rings only, with no
+ * opening state to extract (see the note on MasteryDiagram.vue).
  */
-export function useVennBurst(
-  stage: MotionTarget,
-  options: { distance?: number; axis?: 'x' | 'y'; media?: string } = {},
-): void {
-  const { distance = 160, axis = 'x', media } = options
-
+export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): void {
   useEffectScope(({ scope }) => {
     if (!scope) return
 
-    const brandEl = scope.querySelector<HTMLElement>('[data-venn-circle="brand"]')
-    const productEl = scope.querySelector<HTMLElement>('[data-venn-circle="product"]')
-    const rings = Array.from(scope.querySelectorAll<HTMLElement>('[data-venn-ring]'))
-    const labels = Array.from(scope.querySelectorAll<HTMLElement>('[data-venn-label]'))
-    const tags = Array.from(scope.querySelectorAll<HTMLElement>('[data-venn-tag]'))
-    if (!brandEl || !productEl) return
+    const blob = scope.querySelector<SVGPathElement>('[data-mastery="blob"]')
+    if (!blob) return
 
-    const burst = (): void => {
-      // x needs to flip in RTL (the circles physically swap sides — see the
-      // note on .venn-circle--brand below); a vertical stack has no side to
-      // flip, so the mobile y-axis call always uses the same two signs.
-      const sign = axis === 'x' ? directionFactor() : 1
+    const core = scope.querySelector<SVGGElement>('[data-mastery="core"]')
+    const rings = scope.querySelector<SVGGElement>('[data-mastery="rings"]')
+    const inner = scope.querySelector<SVGCircleElement>('[data-mastery="ring-inner"]')
+    const outer = scope.querySelector<SVGCircleElement>('[data-mastery="ring-outer"]')
+    const axis = scope.querySelector<SVGLineElement>('[data-mastery="axis"]')
+    const brand = scope.querySelector<HTMLElement>('[data-mastery-label="brand"]')
+    const product = scope.querySelector<HTMLElement>('[data-mastery-label="product"]')
+    const coreLabel = scope.querySelector<HTMLElement>('[data-mastery-label="core"]')
 
-      gsap
-        .timeline({ scrollTrigger: { trigger: scope, start: REVEAL_START, once: true } })
-        .fromTo(brandEl, { [axis]: distance * sign }, { [axis]: 0, duration: 1, ease: MOTION.ease.brand })
-        .fromTo(productEl, { [axis]: -distance * sign }, { [axis]: 0, duration: 1, ease: MOTION.ease.brand }, '<')
+    const { width, height } = scope.getBoundingClientRect()
+    if (width === 0) return
+
+    /*
+     | Where the labels start, in px from where they finish. Brand and Product
+     | begin inside their own circle (the reference's 38% inset) and end just
+     | outside their endpoint dot; Service Mastery begins in the overlap and
+     | ends at the top. Measured rather than declared so the travel stays right
+     | at any width — and mirrored in RTL, where the two sides swap.
+     */
+    const sideTravel = (width * 0.38 - 50) * directionFactor()
+    const coreTravel = height * 0.46 - 40
+
+    // Rotating a dashed ring reads as movement; a plain one would not. The
+    // origin is the composition centre, not the node's own box, so the rings
+    // turn in place rather than orbiting.
+    const spin = { svgOrigin: `${width / 2} ${height / 2}` }
+
+    /*
+     | The component renders the FINISHED composition, so reduced motion, a
+     | failed bundle, and the moment before this runs all leave a complete
+     | diagram. Rewinding to the opening Venn is therefore the first thing the
+     | effect does, and only ever when it is going to play.
+     */
+    Object.assign(progress, { t: 0 })
+
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: scope, start: REVEAL_START, once: true },
+    })
+
+    /*
+     | Shown outright, not faded in. The hidden state exists only to keep the
+     | finished diagram off screen until the section arrives (see the
+     | motion-ready gate in the component); the reference opens on a solid
+     | Venn, and any fade here leaves it washed out through the first third of
+     | its own transformation.
+     */
+    tl.set(scope, { opacity: 1 }, 0)
+
+    // The material: melt, pull apart, shrink into the endpoint dots.
+    tl.to(progress, { t: 1, duration: MOTION.duration.mastery, ease: MOTION.ease.none }, 0)
+
+    // The darker core belongs to the overlap, and goes with it.
+    if (core) {
+      tl.fromTo(core, { opacity: 1 }, { opacity: 0, duration: 0.13, ease: MOTION.ease.none }, 0.13)
+    }
+
+    // The rings are not part of the opening — they arrive as the middle empties.
+    if (rings && inner && outer) {
+      tl.fromTo(rings, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: MOTION.ease.quick }, 0.35)
+        .fromTo(inner, { rotation: -720, ...spin }, { rotation: 0, duration: 1.8, ease: MOTION.ease.quick, ...spin }, 0.2)
+        .fromTo(outer, { rotation: 720, ...spin }, { rotation: 0, duration: 1.8, ease: MOTION.ease.quick, ...spin }, 0.2)
+    }
+
+    /*
+     | The axis arrives early and dark, while the bridge is still thick, and
+     | only then pales to the finished stroke. That ordering is what sells the
+     | handoff: the reader never sees a line fade in over a gap, they see the
+     | material itself thin out into one.
+     */
+    if (axis) {
+      tl.fromTo(axis, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: MOTION.ease.quick }, 0.36)
         .fromTo(
-          rings,
-          { opacity: 0, scale: 0.7 },
-          { opacity: 1, scale: 1, duration: 0.8, ease: MOTION.ease.brand, stagger: 0.1 },
-          '<0.15',
-        )
-        .fromTo(labels, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: MOTION.ease.quick, stagger: 0.05 }, '<0.1')
-        .fromTo(
-          tags,
-          { opacity: 0, y: 12 },
-          { opacity: 1, y: 0, duration: 0.5, ease: MOTION.ease.brand, stagger: MOTION.stagger.cards },
-          '-=0.5',
+          axis,
+          { stroke: AXIS_DRAWN },
+          { stroke: AXIS_RESTING, duration: 0.9, ease: MOTION.ease.none },
+          0.9,
         )
     }
 
-    if (!media) {
-      burst()
-      return
+    // Labels travel and recolour — the same elements throughout.
+    if (brand && product) {
+      tl.fromTo(
+        [brand, product],
+        {
+          x: (i: number) => (i === 0 ? sideTravel : -sideTravel),
+          color: PAPER,
+        },
+        {
+          x: 0,
+          color: INK,
+          duration: 1.2,
+          ease: MOTION.ease.spread,
+        },
+        0.05,
+      )
     }
 
-    const mm = gsap.matchMedia()
-    mm.add(media, () => burst())
-
-    return () => mm.revert()
+    if (coreLabel) {
+      tl.fromTo(
+        coreLabel,
+        { y: coreTravel, color: PAPER },
+        {
+          y: 0,
+          color: INK,
+          duration: 1,
+          ease: MOTION.ease.spread,
+        },
+        0.1,
+      )
+    }
   }, stage)
 }
 

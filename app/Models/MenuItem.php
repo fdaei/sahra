@@ -32,6 +32,7 @@ final class MenuItem extends Model
         'route_params',
         'url',
         'target',
+        'icon',
         'is_cta',
         'sort_order',
         'is_active',
@@ -52,8 +53,8 @@ final class MenuItem extends Model
 
     protected static function booted(): void
     {
-        static::saved(fn () => NavigationBuilder::flush());
-        static::deleted(fn () => NavigationBuilder::flush());
+        self::saved(fn () => NavigationBuilder::flush());
+        self::deleted(fn () => NavigationBuilder::flush());
     }
 
     public function translationModel(): string

@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\PublicationStatus;
+use App\Filament\Resource;
 use App\Filament\Resources\ServiceResource\Pages;
 use App\Filament\Support\PublicationFields;
+use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Service;
 use Filament\Forms\Components\FileUpload;
@@ -19,7 +21,6 @@ use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\PageRegistration;
-use App\Filament\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -104,10 +105,7 @@ final class ServiceResource extends Resource
                                     ->default(0)
                                     ->helperText('Lower numbers appear first.'),
 
-                                TextInput::make('icon')
-                                    ->label('Icon name')
-                                    ->maxLength(50)
-                                    ->helperText('Technical icon identifier. Leave the current value unchanged if unsure.'),
+                                SvgIconUpload::make('icon', 'Service icon'),
                             ]),
                     ]),
 

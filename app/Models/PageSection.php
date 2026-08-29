@@ -32,6 +32,8 @@ final class PageSection extends Model
         'sort_order',
         'is_visible',
         'image_path',
+        'primary_cta_icon',
+        'secondary_cta_icon',
         'eyebrow_color',
         'title_color',
         'subtitle_color',

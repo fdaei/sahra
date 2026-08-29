@@ -8,7 +8,7 @@
  * (`website`, must stay empty) and `form_started_at` (ms timestamp captured
  * on mount, rejected server-side if submitted under 3s).
  */
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import { getCountryDataList } from "countries-list";
 import {
@@ -22,6 +22,8 @@ import {
   MessageCircle,
   Search,
   UserRound,
+  ArrowUpRight,
+  X,
 } from "lucide-vue-next";
 import SeoHead from "@/Components/SeoHead.vue";
 import SocialIcon from "@/Components/SocialIcon.vue";
@@ -134,6 +136,25 @@ const countryOpen = ref(false);
 const servicesOpen = ref(false);
 const countryPicker = ref<HTMLElement | null>(null);
 const servicesPicker = ref<HTMLElement | null>(null);
+const successDialog = ref<HTMLElement | null>(null);
+const successOpen = ref(false);
+
+watch(
+  () => page.props.flash.success,
+  (message) => {
+    if (!message) return;
+
+    successOpen.value = true;
+    document.body.style.overflow = "hidden";
+    nextTick(() => successDialog.value?.focus());
+  },
+  { immediate: true },
+);
+
+function closeSuccess(): void {
+  successOpen.value = false;
+  document.body.style.overflow = "";
+}
 
 const filteredCountries = computed(() => {
   const query = countrySearch.value.trim().toLocaleLowerCase();
@@ -175,7 +196,10 @@ onMounted(() => {
   form.form_started_at = Date.now();
   document.addEventListener("click", closePopovers);
 });
-onBeforeUnmount(() => document.removeEventListener("click", closePopovers));
+onBeforeUnmount(() => {
+  document.removeEventListener("click", closePopovers);
+  document.body.style.overflow = "";
+});
 
 function submit(): void {
   form
@@ -587,7 +611,7 @@ function submit(): void {
               <button
                 type="submit"
                 :disabled="form.processing"
-                class="inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-colors hover:bg-gold hover:text-ink disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
+                class="inline-flex w-full items-center justify-center gap-1 rounded-sm bg-ink px-6 py-3 text-body-lg text-paper transition-colors hover:bg-gold hover:text-white disabled:opacity-50 md:px-8 md:py-4 md:text-title-md"
               >
                 {{
                   form.processing
@@ -681,4 +705,57 @@ function submit(): void {
       </div>
     </div>
   </section>
+
+  <Teleport to="body">
+    <div
+      v-if="successOpen"
+      class="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-5 backdrop-blur-[5px]"
+      role="presentation"
+      @click.self="closeSuccess"
+      @keydown.esc="closeSuccess"
+    >
+      <div
+        ref="successDialog"
+        class="relative flex max-h-[calc(100vh-40px)] w-full max-w-[706px] flex-col items-center overflow-y-auto rounded-lg bg-white p-6 outline-none md:p-12"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-success-title"
+        tabindex="-1"
+      >
+        <button
+          type="button"
+          class="absolute end-4 top-4 rounded-full p-2 text-neutral-700 transition-colors hover:bg-neutral-100"
+          :aria-label="t('forms.newsletter.close')"
+          @click="closeSuccess"
+        >
+          <X class="size-5" aria-hidden="true" />
+        </button>
+
+        <img
+          src="/images/sahra/checklist-success.svg"
+          alt=""
+          width="96"
+          height="94"
+          class="mb-12 size-24 object-contain"
+          aria-hidden="true"
+        />
+        <h2
+          id="contact-success-title"
+          class="max-w-[520px] text-center text-[24px] font-medium leading-normal text-neutral-900"
+        >
+          {{ page.props.flash.success }}
+        </h2>
+        <a
+          :href="`/${page.props.locale.current}/contact`"
+          class="mt-8 inline-flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-[18px] text-white transition-colors hover:bg-gold hover:text-white"
+        >
+          {{ t("forms.newsletter.consultation") }}
+          <ArrowUpRight
+            class="size-6 rtl:-scale-x-100"
+            aria-hidden="true"
+          />
+        </a>
+      </div>
+    </div>
+  </Teleport>
 </template>
