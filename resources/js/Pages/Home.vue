@@ -774,7 +774,7 @@ useSectionReveal();
             <p class="text-[13px] leading-normal text-neutral-700 md:text-body-md">
               {{ posts[0].excerpt }}
             </p>
-            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper transition-colors group-hover:bg-gold group-hover:text-white md:flex md:size-12">
+            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper transition-colors group-hover:border-transparent group-hover:bg-gold group-hover:text-white md:flex md:size-12">
               <ArrowUpRight class="size-8 rtl:-scale-x-100" :stroke-width="1.25" />
             </span>
           </div>
