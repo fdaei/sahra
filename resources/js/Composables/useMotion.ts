@@ -84,17 +84,16 @@ function useEffectScope(
  | it is actually on screen.
  */
 /*
- | Brand colours the services diagram tweens between.
+ | Brand colours used by the services diagram animation.
  |
- | GSAP interpolates concrete values, so these mirror the `--color-ink` and
- | `--color-paper` tokens in app.css rather than reading them at runtime — keep
- | the two in step. The axis arrives at full ink and settles back to a low
- | alpha of the same colour, which is what makes it recede without going grey.
+ | GSAP interpolates concrete values, so these mirror the `--color-paper` and
+ | `--color-gold` tokens in app.css rather than reading them at runtime — keep
+ | the values in step. The axis arrives at full gold and settles to a softer
+ | gold so it stays on-brand against the dark section background.
  */
-const INK = '#231F20'
 const PAPER = '#FFFFFF'
-const AXIS_DRAWN = 'rgba(35, 31, 32, 1)'
-const AXIS_RESTING = 'rgba(35, 31, 32, 0.4)'
+const AXIS_DRAWN = 'rgba(189, 147, 59, 1)'
+const AXIS_RESTING = 'rgba(189, 147, 59, 0.72)'
 
 const REVEAL_START = 'top 88%'
 const REVEAL_START_TALL = 'top 65%'
@@ -503,7 +502,7 @@ export function useScrubRotate(
  * curve reproduced when this was three eased channels.
  *
  * The labels are moved, never swapped: Brand and Product travel out from
- * inside their circles to the ends of the axis and turn from white to ink;
+ * inside their circles to the ends of the axis and remain white;
  * Service Mastery rises from the overlap to the top of the composition.
  *
  * Not a Figma audit item: the file draws the finished rings only, with no
@@ -605,7 +604,7 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
         },
         {
           x: 0,
-          color: INK,
+          color: PAPER,
           duration: 1.2,
           ease: MOTION.ease.spread,
         },
@@ -619,7 +618,7 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
         { y: coreTravel, color: PAPER },
         {
           y: 0,
-          color: INK,
+          color: PAPER,
           duration: 1,
           ease: MOTION.ease.spread,
         },

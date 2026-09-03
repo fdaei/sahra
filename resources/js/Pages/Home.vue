@@ -82,6 +82,9 @@ interface SectionContent {
   subtitle: string;
   description: string;
   content: string;
+  orbitBrandLabel: string;
+  orbitProductLabel: string;
+  orbitCoreLabel: string;
   colors: Record<
     "eyebrow" | "title" | "subtitle" | "description" | "content",
     string | null

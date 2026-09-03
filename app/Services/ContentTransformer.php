@@ -305,6 +305,9 @@ final class ContentTransformer
             'subtitle' => (string) $section->getTranslation('subtitle'),
             'description' => (string) $section->getTranslation('description'),
             'content' => (string) $section->getTranslation('content'),
+            'orbitBrandLabel' => (string) $section->getTranslation('orbit_brand_label'),
+            'orbitProductLabel' => (string) $section->getTranslation('orbit_product_label'),
+            'orbitCoreLabel' => (string) $section->getTranslation('orbit_core_label'),
             'colors' => [
                 'eyebrow' => $section->eyebrow_color,
                 'title' => $section->title_color,

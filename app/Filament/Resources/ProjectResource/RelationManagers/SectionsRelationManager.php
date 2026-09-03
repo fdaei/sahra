@@ -96,6 +96,21 @@ final class SectionsRelationManager extends RelationManager
                     ])
                     ->visible(fn (Get $get): bool => $get('type') === SectionType::RichText->value),
 
+                TextInput::make("translations.{$locale}.orbit_brand_label")
+                    ->label('Orbit brand label')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+
+                TextInput::make("translations.{$locale}.orbit_product_label")
+                    ->label('Orbit product label')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+
+                TextInput::make("translations.{$locale}.orbit_core_label")
+                    ->label('Orbit mastery label')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+
                 TextInput::make("translations.{$locale}.primary_cta_label")
                     ->label('Primary button label')
                     ->maxLength(100),

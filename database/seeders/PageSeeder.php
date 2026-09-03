@@ -196,16 +196,25 @@ final class PageSeeder extends Seeder
                 'eyebrow' => 'Our Services',
                 'title' => 'A Connected System for Brand Growth',
                 'description' => 'From strategy and identity to content and campaigns, Sahra brings every part of your marketing into one clear direction',
+                'orbit_brand_label' => 'Brand',
+                'orbit_product_label' => 'Product',
+                'orbit_core_label' => 'Service Mastery',
             ],
             'fa' => [
                 'eyebrow' => 'خدمات ما',
                 'title' => 'چهار سیستم، یک مسیر',
                 'description' => 'هر آنچه انجام می‌دهیم برای ایجاد شفافیت، ساختار و مسیر بلندمدت برند شماست.',
+                'orbit_brand_label' => 'برند',
+                'orbit_product_label' => 'محصول',
+                'orbit_core_label' => 'تسلط خدماتی',
             ],
             'ar' => [
                 'eyebrow' => 'خدماتنا',
                 'title' => 'أربعة أنظمة، اتجاه واحد',
                 'description' => 'كل ما نقوم به مصمم لمنح علامتك التجارية وضوحاً وبنية واتجاهاً طويل الأمد.',
+                'orbit_brand_label' => 'العلامة التجارية',
+                'orbit_product_label' => 'المنتج',
+                'orbit_core_label' => 'إتقان الخدمة',
             ],
         ]);
 

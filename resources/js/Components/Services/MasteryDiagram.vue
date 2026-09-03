@@ -22,7 +22,7 @@
  | leave a complete diagram rather than an empty box.
  */
 import { computed, reactive, ref, useId } from "vue";
-import { useElementSize } from "@vueuse/core";
+import { useElementSize, useMediaQuery } from "@vueuse/core";
 import { useMasteryOpen } from "@/Composables/useMotion";
 import { blobPath, resolveBlob, type BlobProgress } from "@/lib/blob";
 
@@ -44,6 +44,7 @@ const clipId = useId();
  | size, with no letterboxing to correct for.
  */
 const { width, height } = useElementSize(stage);
+const isMobile = useMediaQuery("(max-width: 639px)");
 
 /* Resting value: the diagram is finished until the motion layer rewinds it. */
 const progress = reactive<BlobProgress>({ t: 1 });
@@ -59,16 +60,39 @@ const path = computed(() => blobPath(shape.value));
  | instead of arriving over it: by the time the bridge has thinned away, the
  | dotted line is already strung between the same two dots.
  */
-const axis = computed(() => ({
-  x1: shape.value.cx - shape.value.separation,
-  x2: shape.value.cx + shape.value.separation,
-  y: shape.value.cy,
-}));
+const axis = computed(() =>
+  isMobile.value
+    ? {
+        x1: shape.value.cx,
+        y1: shape.value.cy - shape.value.separation,
+        x2: shape.value.cx,
+        y2: shape.value.cy + shape.value.separation,
+      }
+    : {
+        x1: shape.value.cx - shape.value.separation,
+        y1: shape.value.cy,
+        x2: shape.value.cx + shape.value.separation,
+        y2: shape.value.cy,
+      },
+);
 
-const rings = computed(() => ({
-  inner: Math.min(138, width.value * 0.141),
-  outer: Math.min(240, width.value * 0.245),
-}));
+const blobTransform = computed(() =>
+  isMobile.value
+    ? `rotate(90 ${shape.value.cx} ${shape.value.cy})`
+    : undefined,
+);
+
+const rings = computed(() =>
+  isMobile.value
+    ? {
+        inner: Math.min(width.value * 0.36, height.value * 0.3),
+        outer: Math.min(width.value * 0.59, height.value * 0.47),
+      }
+    : {
+        inner: Math.min(138, width.value * 0.141),
+        outer: Math.min(240, width.value * 0.245),
+      },
+);
 
 useMasteryOpen(stage, progress);
 </script>
@@ -112,13 +136,18 @@ useMasteryOpen(stage, progress);
         data-mastery="axis"
         class="mastery-axis"
         :x1="axis.x1"
-        :y1="axis.y"
+        :y1="axis.y1"
         :x2="axis.x2"
-        :y2="axis.y"
+        :y2="axis.y2"
       />
 
       <!-- The one silhouette. Opening Venn and closing dots are both this. -->
-      <path data-mastery="blob" class="mastery-blob" :d="path" />
+      <path
+        data-mastery="blob"
+        class="mastery-blob"
+        :d="path"
+        :transform="blobTransform"
+      />
 
       <!--
         The darker core of the opening Venn — a fill treatment ON the
@@ -198,33 +227,33 @@ useMasteryOpen(stage, progress);
  */
 .mastery-rings circle {
   fill: none;
-  /* Low-opacity ink: present, never dominant. */
-  stroke: rgb(var(--color-ink-rgb) / 32%);
-  stroke-width: 1;
+  /* Gold orbit rings remain visible without competing with the service pills. */
+  stroke: rgb(var(--color-gold-rgb) / 62%);
+  stroke-width: 2;
   stroke-dasharray: 2 6;
 }
 .mastery-axis {
-  /* Resting value only — the motion layer tweens the stroke in from full ink. */
-  stroke: rgb(var(--color-ink-rgb) / 40%);
-  stroke-width: 1;
+  /* Resting value only — the motion layer draws and settles the gold stroke. */
+  stroke: rgb(var(--color-gold-rgb) / 72%);
+  stroke-width: 2;
   stroke-dasharray: 1 5;
   stroke-linecap: round;
 }
 .mastery-blob {
-  fill: var(--color-ink);
+  fill: var(--color-gold);
 }
 /*
  | Black at partial alpha rather than a second hardcoded near-black, so the
  | overlap stays a fixed step darker than the blob if `--color-ink` ever moves.
  */
 .mastery-core {
-  fill: #000;
-  fill-opacity: 0.45;
+  fill: var(--color-gold-900);
+  fill-opacity: 0.72;
 }
 .mastery-label {
   position: absolute;
   translate: -50% -50%;
-  color: var(--color-ink);
+  color: var(--color-paper);
   font-size: 20px;
   font-weight: 500;
   line-height: 1.2;
@@ -283,11 +312,29 @@ html[dir="rtl"] .mastery-label--product {
   }
   .mastery-label--brand {
     inset-inline-start: 8px;
-    top: 82%;
+    top: calc(50% + 5px);
   }
   .mastery-label--product {
     inset-inline-end: 8px;
-    top: 82%;
+    top: calc(50% + 5px);
+  }
+}
+
+@media (max-width: 639px) {
+  .mastery-label--core {
+    display: none;
+  }
+  .mastery-label--brand {
+    inset-inline-start: 50%;
+    top: 64px;
+    translate: -50% 0;
+  }
+  .mastery-label--product {
+    inset-inline-end: auto;
+    inset-inline-start: 50%;
+    top: auto;
+    bottom: 18px;
+    translate: -50% 0;
   }
 }
 </style>

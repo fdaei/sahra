@@ -9,6 +9,9 @@ interface ServiceSection {
   eyebrow: string;
   title: string;
   description: string;
+  orbitBrandLabel?: string;
+  orbitProductLabel?: string;
+  orbitCoreLabel?: string;
 }
 const props = defineProps<{
   section: ServiceSection;
@@ -95,14 +98,10 @@ const productPositions = [
 ];
 
 const brandGhosts = computed(() =>
-  props.services
-    .filter((service) => service.homeOrbitGroup === "brand")
-    .map((service) => service.title),
+  props.services.filter((service) => service.homeOrbitGroup === "brand"),
 );
 const productGhosts = computed(() =>
-  props.services
-    .filter((service) => service.homeOrbitGroup === "product")
-    .map((service) => service.title),
+  props.services.filter((service) => service.homeOrbitGroup === "product"),
 );
 
 onMounted(() => {
@@ -173,22 +172,23 @@ onBeforeUnmount(() => {
         :aria-label="t('services.orbit_label')"
       >
         <MasteryDiagram
-          :brand-label="t('services.venn_brand')"
-          :product-label="t('services.venn_product')"
-          :core-label="t('services.core')"
+          :brand-label="section.orbitBrandLabel || t('services.venn_brand')"
+          :product-label="section.orbitProductLabel || t('services.venn_product')"
+          :core-label="section.orbitCoreLabel || t('services.core')"
         />
         <div class="services-grid">
           <div class="side-col side-col--brand" aria-hidden="true">
             <div
-              v-for="(label, index) in brandGhosts"
-              :key="label"
+              v-for="(service, index) in brandGhosts"
+              :key="service.key"
               class="ghost-service"
+              :class="{ 'ghost-service--no-image': !service.image }"
               :style="{
                 '--x': `${brandPositions[index % brandPositions.length].x}%`,
                 '--y': `${brandPositions[index % brandPositions.length].y}%`,
               }"
             >
-              <strong>{{ label }}</strong>
+              <strong>{{ service.title }}</strong>
             </div>
           </div>
           <div class="mastery-col">
@@ -196,6 +196,7 @@ onBeforeUnmount(() => {
               v-for="(service, index) in cards"
               :key="service.key"
               class="service-card"
+              :class="{ 'service-card--has-image': !!service.image }"
               :style="{
                 '--accent': service.accent,
                 '--x': `${service.position.x}%`,
@@ -246,15 +247,16 @@ onBeforeUnmount(() => {
           </div>
           <div class="side-col side-col--product" aria-hidden="true">
             <div
-              v-for="(label, index) in productGhosts"
-              :key="label"
+              v-for="(service, index) in productGhosts"
+              :key="service.key"
               class="ghost-service"
+              :class="{ 'ghost-service--no-image': !service.image }"
               :style="{
                 '--x': `${productPositions[index % productPositions.length].x}%`,
                 '--y': `${productPositions[index % productPositions.length].y}%`,
               }"
             >
-              <strong>{{ label }}</strong>
+              <strong>{{ service.title }}</strong>
             </div>
           </div>
         </div>
@@ -625,6 +627,20 @@ onBeforeUnmount(() => {
 .service-card__content {
   bottom: 38px;
 }
+.service-card--has-image:hover,
+.service-card--has-image:focus-within,
+.service-card--has-image:hover .service-card__title,
+.service-card--has-image:focus-within .service-card__title {
+  border-color: var(--color-gold);
+  background: var(--color-gold);
+  color: var(--color-paper);
+}
+.service-card--has-image:hover .service-card__title strong,
+.service-card--has-image:focus-within .service-card__title strong,
+.service-card--has-image:hover .service-card__title .service-card__icon,
+.service-card--has-image:focus-within .service-card__title .service-card__icon {
+  color: var(--color-paper);
+}
 
 @media (max-width: 1023px) {
   .cloud-diagram {
@@ -701,14 +717,28 @@ onBeforeUnmount(() => {
 /* Ramotion services system — measured in Playwright at 1440px. */
 .services-cloud {
   min-height: auto;
-  background: #f7f7f7;
-  color: var(--color-ink);
+  background: #050505;
+  color: var(--color-paper);
 }
 .services-cloud::after {
-  display: none;
+  display: block;
+  left: 0;
+  bottom: -110px;
+  width: 100%;
+  height: 360px;
+  translate: none;
+  border-radius: 0;
+  background: radial-gradient(
+    ellipse 65% 85% at 50% 100%,
+    rgb(var(--color-gold-rgb) / 62%) 0%,
+    rgb(var(--color-gold-rgb) / 32%) 38%,
+    transparent 76%
+  );
+  box-shadow: none;
+  filter: blur(28px);
 }
 .services-cloud :is(h2, p) {
-  color: var(--color-ink) !important;
+  color: var(--color-paper) !important;
 }
 /* Gold, as everywhere else on the site — the reference's flat ink was not ours. */
 .service-eyebrow {
@@ -793,12 +823,12 @@ onBeforeUnmount(() => {
   max-width: 250px;
   height: 40px;
   padding: 0 13px;
-  border: 1px solid var(--color-neutral-200);
+  border: 2px solid rgb(var(--color-gold-rgb) / 70%);
   border-radius: 20px;
-  color: var(--color-neutral-200);
+  color: var(--color-paper);
   font-size: 17px;
   font-weight: 500;
-  background: #f7f7f7;
+  background: #050505;
 }
 .side-col--brand .ghost-service,
 .side-col--product .ghost-service {
@@ -824,11 +854,11 @@ onBeforeUnmount(() => {
   max-width: 285px;
   height: 40px;
   border: 0;
-  border-radius: 0;
-  background: transparent;
+  border-radius: 20px;
+  background: var(--color-paper);
   /* Staggered off the column centre — see `nudges` above. */
   inset-inline-start: var(--nudge, 0);
-  color: var(--accent);
+  color: var(--color-ink);
   opacity: 0;
   transform: scale(0);
   transition:
@@ -842,20 +872,23 @@ onBeforeUnmount(() => {
 .service-card:hover,
 .service-card:focus-within {
   display: block;
-  background: transparent;
+  background: var(--color-paper);
   box-shadow: none;
 }
 .service-card__title {
   height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--color-ink);
+  border: 2px solid var(--color-paper);
   border-radius: 20px;
-  background: var(--color-ink);
-  color: var(--accent);
+  background: var(--color-paper);
+  color: var(--color-ink);
   font-size: 17px;
 }
 .service-card__title strong {
-  color: var(--color-paper);
+  color: var(--color-ink);
+}
+.service-card__title .service-card__icon {
+  color: var(--accent);
 }
 .service-card__icon {
   width: 14px;
@@ -1001,6 +1034,11 @@ onBeforeUnmount(() => {
   color: rgb(var(--color-ink-rgb) / 34%);
   font-size: 14px;
   transform: scale(0.96);
+}
+.ghost-service.ghost-service--no-image {
+  border-color: var(--color-neutral-200);
+  background: #000;
+  color: var(--color-neutral-200);
 }
 .side-col--brand .ghost-service,
 .side-col--product .ghost-service {
