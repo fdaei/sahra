@@ -9,7 +9,7 @@ import type { SharedProps } from "@/types";
 interface LeadMagnetSection {
   title: string;
   description: string;
-  primaryCta: { label: string; url: string; icon?: string | null } | null;
+  primaryCta: { label: string; url: string; icon?: string | null; hoverIcon?: string | null } | null;
   colors?: {
     title?: string | null;
     description?: string | null;
@@ -172,11 +172,11 @@ onBeforeUnmount(() => {
         <button
           v-if="section.primaryCta"
           type="button"
-          class="relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-white"
+          class="group relative z-10 shrink-0 rounded-sm border border-white px-3 py-3 text-[14px] font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-white"
           @click="openModal"
         >
           {{ section.primaryCta.label }}
-          <ButtonIcon :name="section.primaryCta.icon" />
+          <ButtonIcon :name="section.primaryCta.icon" :hover-name="section.primaryCta.hoverIcon" />
         </button>
       </div>
     </div>
@@ -266,12 +266,12 @@ onBeforeUnmount(() => {
           <button
             v-if="section.primaryCta"
             type="button"
-            class="inline-flex shrink-0 items-center justify-center rounded-sm border border-white font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:text-gold"
+            class="group inline-flex shrink-0 items-center justify-center rounded-sm border border-white font-normal leading-normal text-white transition-colors duration-300 hover:border-gold hover:text-gold"
             :class="inline ? 'px-6 py-3 text-[18px]' : 'px-8 py-4 text-[20px]'"
             @click="openModal"
           >
             {{ section.primaryCta.label }}
-            <ButtonIcon :name="section.primaryCta.icon" />
+            <ButtonIcon :name="section.primaryCta.icon" :hover-name="section.primaryCta.hoverIcon" />
           </button>
         </div>
       </div>

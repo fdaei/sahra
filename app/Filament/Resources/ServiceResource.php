@@ -115,6 +115,11 @@ final class ServiceResource extends Resource
                             ->label('Show as a full section on the Services page')
                             ->default(true),
 
+                        Toggle::make('show_on_work_page')
+                            ->label('Show as a filter on the Work page')
+                            ->helperText('Controls whether this service appears in the filter list on /work.')
+                            ->default(true),
+
                         Section::make('Advanced display settings')
                             ->description('Only change these when adjusting the site layout.')
                             ->collapsed()
@@ -127,6 +132,7 @@ final class ServiceResource extends Resource
                                     ->helperText('Lower numbers appear first.'),
 
                                 SvgIconUpload::make('icon', 'Service icon'),
+                                SvgIconUpload::make('hover_icon', 'Service hover icon'),
                             ]),
                     ]),
 
@@ -173,6 +179,10 @@ final class ServiceResource extends Resource
                     ->label('Shown on home')
                     ->boolean(),
 
+                Tables\Columns\IconColumn::make('show_on_work_page')
+                    ->label('Shown on work')
+                    ->boolean(),
+
                 Tables\Columns\TextColumn::make('home_orbit_group')
                     ->label('Home map')
                     ->badge()
@@ -201,6 +211,8 @@ final class ServiceResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->options(PublicationStatus::options()),
                 Tables\Filters\TernaryFilter::make('show_on_home'),
+                Tables\Filters\TernaryFilter::make('show_on_work_page')
+                    ->label('Shown on work'),
                 Tables\Filters\TrashedFilter::make(),
             ])
             ->actions([

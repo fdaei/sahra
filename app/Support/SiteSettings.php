@@ -118,7 +118,7 @@ final class SiteSettings
     }
 
     /**
-     * @return array<int, array{platform: string, label: string, url: string, icon: string}>
+     * @return array<int, array{platform: string, label: string, url: string, icon: string, hoverIcon: string|null}>
      */
     public static function socialLinks(): array
     {
@@ -134,6 +134,7 @@ final class SiteSettings
                     'label' => $l->label,
                     'url' => $l->url,
                     'icon' => IconUrl::resolve($l->icon) ?? '',
+                    'hoverIcon' => IconUrl::resolve($l->hover_icon),
                 ])
                 ->all(),
         );

@@ -39,9 +39,11 @@ final class Service extends Model
         'sort_order',
         'show_on_home',
         'show_on_services_page',
+        'show_on_work_page',
         'home_orbit_group',
         'external_url',
         'icon',
+        'hover_icon',
         'image_path',
     ];
 
@@ -61,6 +63,7 @@ final class Service extends Model
             'published_at' => 'datetime',
             'show_on_home' => 'boolean',
             'show_on_services_page' => 'boolean',
+            'show_on_work_page' => 'boolean',
             'sort_order' => 'integer',
         ];
     }
@@ -96,6 +99,11 @@ final class Service extends Model
     public function scopeOnServicesPage(Builder $query): Builder
     {
         return $query->where('show_on_services_page', true);
+    }
+
+    public function scopeOnWorkPage(Builder $query): Builder
+    {
+        return $query->where('show_on_work_page', true);
     }
 
     /**

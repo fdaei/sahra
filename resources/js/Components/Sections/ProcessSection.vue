@@ -1,9 +1,12 @@
 <script setup lang="ts">
+import HoverIcon from "@/Components/HoverIcon.vue";
+
 interface ProcessItem {
   value: string;
   title: string;
   description: string;
   icon: string | null;
+  hoverIcon: string | null;
 }
 
 defineProps<{
@@ -62,7 +65,7 @@ const isUploadedIcon = (icon: string | null): icon is string =>
         <article
           v-for="(item, index) in section.items"
           :key="item.value"
-          class="flex min-h-[97px] min-w-0 items-center gap-6 border-b border-gold-300 px-2 py-6 md:min-h-0 md:flex-col md:items-start md:gap-8 md:border-0 md:bg-transparent md:p-4"
+          class="group flex min-h-[97px] min-w-0 items-center gap-6 border-b border-gold-300 px-2 py-6 md:min-h-0 md:flex-col md:items-start md:gap-8 md:border-0 md:bg-transparent md:p-4"
         >
           <span
             class="latin-nums shrink-0 text-[24px] font-semibold leading-none text-gold-700 md:border-b md:border-gold md:pb-1 md:text-[36px] md:font-medium"
@@ -75,13 +78,11 @@ const isUploadedIcon = (icon: string | null): icon is string =>
               <span
                 class="relative hidden size-10 shrink-0 items-center justify-center rounded-round p-1 drop-shadow-[1px_1px_5px_rgba(0,0,0,0.08)] md:flex"
               >
-                <img
+                <HoverIcon
                   v-if="isUploadedIcon(item.icon)"
-                  :src="item.icon"
-                  alt=""
-                  class="size-9 object-contain"
-                  width="36"
-                  height="36"
+                  :name="item.icon"
+                  :hover-name="item.hoverIcon"
+                  class="size-9"
                 />
 
                 <img

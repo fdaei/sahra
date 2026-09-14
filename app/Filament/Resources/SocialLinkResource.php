@@ -57,6 +57,8 @@ final class SocialLinkResource extends Resource
                     SvgIconUpload::make('icon', 'Social icon')
                         ->required(),
 
+                    SvgIconUpload::make('hover_icon', 'Social hover icon'),
+
                     TextInput::make('sort_order')->numeric()->default(0),
 
                     Toggle::make('is_active')->label('Active')->default(true),

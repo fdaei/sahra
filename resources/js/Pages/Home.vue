@@ -46,6 +46,7 @@ import {
 } from "@/Composables/useMotion";
 import SeoHead from "@/Components/SeoHead.vue";
 import CtaBanner from "@/Components/CtaBanner.vue";
+import HoverIcon from "@/Components/HoverIcon.vue";
 import ServicesOrbit from "@/Components/Services/ServicesOrbit.vue";
 import LeadMagnet from "@/Components/Sections/LeadMagnet.vue";
 import PackagesSection from "@/Components/Sections/PackagesSection.vue";
@@ -73,6 +74,7 @@ interface SectionItemContent {
   features: string[];
   footer: string;
   icon: string | null;
+  hoverIcon: string | null;
 }
 
 interface SectionContent {
@@ -89,8 +91,8 @@ interface SectionContent {
     "eyebrow" | "title" | "subtitle" | "description" | "content",
     string | null
   >;
-  primaryCta: { label: string; url: string; icon?: string | null } | null;
-  secondaryCta: { label: string; url: string; icon?: string | null } | null;
+  primaryCta: { label: string; url: string; icon?: string | null; hoverIcon?: string | null } | null;
+  secondaryCta: { label: string; url: string; icon?: string | null; hoverIcon?: string | null } | null;
   image: { src: string; alt: string; width: number; height: number } | null;
   items: SectionItemContent[];
 }
@@ -108,6 +110,9 @@ const props = defineProps<{
 
 const page = usePage<SharedProps>();
 const hero = computed(() => props.sections.hero);
+
+const isUploadedIcon = (icon?: string | null): icon is string =>
+  Boolean(icon && (icon.startsWith("/") || /^https?:\/\//.test(icon)));
 const heroImage = computed(() => hero.value?.image ?? null);
 const kpi = computed(() => props.sections.kpi);
 const process = computed(() => props.sections.process);
@@ -175,7 +180,12 @@ const heroCtas = computed(() => {
   const ordered = [primary, secondary];
 
   return ordered.filter(
-    (cta): cta is { label: string; url: string; icon?: string | null } => cta !== null,
+    (cta): cta is {
+      label: string;
+      url: string;
+      icon?: string | null;
+      hoverIcon?: string | null;
+    } => cta !== null,
   );
 });
 
@@ -355,9 +365,10 @@ useSectionReveal();
           :key="cta.url"
           :href="cta.url"
           :class="i === 0 ? heroCtaSolid : heroCtaOutline"
+          class="group"
         >
           {{ cta.label }}
-          <ButtonIcon :name="cta.icon" />
+          <ButtonIcon :name="cta.icon" :hover-name="cta.hoverIcon" />
         </a>
       </div>
     </div>
@@ -387,16 +398,15 @@ useSectionReveal();
       <div
         v-for="(item, i) in kpi.items"
         :key="i"
-        class="edge-gold will-reveal flex h-[77px] flex-col items-center justify-center gap-2 rounded-[4px] px-3 py-3 md:h-auto md:px-3 md:py-6"
+        class="group edge-gold will-reveal flex h-[77px] flex-col items-center justify-center gap-2 rounded-[4px] px-3 py-3 md:h-auto md:px-3 md:py-6"
         data-reveal
       >
         <div class="flex items-center justify-center gap-1 md:gap-4">
-          <img
-            v-if="item.icon"
-            :src="item.icon"
-            alt=""
-            class="size-4 object-contain md:size-8"
-            aria-hidden="true"
+          <HoverIcon
+            v-if="isUploadedIcon(item.icon)"
+            :name="item.icon"
+            :hover-name="item.hoverIcon"
+            class="size-4 md:size-8"
           />
           <component
             v-else
@@ -559,15 +569,14 @@ useSectionReveal();
           <div
             v-for="(item, i) in whyUs.items"
             :key="i"
-            class="will-reveal flex min-h-[140px] flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
+            class="group will-reveal flex min-h-[140px] flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
             data-reveal
           >
-            <img
-              v-if="item.icon"
-              :src="item.icon"
-              alt=""
-              class="size-6 object-contain md:size-8"
-              aria-hidden="true"
+            <HoverIcon
+              v-if="isUploadedIcon(item.icon)"
+              :name="item.icon"
+              :hover-name="item.hoverIcon"
+              class="size-6 md:size-8"
             />
             <svg
               v-else-if="item.title.trim().toLocaleLowerCase() === 'end-to-end support'"

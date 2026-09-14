@@ -693,9 +693,9 @@ function submit(): void {
                     target="_blank"
                     rel="noopener noreferrer"
                     :aria-label="link.label"
-                    class="flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold lg:size-10"
+                    class="group flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold lg:size-10"
                   >
-                    <SocialIcon :icon="link.icon" class="size-6" />
+                    <SocialIcon :icon="link.icon" :hover-icon="link.hoverIcon" class="size-6" />
                   </a>
                 </li>
               </ul>

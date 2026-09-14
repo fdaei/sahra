@@ -3,6 +3,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import { useTranslations } from "@/Composables/useTranslations";
 import MasteryDiagram from "@/Components/Services/MasteryDiagram.vue";
+import ButtonIcon from "@/Components/ButtonIcon.vue";
 import type { ServiceItem, SharedProps } from "@/types";
 
 interface ServiceSection {
@@ -226,8 +227,19 @@ onBeforeUnmount(() => {
                   <div v-else class="service-card__fallback" />
                 </div>
               </div>
-              <a class="service-card__title" :href="service.href">
-                <span class="service-card__icon" aria-hidden="true" />
+              <a class="service-card__title group" :href="service.href">
+                <span
+                  v-if="service.icon || service.hoverIcon"
+                  class="service-card__icon service-card__icon--asset"
+                  aria-hidden="true"
+                >
+                  <ButtonIcon
+                    :name="service.icon"
+                    :hover-name="service.hoverIcon"
+                    class="size-full"
+                  />
+                </span>
+                <span v-else class="service-card__icon" aria-hidden="true" />
                 <strong>{{ service.title }}</strong>
                 <svg
                   class="service-card__arrow"
@@ -627,6 +639,7 @@ onBeforeUnmount(() => {
 .service-card__content {
   bottom: 38px;
 }
+
 .service-card--has-image:hover,
 .service-card--has-image:focus-within,
 .service-card--has-image:hover .service-card__title,
@@ -1126,5 +1139,14 @@ onBeforeUnmount(() => {
     top: auto;
     translate: none;
   }
+}
+
+.service-card__icon--asset {
+  width: 14px;
+  height: 14px;
+  rotate: 0deg;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
 }
 </style>

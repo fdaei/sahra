@@ -29,6 +29,7 @@ import arcRings from "~img/decor/arc-rings.svg";
 import duneContours from "~img/decor/dune-contours.webp";
 import SeoHead from "@/Components/SeoHead.vue";
 import CtaBanner from "@/Components/CtaBanner.vue";
+import HoverIcon from "@/Components/HoverIcon.vue";
 import type { SeoMeta, TeamMemberItem } from "@/types";
 
 interface SectionContent {
@@ -49,6 +50,7 @@ interface SectionContent {
     title: string;
     description: string;
     icon: string | null;
+    hoverIcon: string | null;
   }>;
 }
 
@@ -63,6 +65,9 @@ const story = computed(() => props.sections.story);
 const howWeThink = computed(() => props.sections.how_we_think);
 const team = computed(() => props.sections.team);
 const thinkIcons = [BadgeCheck, Focus, Repeat2, TrendingUp];
+
+const isUploadedIcon = (icon?: string | null): icon is string =>
+  Boolean(icon && (icon.startsWith("/") || /^https?:\/\//.test(icon)));
 
 /*
  | Figma 951:3598 — the arch sculpture cutout beside the hero copy. It is
@@ -277,7 +282,7 @@ const teamRows = computed(() => {
           <div
             v-for="(item, i) in howWeThink.items"
             :key="i"
-            class="flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:py-12"
+            class="group flex flex-col gap-4 rounded-sm border-x border-b border-t-[3px] border-gold-400 border-t-gold bg-neutral-50/30 p-6 md:gap-6 md:py-12"
           >
             <!--
               Goal card icon — Figma 1061:2072. The default
@@ -286,12 +291,10 @@ const teamRows = computed(() => {
               glyph and takes its colour from the class, per brief §12. A CMS
               icon still wins where an editor has set one.
             -->
-            <img
-              v-if="item.icon"
-              :src="item.icon"
-              alt=""
-              width="32"
-              height="32"
+            <HoverIcon
+              v-if="isUploadedIcon(item.icon)"
+              :name="item.icon"
+              :hover-name="item.hoverIcon"
               class="size-5 md:size-8"
             />
             <component

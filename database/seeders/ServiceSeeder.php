@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use App\Enums\PublicationStatus;
 use App\Models\Service;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * The four services. Copy from Figma 1323:7189.
@@ -129,6 +128,7 @@ final class ServiceSeeder extends Seeder
                     'sort_order' => $index,
                     'show_on_home' => $index === 0,
                     'show_on_services_page' => true,
+                    'show_on_work_page' => true,
                     'home_orbit_group' => $index === 0 ? 'active' : null,
                     'external_url' => $index === 0
                         ? 'https://www.ramotion.com/branding/'
@@ -180,6 +180,7 @@ final class ServiceSeeder extends Seeder
                     'sort_order' => $index + 1,
                     'show_on_home' => true,
                     'show_on_services_page' => false,
+                    'show_on_work_page' => false,
                     'home_orbit_group' => $group,
                     'external_url' => $url,
                     'image_path' => $image,
@@ -195,6 +196,7 @@ final class ServiceSeeder extends Seeder
                     'sort_order' => $index + 1,
                     'show_on_home' => true,
                     'show_on_services_page' => false,
+                    'show_on_work_page' => false,
                     'home_orbit_group' => $group,
                     'external_url' => $url,
                     'image_path' => $image,

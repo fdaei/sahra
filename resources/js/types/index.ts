@@ -29,6 +29,7 @@ export interface NavItem {
   target: '_self' | '_blank'
   isCta: boolean
   icon?: string | null
+  hoverIcon?: string | null
   children: NavItem[]
 }
 
@@ -37,6 +38,7 @@ export interface SocialLink {
   label: string
   url: string
   icon: string
+  hoverIcon: string | null
 }
 
 export interface SiteSettings {
@@ -140,6 +142,7 @@ export interface ResultStat {
   label: string
   value: string
   icon: string | null
+  hoverIcon: string | null
 }
 
 export interface ServiceItem {
@@ -152,6 +155,7 @@ export interface ServiceItem {
   homeOrbitGroup: 'active' | 'brand' | 'product' | null
   externalUrl: string | null
   icon: string | null
+  hoverIcon: string | null
   image: MediaImage | null
 }
 

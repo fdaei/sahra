@@ -92,6 +92,7 @@ final class NavigationBuilder
             'target' => $item->target,
             'isCta' => $item->is_cta,
             'icon' => IconUrl::resolve($item->icon),
+            'hoverIcon' => IconUrl::resolve($item->hover_icon),
             'children' => $children,
         ];
     }

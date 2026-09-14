@@ -24,6 +24,7 @@ final class SectionItem extends Model
         'sort_order',
         'is_visible',
         'icon',
+        'hover_icon',
         'image_path',
     ];
 

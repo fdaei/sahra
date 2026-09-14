@@ -124,10 +124,10 @@ function isActive(url: string): boolean {
           <Link
             v-if="cta"
             :href="cta.url"
-            class="flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-title-sm text-paper transition-colors hover:bg-gold hover:text-white"
+            class="group flex items-center gap-1 rounded-sm bg-ink px-6 py-3 text-title-sm text-paper transition-colors hover:bg-gold hover:text-white"
           >
             {{ cta.label }}
-            <ButtonIcon :name="cta.icon" />
+            <ButtonIcon :name="cta.icon" :hover-name="cta.hoverIcon" />
           </Link>
         </div>
       </div>

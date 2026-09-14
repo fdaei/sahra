@@ -56,7 +56,7 @@ defineProps<{
     description: string
     subtitle: string
     colors: Record<'eyebrow' | 'title' | 'subtitle' | 'description' | 'content', string | null>
-    primaryCta: { label: string; url: string; icon?: string | null } | null
+    primaryCta: { label: string; url: string; icon?: string | null; hoverIcon?: string | null } | null
   }
 }>()
 </script>
@@ -114,11 +114,11 @@ defineProps<{
             <a
               v-if="section.primaryCta"
               :href="section.primaryCta.url"
-              class="final-cta-button inline-flex w-fit items-center gap-1 self-start rounded-sm bg-paper px-3 py-3
+              class="final-cta-button group inline-flex w-fit items-center gap-1 self-start rounded-sm bg-paper px-3 py-3
                      text-body-md text-ink transition-colors hover:bg-gold hover:text-white md:px-6 md:text-title-sm"
             >
               {{ section.primaryCta.label }}
-              <ButtonIcon v-if="section.primaryCta.icon" :name="section.primaryCta.icon" class="size-5 md:size-6" />
+              <ButtonIcon v-if="section.primaryCta.icon || section.primaryCta.hoverIcon" :name="section.primaryCta.icon" :hover-name="section.primaryCta.hoverIcon" class="size-5 md:size-6" />
               <ArrowRight v-else class="hidden size-5 shrink-0 rtl:-scale-x-100 md:block md:size-6" aria-hidden="true" />
             </a>
           </div>

@@ -150,6 +150,7 @@ final class ContentTransformer
             'homeOrbitGroup' => $service->home_orbit_group,
             'externalUrl' => $service->external_url,
             'icon' => IconUrl::resolve($service->icon),
+            'hoverIcon' => IconUrl::resolve($service->hover_icon),
             'image' => MediaTransformer::make(
                 $service->image_path,
                 $service->getTranslation('image_alt'),
@@ -319,11 +320,13 @@ final class ContentTransformer
                 $section->getTranslation('primary_cta_label'),
                 $section->getTranslation('primary_cta_url'),
                 $section->primary_cta_icon,
+                $section->primary_cta_hover_icon,
             ),
             'secondaryCta' => self::cta(
                 $section->getTranslation('secondary_cta_label'),
                 $section->getTranslation('secondary_cta_url'),
                 $section->secondary_cta_icon,
+                $section->secondary_cta_hover_icon,
             ),
             'image' => MediaTransformer::make(
                 $section->image_path,
@@ -368,6 +371,7 @@ final class ContentTransformer
             'features' => (array) ($item->getTranslation('features') ?? []),
             'footer' => (string) $item->getTranslation('footer'),
             'icon' => IconUrl::resolve($item->icon),
+            'hoverIcon' => IconUrl::resolve($item->hover_icon),
             'image' => MediaTransformer::make(
                 $item->image_path,
                 $item->getTranslation('image_alt'),
@@ -403,7 +407,7 @@ final class ContentTransformer
     /**
      * ResultStat[] — label + value + optional uploaded icon.
      *
-     * @return array<int, array{label: string, value: string, icon: string|null}>
+     * @return array<int, array{label: string, value: string, icon: string|null, hoverIcon: string|null}>
      */
     private static function resultsFor(Project $project): array
     {
@@ -418,20 +422,30 @@ final class ContentTransformer
                 'label' => (string) $item->getTranslation('title'),
                 'value' => (string) $item->getTranslation('value'),
                 'icon' => IconUrl::resolve($item->icon),
+                'hoverIcon' => IconUrl::resolve($item->hover_icon),
             ])
             ->all();
     }
 
     /**
-     * @return array{label: string, url: string, icon: string|null}|null
+     * @return array{label: string, url: string, icon: string|null, hoverIcon: string|null}|null
      */
-    private static function cta(?string $label, ?string $url, ?string $icon = null): ?array
-    {
+    private static function cta(
+        ?string $label,
+        ?string $url,
+        ?string $icon = null,
+        ?string $hoverIcon = null,
+    ): ?array {
         if ($label === null || $label === '') {
             return null;
         }
 
-        return ['label' => $label, 'url' => $url ?? '#', 'icon' => IconUrl::resolve($icon)];
+        return [
+            'label' => $label,
+            'url' => $url ?? '#',
+            'icon' => IconUrl::resolve($icon),
+            'hoverIcon' => IconUrl::resolve($hoverIcon),
+        ];
     }
 
     private static function imageContextFor(SectionType $type): string

@@ -33,6 +33,7 @@ final class MenuItem extends Model
         'url',
         'target',
         'icon',
+        'hover_icon',
         'is_cta',
         'sort_order',
         'is_active',

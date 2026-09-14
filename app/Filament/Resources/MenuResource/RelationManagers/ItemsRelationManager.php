@@ -69,6 +69,7 @@ final class ItemsRelationManager extends RelationManager
                         ->native(false),
 
                     SvgIconUpload::make('icon', 'Button icon'),
+                    SvgIconUpload::make('hover_icon', 'Button hover icon'),
 
                     Select::make('parent_id')
                         ->label('Parent item')

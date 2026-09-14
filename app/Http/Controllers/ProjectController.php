@@ -57,6 +57,7 @@ final class ProjectController extends Controller
             // Filter list — Figma "Filters" 542:858
             'filters' => Service::query()
                 ->forDisplay()
+                ->onWorkPage()
                 ->get()
                 ->map(fn (Service $s): array => [
                     'slug' => (string) $s->getTranslation('slug'),

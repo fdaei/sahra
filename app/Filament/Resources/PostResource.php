@@ -202,7 +202,12 @@ final class PostResource extends Resource
                         ]),
                 ]),
             ]),
-            SvgIconUpload::make('lead_magnet_cta_icon', 'Download button icon'),
+            Section::make('Download button icons')
+                ->columns(2)
+                ->schema([
+                    SvgIconUpload::make('lead_magnet_cta_icon', 'Download button icon'),
+                    SvgIconUpload::make('lead_magnet_cta_hover_icon', 'Download button hover icon'),
+                ]),
         ]);
     }
 

@@ -43,6 +43,7 @@ final class Post extends Model implements HasLocalisedSlugs
         'lead_magnet_send_email',
         'lead_magnet_image_path',
         'lead_magnet_cta_icon',
+        'lead_magnet_cta_hover_icon',
         'reading_minutes',
     ];
 

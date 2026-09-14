@@ -88,6 +88,12 @@ final class SectionsRelationManager extends RelationManager
                     ->label('Description')
                     ->rows(3),
 
+                TextInput::make("translations.{$locale}.content")
+                    ->label('Hero highlighted phrase')
+                    ->maxLength(150)
+                    ->helperText('Displayed as the highlighted phrase in the hero heading.')
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::Hero->value),
+
                 RichEditor::make("translations.{$locale}.content")
                     ->label('Rich content')
                     ->toolbarButtons([
@@ -96,19 +102,22 @@ final class SectionsRelationManager extends RelationManager
                     ])
                     ->visible(fn (Get $get): bool => $get('type') === SectionType::RichText->value),
 
-                TextInput::make("translations.{$locale}.orbit_brand_label")
-                    ->label('Orbit brand label')
-                    ->maxLength(100)
-                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+                Section::make('Service Cloud labels')
+                    ->description('Change the labels shown inside the Service Cloud diagram.')
+                    ->columns(3)
+                    ->schema([
+                        TextInput::make("translations.{$locale}.orbit_brand_label")
+                            ->label('Brand label')
+                            ->maxLength(100),
 
-                TextInput::make("translations.{$locale}.orbit_product_label")
-                    ->label('Orbit product label')
-                    ->maxLength(100)
-                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+                        TextInput::make("translations.{$locale}.orbit_product_label")
+                            ->label('Product label')
+                            ->maxLength(100),
 
-                TextInput::make("translations.{$locale}.orbit_core_label")
-                    ->label('Orbit mastery label')
-                    ->maxLength(100)
+                        TextInput::make("translations.{$locale}.orbit_core_label")
+                            ->label('Service mastery label')
+                            ->maxLength(100),
+                    ])
                     ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
 
                 TextInput::make("translations.{$locale}.primary_cta_label")
@@ -137,7 +146,9 @@ final class SectionsRelationManager extends RelationManager
                 ->columns(2)
                 ->schema([
                     SvgIconUpload::make('primary_cta_icon', 'Primary button icon'),
+                    SvgIconUpload::make('primary_cta_hover_icon', 'Primary button hover icon'),
                     SvgIconUpload::make('secondary_cta_icon', 'Secondary button icon'),
+                    SvgIconUpload::make('secondary_cta_hover_icon', 'Secondary button hover icon'),
                 ]),
 
             Section::make('Text colours')
@@ -238,6 +249,7 @@ final class SectionsRelationManager extends RelationManager
                     ]),
 
                     SvgIconUpload::make('icon', 'Item icon'),
+                    SvgIconUpload::make('hover_icon', 'Item hover icon'),
                 ]),
         ]);
     }
@@ -331,6 +343,7 @@ final class SectionsRelationManager extends RelationManager
                 'sort_order' => $index,
                 'is_visible' => true,
                 'icon' => $attributes['icon'] ?? null,
+                'hover_icon' => $attributes['hover_icon'] ?? null,
                 'image_path' => $attributes['image_path'] ?? null,
             ]);
 
@@ -354,6 +367,7 @@ final class SectionsRelationManager extends RelationManager
             ->map(function ($item): array {
                 $itemData = TranslatableForm::hydrate($item, []);
                 $itemData['icon'] = $item->icon;
+                $itemData['hover_icon'] = $item->hover_icon;
                 $itemData['image_path'] = $item->image_path;
 
                 return $itemData;

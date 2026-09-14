@@ -165,6 +165,8 @@ final class PostController extends Controller
                 'url' => '',
                 'icon' => IconUrl::resolve($post->lead_magnet_cta_icon)
                     ?? ($fallback['primaryCta']['icon'] ?? null),
+                'hoverIcon' => IconUrl::resolve($post->lead_magnet_cta_hover_icon)
+                    ?? ($fallback['primaryCta']['hoverIcon'] ?? null),
             ],
             'image' => $post->lead_magnet_image_path
                 ? MediaTransformer::make(

@@ -35,6 +35,7 @@ import {
 } from "lucide-vue-next";
 import SeoHead from "@/Components/SeoHead.vue";
 import CtaBanner from "@/Components/CtaBanner.vue";
+import HoverIcon from "@/Components/HoverIcon.vue";
 import { useHeroStagger, useSectionReveal } from "@/Composables/useMotion";
 import { useTranslations } from "@/Composables/useTranslations";
 import type { ProjectDetail, SeoMeta } from "@/types";
@@ -79,6 +80,9 @@ const resultIcons = [
   "/icons/sahra/results/follower.svg",
   "/icons/sahra/results/view.svg",
 ];
+
+const isUploadedIcon = (icon?: string | null): icon is string =>
+  Boolean(icon && (icon.startsWith("/") || /^https?:\/\//.test(icon)));
 
 const activeShowcaseIndex = ref(0);
 const showcaseFilters = computed(() => [
@@ -443,10 +447,17 @@ useSectionReveal(pageRoot);
             <li
               v-for="(stat, i) in project.results"
               :key="i"
-              class="flex flex-col gap-4 rounded-sm bg-gold-100 px-6 py-4 md:px-8"
+              class="group flex flex-col gap-4 rounded-sm bg-gold-100 px-6 py-4 md:px-8"
             >
+              <HoverIcon
+                v-if="isUploadedIcon(stat.icon)"
+                :name="stat.icon"
+                :hover-name="stat.hoverIcon"
+                class="size-8"
+              />
               <img
-                :src="stat.icon || resultIcons[i] || resultIcons[0]"
+                v-else
+                :src="resultIcons[i] || resultIcons[0]"
                 alt=""
                 class="size-8 object-contain object-left"
                 aria-hidden="true"

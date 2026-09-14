@@ -6,6 +6,10 @@ SET NAMES utf8mb4;
 SET time_zone = '+00:00';
 START TRANSACTION;
 
+ALTER TABLE services
+    ADD COLUMN IF NOT EXISTS show_on_work_page TINYINT(1) NOT NULL DEFAULT 1
+    AFTER show_on_services_page;
+
 -- Remove the leftover routine found in the server dump. It is not needed.
 DROP PROCEDURE IF EXISTS upsert_service_orbit_item;
 
@@ -13,6 +17,7 @@ DROP PROCEDURE IF EXISTS upsert_service_orbit_item;
 UPDATE services
 SET show_on_home = 1,
     show_on_services_page = 1,
+    show_on_work_page = 1,
     home_orbit_group = 'active',
     external_url = 'https://www.ramotion.com/branding/',
     sort_order = 0,
@@ -22,6 +27,7 @@ WHERE id = 1;
 UPDATE services
 SET show_on_home = 0,
     show_on_services_page = 1,
+    show_on_work_page = 1,
     home_orbit_group = NULL,
     external_url = NULL,
     updated_at = NOW()
@@ -29,29 +35,30 @@ WHERE id IN (2, 3, 4);
 
 -- Home capability-map records. IDs 5-19 are free in the supplied dump.
 INSERT INTO services
-    (id, status, published_at, sort_order, show_on_home, show_on_services_page, home_orbit_group, external_url, icon, image_path, created_at, updated_at, deleted_at)
+    (id, status, published_at, sort_order, show_on_home, show_on_services_page, show_on_work_page, home_orbit_group, external_url, icon, image_path, created_at, updated_at, deleted_at)
 VALUES
-    (5,  'published', NOW(), 1,  1, 0, 'active',  'https://www.ramotion.com/design-systems/',       NULL, 'projects/kerman-motors.webp', NOW(), NOW(), NULL),
-    (6,  'published', NOW(), 2,  1, 0, 'active',  'https://www.ramotion.com/app-design/',           NULL, 'projects/cheshmeh.webp', NOW(), NOW(), NULL),
-    (7,  'published', NOW(), 3,  1, 0, 'active',  'https://www.ramotion.com/brand-strategy/',       NULL, 'posts/brand-direction.webp', NOW(), NOW(), NULL),
-    (8,  'published', NOW(), 4,  1, 0, 'active',  'https://www.ramotion.com/ui-ux-design/',          NULL, 'projects/fakhar-clinic.webp', NOW(), NOW(), NULL),
-    (9,  'published', NOW(), 5,  1, 0, 'active',  'https://www.ramotion.com/web-design/',            NULL, 'projects/baghche.webp', NOW(), NOW(), NULL),
-    (10, 'published', NOW(), 6,  1, 0, 'active',  'https://www.ramotion.com/web-app-development/',  NULL, 'projects/plus-protein.webp', NOW(), NOW(), NULL),
-    (11, 'published', NOW(), 7,  1, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (12, 'published', NOW(), 8,  1, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (13, 'published', NOW(), 9,  1, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (14, 'published', NOW(), 10, 1, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (15, 'published', NOW(), 11, 1, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (16, 'published', NOW(), 12, 1, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (17, 'published', NOW(), 13, 1, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (18, 'published', NOW(), 14, 1, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
-    (19, 'published', NOW(), 15, 1, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL)
+    (5,  'published', NOW(), 1,  1, 0, 0, 'active',  'https://www.ramotion.com/design-systems/',       NULL, 'projects/kerman-motors.webp', NOW(), NOW(), NULL),
+    (6,  'published', NOW(), 2,  1, 0, 0, 'active',  'https://www.ramotion.com/app-design/',           NULL, 'projects/cheshmeh.webp', NOW(), NOW(), NULL),
+    (7,  'published', NOW(), 3,  1, 0, 0, 'active',  'https://www.ramotion.com/brand-strategy/',       NULL, 'posts/brand-direction.webp', NOW(), NOW(), NULL),
+    (8,  'published', NOW(), 4,  1, 0, 0, 'active',  'https://www.ramotion.com/ui-ux-design/',          NULL, 'projects/fakhar-clinic.webp', NOW(), NOW(), NULL),
+    (9,  'published', NOW(), 5,  1, 0, 0, 'active',  'https://www.ramotion.com/web-design/',            NULL, 'projects/baghche.webp', NOW(), NOW(), NULL),
+    (10, 'published', NOW(), 6,  1, 0, 0, 'active',  'https://www.ramotion.com/web-app-development/',  NULL, 'projects/plus-protein.webp', NOW(), NOW(), NULL),
+    (11, 'published', NOW(), 7,  1, 0, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (12, 'published', NOW(), 8,  1, 0, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (13, 'published', NOW(), 9,  1, 0, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (14, 'published', NOW(), 10, 1, 0, 0, 'brand',   NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (15, 'published', NOW(), 11, 1, 0, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (16, 'published', NOW(), 12, 1, 0, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (17, 'published', NOW(), 13, 1, 0, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (18, 'published', NOW(), 14, 1, 0, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL),
+    (19, 'published', NOW(), 15, 1, 0, 0, 'product', NULL, NULL, NULL, NOW(), NOW(), NULL)
 ON DUPLICATE KEY UPDATE
     status = VALUES(status),
     published_at = COALESCE(services.published_at, VALUES(published_at)),
     sort_order = VALUES(sort_order),
     show_on_home = VALUES(show_on_home),
     show_on_services_page = VALUES(show_on_services_page),
+    show_on_work_page = VALUES(show_on_work_page),
     home_orbit_group = VALUES(home_orbit_group),
     external_url = VALUES(external_url),
     image_path = COALESCE(VALUES(image_path), services.image_path),
@@ -124,6 +131,16 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM migrations
     WHERE migration = '2026_08_29_000001_make_home_service_orbit_editable'
+);
+
+INSERT INTO migrations (migration, batch)
+SELECT '2026_09_14_000001_add_show_on_work_page_to_services_table',
+       4
+FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM migrations
+    WHERE migration = '2026_09_14_000001_add_show_on_work_page_to_services_table'
 );
 
 COMMIT;

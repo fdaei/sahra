@@ -37,6 +37,10 @@ CALL add_service_orbit_column(
     'TINYINT(1) NOT NULL DEFAULT 1 AFTER `show_on_home`'
 )$$
 CALL add_service_orbit_column(
+    'show_on_work_page',
+    'TINYINT(1) NOT NULL DEFAULT 1 AFTER `show_on_services_page`'
+)$$
+CALL add_service_orbit_column(
     'home_orbit_group',
     'VARCHAR(20) NULL AFTER `show_on_services_page`'
 )$$
@@ -92,6 +96,7 @@ BEGIN
             sort_order,
             show_on_home,
             show_on_services_page,
+            show_on_work_page,
             home_orbit_group,
             external_url,
             image_path,
@@ -103,6 +108,7 @@ BEGIN
             sort_value,
             1,
             services_page_value,
+            0,
             group_value,
             url_value,
             image_value,
@@ -118,6 +124,7 @@ BEGIN
                sort_order = sort_value,
                show_on_home = 1,
                show_on_services_page = services_page_value,
+               show_on_work_page = 0,
                home_orbit_group = group_value,
                external_url = url_value,
                image_path = COALESCE(image_value, image_path),
@@ -154,6 +161,7 @@ UPDATE services AS s
 JOIN service_translations AS st ON st.service_id = s.id
    SET s.show_on_home = 0,
        s.show_on_services_page = 1,
+       s.show_on_work_page = 1,
        s.home_orbit_group = NULL,
        s.external_url = NULL,
        s.updated_at = NOW()
@@ -185,6 +193,25 @@ CALL upsert_service_orbit_item('product-writing', 'Product writing', 'product', 
 
 COMMIT$$
 
+UPDATE services AS s
+JOIN service_translations AS st ON st.service_id = s.id
+   SET s.show_on_work_page = CASE
+       WHEN st.slug IN (
+           'branding',
+           'content-production',
+           'marketing-design',
+           'social-media-support'
+       ) THEN 1
+       ELSE 0
+   END
+ WHERE st.locale = 'en'
+   AND (s.home_orbit_group IS NOT NULL OR st.slug IN (
+       'branding',
+       'content-production',
+       'marketing-design',
+       'social-media-support'
+   ))$$
+
 DROP PROCEDURE IF EXISTS upsert_service_orbit_item$$
 
 DELIMITER ;
@@ -195,4 +222,3 @@ FROM services
 WHERE show_on_home = 1
 GROUP BY home_orbit_group
 ORDER BY home_orbit_group;
-
