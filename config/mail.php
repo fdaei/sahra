@@ -6,6 +6,9 @@ return [
 
     'default' => env('MAIL_MAILER', 'log'),
 
+    // Preserved so admin-managed SMTP can be disabled at runtime.
+    'env_default' => env('MAIL_MAILER', 'log'),
+
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',

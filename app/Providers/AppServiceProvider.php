@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Support\MailSettings;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -51,6 +53,12 @@ final class AppServiceProvider extends ServiceProvider
         }
 
         $this->shareTranslations();
+
+        // Queue workers are long-lived, so apply database-backed mail settings
+        // immediately before each queued notification is processed.
+        Queue::before(function (): void {
+            MailSettings::apply();
+        });
     }
 
     /**

@@ -15,6 +15,8 @@ return [
         'country_empty' => 'No country found.',
         'countries' => ['om' => 'Oman', 'ir' => 'Iran'],
         'services' => 'Services',
+        'service_search' => 'Search for a service',
+        'service_empty' => 'No service found.',
         'services_placeholder' => 'Select one or more services',
         'message' => 'Short Message',
         'message_placeholder' => 'Enter your message...',

@@ -133,6 +133,7 @@ const countries = computed(() => {
 const selectedCountry = ref(countries.value[0]);
 const countrySearch = ref("");
 const countryOpen = ref(false);
+const serviceSearch = ref("");
 const servicesOpen = ref(false);
 const countryPicker = ref<HTMLElement | null>(null);
 const servicesPicker = ref<HTMLElement | null>(null);
@@ -173,6 +174,15 @@ const selectedServicesLabel = computed(() => {
     : t("forms.contact.services_placeholder");
 });
 
+const filteredServices = computed(() => {
+  const query = serviceSearch.value.trim().toLocaleLowerCase();
+  if (!query) return props.services;
+
+  return props.services.filter(({ title }) =>
+    title.toLocaleLowerCase().includes(query),
+  );
+});
+
 function chooseCountry(country: (typeof countries.value)[number]): void {
   selectedCountry.value = country;
   countryOpen.value = false;
@@ -186,10 +196,18 @@ function toggleService(id: number): void {
   form.clearErrors("service_ids");
 }
 
+function toggleServices(): void {
+  servicesOpen.value = !servicesOpen.value;
+  if (!servicesOpen.value) serviceSearch.value = "";
+}
+
 function closePopovers(event: MouseEvent): void {
   const target = event.target as Node;
   if (!countryPicker.value?.contains(target)) countryOpen.value = false;
-  if (!servicesPicker.value?.contains(target)) servicesOpen.value = false;
+  if (!servicesPicker.value?.contains(target)) {
+    servicesOpen.value = false;
+    serviceSearch.value = "";
+  }
 }
 
 onMounted(() => {
@@ -512,7 +530,7 @@ function submit(): void {
                     "
                     :aria-expanded="servicesOpen"
                     aria-controls="service-options"
-                    @click="servicesOpen = !servicesOpen"
+                    @click="toggleServices"
                   >
                     <Layers3
                       class="pointer-events-none ms-4 size-6 shrink-0 text-neutral-600"
@@ -542,28 +560,57 @@ function submit(): void {
                     class="absolute z-30 mt-2 w-full overflow-hidden rounded-sm border border-neutral-200 bg-paper/95 shadow-lg backdrop-blur"
                   >
                     <label
-                      v-for="service in services"
-                      :key="service.id"
-                      class="flex h-12 cursor-pointer items-center justify-between gap-3 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
+                      for="service-search"
+                      class="flex h-12 items-center gap-2 border-b border-neutral-200 px-3"
                     >
-                      <span>{{ service.title }}</span>
-                      <input
-                        type="checkbox"
-                        class="peer sr-only"
-                        :checked="form.service_ids.includes(service.id)"
-                        @change="toggleService(service.id)"
+                      <Search
+                        class="size-5 shrink-0 text-neutral-600"
+                        :stroke-width="1.5"
+                        aria-hidden="true"
                       />
-                      <span
-                        class="flex size-5 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-neutral-400 peer-checked:border-neutral-700"
-                      >
-                        <Check
-                          v-if="form.service_ids.includes(service.id)"
-                          class="size-4 text-neutral-700"
-                          :stroke-width="2"
-                          aria-hidden="true"
-                        />
-                      </span>
+                      <span class="sr-only">{{
+                        t("forms.contact.service_search")
+                      }}</span>
+                      <input
+                        id="service-search"
+                        v-model="serviceSearch"
+                        type="search"
+                        :placeholder="t('forms.contact.service_search')"
+                        class="min-w-0 flex-1 border-0 bg-transparent p-0 text-body-md shadow-none placeholder:text-neutral-500 focus:ring-0"
+                        autofocus
+                      />
                     </label>
+                    <div class="max-h-[min(24rem,50vh)] overflow-y-auto overscroll-contain">
+                      <label
+                        v-for="service in filteredServices"
+                        :key="service.id"
+                        class="flex h-12 cursor-pointer items-center justify-between gap-3 border-b border-neutral-200 px-3 text-body-md last:border-b-0 hover:bg-neutral-50"
+                      >
+                        <span>{{ service.title }}</span>
+                        <input
+                          type="checkbox"
+                          class="peer sr-only"
+                          :checked="form.service_ids.includes(service.id)"
+                          @change="toggleService(service.id)"
+                        />
+                        <span
+                          class="flex size-5 shrink-0 items-center justify-center rounded-[4px] border-[1.5px] border-neutral-400 peer-checked:border-neutral-700"
+                        >
+                          <Check
+                            v-if="form.service_ids.includes(service.id)"
+                            class="size-4 text-neutral-700"
+                            :stroke-width="2"
+                            aria-hidden="true"
+                          />
+                        </span>
+                      </label>
+                      <p
+                        v-if="filteredServices.length === 0"
+                        class="px-3 py-4 text-body-md text-neutral-500"
+                      >
+                        {{ t("forms.contact.service_empty") }}
+                      </p>
+                    </div>
                   </div>
                   <p
                     v-if="form.errors.service_ids"

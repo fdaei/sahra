@@ -15,6 +15,8 @@ return [
         'country_empty' => 'کشوری پیدا نشد.',
         'countries' => ['om' => 'عمان', 'ir' => 'ایران'],
         'services' => 'خدمات',
+        'service_search' => 'جست‌وجوی خدمت',
+        'service_empty' => 'خدمتی پیدا نشد.',
         'services_placeholder' => 'یک یا چند خدمت را انتخاب کنید',
         'message' => 'پیام کوتاه',
         'message_placeholder' => 'پیام خود را بنویسید...',

@@ -1023,6 +1023,7 @@ onBeforeUnmount(() => {
   height: 100%;
   min-height: 0;
   translate: none;
+  isolation: isolate;
 }
 .side-col,
 .mastery-col {
@@ -1067,10 +1068,16 @@ onBeforeUnmount(() => {
   max-width: 250px;
   border-radius: 999px;
   inset-inline-start: var(--x);
+  z-index: 1;
   transform: scale(0.82);
 }
 .is-visible .service-card {
   transform: scale(1);
+}
+.service-card:hover,
+.service-card:focus-within {
+  /* Lift the whole card so its image stack can cross the side pills. */
+  z-index: 20;
 }
 .service-card__title {
   height: 38px;
@@ -1091,6 +1098,7 @@ onBeforeUnmount(() => {
 }
 .service-card__content {
   bottom: 38px;
+  z-index: 30;
 }
 
 @media (max-width: 1023px) {

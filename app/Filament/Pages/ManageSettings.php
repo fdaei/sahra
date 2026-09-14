@@ -5,16 +5,20 @@ declare(strict_types=1);
 namespace App\Filament\Pages;
 
 use App\Models\Setting;
+use App\Support\MailSettings;
 use App\Support\SiteSettings;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +71,15 @@ final class ManageSettings extends Page implements HasForms
         'google_tag_manager_id' => false,
         'google_search_console_verification' => false,
         'hotjar_site_id' => false,
+        'mail_enabled' => false,
+        'mail_host' => false,
+        'mail_port' => false,
+        'mail_encryption' => false,
+        'mail_username' => false,
+        'mail_password' => false,
+        'mail_from_address' => false,
+        'mail_from_name' => false,
+        'mail_contact_notification_address' => false,
     ];
 
     public static function canAccess(): bool
@@ -106,6 +119,12 @@ final class ManageSettings extends Page implements HasForms
                 $data[$key] = is_array($value) ? ($value['value'] ?? null) : $value;
             }
         }
+
+        $data['mail_enabled'] ??= false;
+        $data['mail_port'] ??= 587;
+        $data['mail_encryption'] ??= 'tls';
+        // Never hydrate the SMTP password into Livewire/browser state.
+        $data['mail_password'] = null;
 
         $this->form->fill($data);
     }
@@ -185,6 +204,66 @@ final class ManageSettings extends Page implements HasForms
                             ->maxLength(50)
                             ->placeholder('1234567'),
                     ]),
+
+                Section::make('Email service')
+                    ->description('Used to send PDF lead magnets and contact notifications. Enable SMTP after entering the service details.')
+                    ->columns(2)
+                    ->schema([
+                        Toggle::make('mail_enabled')
+                            ->label('Enable SMTP')
+                            ->helperText('When disabled, Laravel uses the mail settings from the environment.')
+                            ->columnSpanFull(),
+
+                        TextInput::make('mail_host')
+                            ->label('SMTP host')
+                            ->placeholder('smtp.example.com')
+                            ->required(fn (Get $get): bool => (bool) $get('mail_enabled'))
+                            ->maxLength(255),
+
+                        TextInput::make('mail_port')
+                            ->label('SMTP port')
+                            ->numeric()
+                            ->minValue(1)
+                            ->maxValue(65535)
+                            ->default(587),
+
+                        Select::make('mail_encryption')
+                            ->label('Encryption')
+                            ->options([
+                                'tls' => 'TLS',
+                                'ssl' => 'SSL',
+                                'none' => 'None',
+                            ])
+                            ->default('tls')
+                            ->required(),
+
+                        TextInput::make('mail_username')
+                            ->label('SMTP username')
+                            ->maxLength(255),
+
+                        TextInput::make('mail_password')
+                            ->label('SMTP password')
+                            ->password()
+                            ->revealable()
+                            ->maxLength(500)
+                            ->helperText('Leave blank to keep the saved password.'),
+
+                        TextInput::make('mail_from_address')
+                            ->label('Sender email')
+                            ->email()
+                            ->maxLength(200),
+
+                        TextInput::make('mail_from_name')
+                            ->label('Sender name')
+                            ->maxLength(200),
+
+                        TextInput::make('mail_contact_notification_address')
+                            ->label('Contact notification recipient')
+                            ->email()
+                            ->maxLength(200)
+                            ->helperText('Optional. New contact form submissions are sent here.')
+                            ->columnSpanFull(),
+                    ]),
             ]);
     }
 
@@ -194,9 +273,17 @@ final class ManageSettings extends Page implements HasForms
 
         DB::transaction(function () use ($state): void {
             foreach (self::KEYS as $key => $translatable) {
+                $rawValue = $state[$key] ?? null;
+
+                if ($key === 'mail_password') {
+                    $rawValue = is_string($rawValue) && $rawValue !== ''
+                        ? MailSettings::encryptPassword($rawValue)
+                        : MailSettings::storedPassword();
+                }
+
                 $value = $translatable
                     ? ($state[$key] ?? [])
-                    : ['value' => $state[$key] ?? null];
+                    : ['value' => $rawValue];
 
                 Setting::updateOrCreate(
                     ['key' => $key],
@@ -204,6 +291,7 @@ final class ManageSettings extends Page implements HasForms
                         'group' => match (true) {
                             str_contains($key, 'seo_') => 'seo',
                             str_contains($key, 'google_') || str_contains($key, 'hotjar_') => 'integrations',
+                            str_starts_with($key, 'mail_') => 'email',
                             default => 'general',
                         },
                         'value' => $value,

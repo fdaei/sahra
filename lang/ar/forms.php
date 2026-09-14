@@ -15,6 +15,8 @@ return [
         'country_empty' => 'لم يتم العثور على دولة.',
         'countries' => ['om' => 'عُمان', 'ir' => 'إيران'],
         'services' => 'الخدمات',
+        'service_search' => 'ابحث عن خدمة',
+        'service_empty' => 'لم يتم العثور على خدمة.',
         'services_placeholder' => 'اختر خدمة أو أكثر',
         'message' => 'رسالة قصيرة',
         'message_placeholder' => 'اكتب رسالتك...',

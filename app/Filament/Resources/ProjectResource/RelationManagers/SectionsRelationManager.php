@@ -89,10 +89,18 @@ final class SectionsRelationManager extends RelationManager
                     ->rows(3),
 
                 TextInput::make("translations.{$locale}.content")
-                    ->label('Hero highlighted phrase')
+                    ->label(fn (Get $get): string => $get('type') === SectionType::TrustProof->value
+                        ? 'Brand count'
+                        : 'Hero highlighted phrase')
                     ->maxLength(150)
-                    ->helperText('Displayed as the highlighted phrase in the hero heading.')
-                    ->visible(fn (Get $get): bool => $get('type') === SectionType::Hero->value),
+                    ->helperText(fn (Get $get): string => $get('type') === SectionType::TrustProof->value
+                        ? 'Displayed in the Trust Proof heading, e.g. "+50".'
+                        : 'Displayed as the highlighted phrase in the hero heading.')
+                    ->visible(fn (Get $get): bool => in_array(
+                        $get('type'),
+                        [SectionType::Hero->value, SectionType::TrustProof->value],
+                        true,
+                    )),
 
                 RichEditor::make("translations.{$locale}.content")
                     ->label('Rich content')

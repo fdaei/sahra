@@ -10,6 +10,7 @@ use App\Models\NewsletterSubscription;
 use App\Models\Post;
 use App\Notifications\LeadMagnetFile;
 use App\Services\SubmissionHandler;
+use App\Support\MailSettings;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -50,6 +51,8 @@ final class LeadMagnetDownloadController extends Controller
 
         if ($post->lead_magnet_send_email) {
             try {
+                MailSettings::apply();
+
                 Notification::route('mail', $email)
                     ->notify(new LeadMagnetFile($post, app()->getLocale()));
 

@@ -10,6 +10,7 @@ use App\Http\Requests\NewsletterSubscriptionRequest;
 use App\Models\ContactSubmission;
 use App\Models\NewsletterSubscription;
 use App\Notifications\ContactSubmissionReceived;
+use App\Support\MailSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 
@@ -44,6 +45,7 @@ final class SubmissionHandler
             ]);
         });
 
+        MailSettings::apply();
         $recipient = config('mail.contact_notification_address');
 
         if (is_string($recipient) && $recipient !== '') {
@@ -58,7 +60,7 @@ final class SubmissionHandler
     /**
      * Subscribe an address.
      *
-     * @return bool  true when newly subscribed, false when already on the list
+     * @return bool true when newly subscribed, false when already on the list
      */
     public function handleNewsletter(NewsletterSubscriptionRequest $request): bool
     {

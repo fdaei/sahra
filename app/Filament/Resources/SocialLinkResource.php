@@ -54,8 +54,7 @@ final class SocialLinkResource extends Resource
                         ->maxLength(500)
                         ->columnSpanFull(),
 
-                    SvgIconUpload::make('icon', 'Social icon')
-                        ->required(),
+                    SvgIconUpload::make('icon', 'Social icon'),
 
                     SvgIconUpload::make('hover_icon', 'Social hover icon'),
 
