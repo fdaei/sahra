@@ -1,0 +1,5107 @@
+=====FILE:app/Filament/Resources/ProjectResource/RelationManagers/SectionsRelationManager.php=====
+<?php
+
+declare(strict_types=1);
+
+namespace App\Filament\Resources\ProjectResource\RelationManagers;
+
+use App\Enums\SectionType;
+use App\Filament\Support\SvgIconUpload;
+use App\Filament\Support\TranslatableForm;
+use App\Models\PageSection;
+use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Form;
+use Filament\Forms\Get;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Manages the polymorphic PageSection children of a Page or Project.
+ *
+ * Registered on both PageResource and ProjectResource — the morphMany
+ * relationship is named `sections` on both models, so one class serves both
+ * rather than duplicating ~250 lines per parent type.
+ *
+ * Sections whose type `hasItems()` expose a sortable repeater of SectionItems
+ * (KPI counters, process steps, goals, strategy pillars, deliverables,
+ * result stats). Each item is itself translatable.
+ */
+final class SectionsRelationManager extends RelationManager
+{
+    protected static string $relationship = 'sections';
+
+    protected static ?string $title = 'Content sections';
+
+    protected static ?string $recordTitleAttribute = 'type';
+
+    public function form(Form $form): Form
+    {
+        return $form->schema([
+            Section::make()
+                ->columns(3)
+                ->schema([
+                    Select::make('type')
+                        ->options(SectionType::options())
+                        ->required()
+                        ->live()
+                        ->native(false)
+                        ->columnSpan(1)
+                        ->helperText('Selects which layout renders this block.'),
+
+                    TextInput::make('sort_order')
+                        ->numeric()
+                        ->default(0)
+                        ->columnSpan(1),
+
+                    Toggle::make('is_visible')
+                        ->label('Visible')
+                        ->default(true)
+                        ->columnSpan(1)
+                        ->helperText('Hide without deleting the content.'),
+                ]),
+
+            TranslatableForm::tabs(fn (string $locale): array => [
+                TextInput::make("translations.{$locale}.eyebrow")
+                    ->label('Eyebrow')
+                    ->maxLength(150)
+                    ->helperText('Small gold label above the title.'),
+
+                TextInput::make("translations.{$locale}.title")
+                    ->label('Title')
+                    ->maxLength(300),
+
+                TextInput::make("translations.{$locale}.subtitle")
+                    ->label('Subtitle')
+                    ->maxLength(300),
+
+                Textarea::make("translations.{$locale}.description")
+                    ->label('Description')
+                    ->rows(3),
+
+                RichEditor::make("translations.{$locale}.content")
+                    ->label('Rich content')
+                    ->toolbarButtons([
+                        'bold', 'italic', 'link', 'bulletList', 'orderedList',
+                        'h2', 'h3', 'blockquote', 'undo', 'redo',
+                    ])
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::RichText->value),
+
+                TextInput::make("translations.{$locale}.orbit_brand_label")
+                    ->label('Orbit brand label')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+
+                TextInput::make("translations.{$locale}.orbit_product_label")
+                    ->label('Orbit product label')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+
+                TextInput::make("translations.{$locale}.orbit_core_label")
+                    ->label('Orbit mastery label')
+                    ->maxLength(100)
+                    ->visible(fn (Get $get): bool => $get('type') === SectionType::ServicesCloud->value),
+
+                TextInput::make("translations.{$locale}.primary_cta_label")
+                    ->label('Primary button label')
+                    ->maxLength(100),
+
+                TextInput::make("translations.{$locale}.primary_cta_url")
+                    ->label('Primary button URL')
+                    ->maxLength(500),
+
+                TextInput::make("translations.{$locale}.secondary_cta_label")
+                    ->label('Secondary button label')
+                    ->maxLength(100),
+
+                TextInput::make("translations.{$locale}.secondary_cta_url")
+                    ->label('Secondary button URL')
+                    ->maxLength(500),
+
+                TextInput::make("translations.{$locale}.image_alt")
+                    ->label('Image alt text')
+                    ->maxLength(300),
+            ]),
+
+            Section::make('Button icons')
+                ->description('Optional icons displayed beside the translated button labels.')
+                ->columns(2)
+                ->schema([
+                    SvgIconUpload::make('primary_cta_icon', 'Primary button icon'),
+                    SvgIconUpload::make('secondary_cta_icon', 'Secondary button icon'),
+                ]),
+
+            Section::make('Text colours')
+                ->description('Optional. Empty values keep the website’s default design colour.')
+                ->columns([
+                    'default' => 1,
+                    'sm' => 2,
+                    'xl' => 5,
+                ])
+                ->collapsed()
+                ->schema([
+                    ColorPicker::make('eyebrow_color')
+                        ->label('Eyebrow'),
+                    ColorPicker::make('title_color')
+                        ->label('Title'),
+                    ColorPicker::make('subtitle_color')
+                        ->label('Subtitle'),
+                    ColorPicker::make('description_color')
+                        ->label('Description'),
+                    ColorPicker::make('content_color')
+                        ->label('Content'),
+                ]),
+
+            FileUpload::make('image_path')
+                ->label('Section image')
+                ->image()
+                ->imageEditor()
+                ->directory('sections')
+                ->disk('public')
+                ->columnSpanFull(),
+
+            /*
+             | Repeatable cards. Stored as SectionItem rows, but edited inline
+             | so an editor manages a whole section on one screen.
+             |
+             | Note: the repeater writes a nested `items` array which
+             | handleSave() below explodes into rows — Filament cannot persist
+             | a HasMany-with-translations directly.
+             */
+            Repeater::make('items')
+                ->label('Cards')
+                ->visible(fn (Get $get): bool => $get('type') !== null
+                    && SectionType::from($get('type'))->hasItems())
+                ->orderColumn('sort_order')
+                ->reorderableWithButtons()
+                ->collapsible()
+                ->itemLabel(fn (array $state): ?string => $state['translations'][config('locales.fallback')]['title'] ?? null)
+                ->defaultItems(0)
+                ->columnSpanFull()
+                ->schema([
+                    TranslatableForm::tabs(fn (string $locale): array => [
+                        TextInput::make("translations.{$locale}.value")
+                            ->label('Value')
+                            ->maxLength(50)
+                            ->helperText('Short display value: "+70k", "+189%", "01".'),
+
+                        TextInput::make("translations.{$locale}.label")
+                            ->label('Value label')
+                            ->maxLength(100)
+                            ->helperText('Packages: e.g. "Starts From".'),
+
+                        TextInput::make("translations.{$locale}.suffix")
+                            ->label('Value suffix')
+                            ->maxLength(100)
+                            ->helperText('Packages: e.g. "OMR / 1 Month".'),
+
+                        TextInput::make("translations.{$locale}.title")
+                            ->label('Title')
+                            ->maxLength(200),
+
+                        Textarea::make("translations.{$locale}.description")
+                            ->label('Description')
+                            ->rows(2),
+
+                        TextInput::make("translations.{$locale}.badge")
+                            ->label('Badge')
+                            ->maxLength(100)
+                            ->helperText('Optional package badge, e.g. "Most Popular".'),
+
+                        Textarea::make("translations.{$locale}.features")
+                            ->label('Features')
+                            ->rows(5)
+                            ->formatStateUsing(fn ($state): string => is_array($state)
+                                ? implode("\n", $state)
+                                : (string) $state)
+                            ->dehydrateStateUsing(fn (?string $state): array => collect(
+                                preg_split('/\r\n|\r|\n/', (string) $state),
+                            )->map(fn (string $feature): string => trim($feature))
+                                ->filter()
+                                ->values()
+                                ->all())
+                            ->helperText('One package feature per line.'),
+
+                        TextInput::make("translations.{$locale}.footer")
+                            ->label('Footer note')
+                            ->maxLength(200)
+                            ->helperText('Packages: e.g. "Best for growing brands".'),
+                    ]),
+
+                    SvgIconUpload::make('icon', 'Item icon'),
+                ]),
+        ]);
+    }
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->defaultSort('sort_order')
+            ->reorderable('sort_order')
+            ->columns([
+                Tables\Columns\TextColumn::make('type')
+                    ->badge()
+                    ->formatStateUsing(fn (SectionType $state): string => $state->getLabel()),
+
+                Tables\Columns\TextColumn::make('title')
+                    ->label('Title')
+                    ->getStateUsing(fn (PageSection $record): string => (string) $record->getTranslation('title'))
+                    ->limit(50),
+
+                Tables\Columns\TextColumn::make('items_count')
+                    ->label('Cards')
+                    ->counts('items')
+                    ->badge()
+                    ->color('gray'),
+
+                Tables\Columns\IconColumn::make('is_visible')
+                    ->label('Visible')
+                    ->boolean(),
+            ])
+            ->headerActions([
+                Tables\Actions\CreateAction::make()
+                    ->using(fn (array $data): Model => $this->persist($data)),
+            ])
+            ->actions([
+                Tables\Actions\EditAction::make()
+                    ->mutateRecordDataUsing(fn (array $data, PageSection $record): array => $this->hydrateFormData($data, $record))
+                    ->using(fn (PageSection $record, array $data): Model => $this->persist($data, $record)),
+
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                Tables\Actions\DeleteBulkAction::make(),
+            ]);
+    }
+
+    /**
+     * Create or update a section together with its translations and items,
+     * inside one transaction.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function persist(array $data, ?PageSection $record = null): Model
+    {
+        return DB::transaction(function () use ($data, $record): Model {
+            $items = $data['items'] ?? [];
+            unset($data['items']);
+
+            [$attributes, $translations] = TranslatableForm::split($data);
+
+            if ($record === null) {
+                $record = $this->getRelationship()->create($attributes);
+            } else {
+                $record->update($attributes);
+            }
+
+            TranslatableForm::persist($record, $translations);
+
+            $this->syncItems($record, $items);
+
+            return $record;
+        });
+    }
+
+    /**
+     * Replace the section's items with the submitted set.
+     *
+     * Deleting and recreating keeps the repeater's ordering authoritative and
+     * avoids orphan rows; section items carry no external references, so there
+     * is nothing to preserve across the swap.
+     *
+     * @param  array<int, array<string, mixed>>  $items
+     */
+    private function syncItems(PageSection $section, array $items): void
+    {
+        $section->items()->delete();
+
+        foreach (array_values($items) as $index => $item) {
+            [$attributes, $translations] = TranslatableForm::split($item);
+
+            $created = $section->items()->create([
+                'sort_order' => $index,
+                'is_visible' => true,
+                'icon' => $attributes['icon'] ?? null,
+                'image_path' => $attributes['image_path'] ?? null,
+            ]);
+
+            TranslatableForm::persist($created, $translations);
+        }
+    }
+
+    /**
+     * Load existing translations and items back into the form.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function hydrateFormData(array $data, PageSection $record): array
+    {
+        $record->loadMissing(['translations', 'items.translations']);
+
+        $data = TranslatableForm::hydrate($record, $data);
+
+        $data['items'] = $record->items
+            ->map(function ($item): array {
+                $itemData = TranslatableForm::hydrate($item, []);
+                $itemData['icon'] = $item->icon;
+                $itemData['image_path'] = $item->image_path;
+
+                return $itemData;
+            })
+            ->all();
+
+        return $data;
+    }
+}
+=====FILE:app/Models/PageSection.php=====
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models;
+
+use App\Enums\SectionType;
+use App\Models\Translations\PageSectionTranslation;
+use App\Traits\HasTranslations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
+
+/**
+ * A content block belonging to a Page or a Project.
+ *
+ * `type` (SectionType) selects the Vue component. Sections whose type
+ * `hasItems()` carry repeatable SectionItem children.
+ *
+ * @property SectionType $type
+ */
+final class PageSection extends Model
+{
+    use HasFactory;
+    use HasTranslations;
+
+    protected $fillable = [
+        'sectionable_type',
+        'sectionable_id',
+        'type',
+        'sort_order',
+        'is_visible',
+        'image_path',
+        'primary_cta_icon',
+        'secondary_cta_icon',
+        'eyebrow_color',
+        'title_color',
+        'subtitle_color',
+        'description_color',
+        'content_color',
+    ];
+
+    /** @var array<int, string> */
+    protected array $translatable = [
+        'eyebrow',
+        'title',
+        'subtitle',
+        'description',
+        'content',
+        'orbit_brand_label',
+        'orbit_product_label',
+        'orbit_core_label',
+        'primary_cta_label',
+        'primary_cta_url',
+        'secondary_cta_label',
+        'secondary_cta_url',
+        'image_alt',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'type' => SectionType::class,
+            'is_visible' => 'boolean',
+            'sort_order' => 'integer',
+        ];
+    }
+
+    public function translationModel(): string
+    {
+        return PageSectionTranslation::class;
+    }
+
+    public function sectionable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+
+    public function items(): HasMany
+    {
+        return $this
+            ->hasMany(SectionItem::class)
+            ->orderBy('sort_order');
+    }
+
+    public function scopeVisible($query)
+    {
+        return $query->where('is_visible', true);
+    }
+
+    public function scopeOfType($query, SectionType $type)
+    {
+        return $query->where('type', $type);
+    }
+}
+=====FILE:app/Models/Translations/PageSectionTranslation.php=====
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\Translations;
+
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * Translation row. One per (parent, locale) — enforced by a composite unique
+ * index in the migration.
+ */
+final class PageSectionTranslation extends Model
+{
+    protected $fillable = [
+        'locale',
+        'eyebrow',
+        'title',
+        'subtitle',
+        'description',
+        'content',
+        'orbit_brand_label',
+        'orbit_product_label',
+        'orbit_core_label',
+        'primary_cta_label',
+        'primary_cta_url',
+        'secondary_cta_label',
+        'secondary_cta_url',
+        'image_alt',
+    ];
+
+}
+=====FILE:app/Services/ContentTransformer.php=====
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Enums\SectionType;
+use App\Models\Client;
+use App\Models\Faq;
+use App\Models\PageSection;
+use App\Models\Post;
+use App\Models\Project;
+use App\Models\SectionItem;
+use App\Models\Service;
+use App\Models\TeamMember;
+use App\Models\Testimonial;
+use App\Support\IconUrl;
+use App\Support\Numerals;
+use Illuminate\Support\Collection;
+
+/**
+ * Maps Eloquent models onto the DTO shapes declared in
+ * resources/js/types/index.ts.
+ *
+ * Kept as one class so the PHP side and the TypeScript side can be diffed
+ * against each other in a single place — if a field is added to a type, the
+ * compiler error points here.
+ *
+ * Every method assumes translations are already eager-loaded by the caller's
+ * scope (forListing / withFullDetail / forDisplay). Nothing here triggers a
+ * query.
+ */
+final class ContentTransformer
+{
+    /* ----------------------------------------------------------- projects */
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function projectSummary(Project $project): array
+    {
+        return [
+            'slug' => $project->slugForLocale(app()->getLocale()),
+            'title' => (string) $project->getTranslation('title'),
+            'excerpt' => (string) $project->getTranslation('excerpt'),
+            'industry' => (string) ($project->industry?->getTranslation('name') ?? ''),
+            'url' => $project->url(absolute: false),
+
+            // Revealed on card hover — Figma "project detail" variant
+            // 553:921 ("hover") adds this badge row over 553:936 ("default").
+            'services' => $project->relationLoaded('services')
+                ? $project->services
+                    ->map(fn (Service $s): string => (string) $s->getTranslation('title'))
+                    ->all()
+                : [],
+
+            'image' => MediaTransformer::make(
+                $project->cover_path,
+                $project->getTranslation('cover_alt'),
+                'project.cover',
+            ),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function projectDetail(Project $project): array
+    {
+        $next = $project->nextProject();
+
+        return array_merge(self::projectSummary($project), [
+            // Rendered as a label on the case-study meta row, so it follows the
+            // locale's digit system like any other generated number.
+            'year' => $project->year === null ? null : Numerals::localise((string) $project->year),
+            'instagram' => $project->instagram_handle,
+            'services' => $project->services
+                ->map(fn (Service $s): string => (string) $s->getTranslation('title'))
+                ->all(),
+
+            'challenge' => (string) $project->getTranslation('challenge'),
+            'challengePoints' => (array) ($project->getTranslation('challenge_points') ?? []),
+
+            'goals' => self::cardsFor($project, SectionType::Goals),
+            'strategy' => self::cardsFor($project, SectionType::Strategy),
+            'deliverables' => self::cardsFor($project, SectionType::Deliverables),
+
+            'showcase' => $project->images
+                ->map(fn ($image): ?array => MediaTransformer::make(
+                    $image->path,
+                    $image->getTranslation('alt'),
+                    'project.showcase',
+                ))
+                ->filter()
+                ->values()
+                ->all(),
+
+            'results' => self::resultsFor($project),
+            'resultsSummary' => (string) $project->getTranslation('results_summary'),
+
+            'beforeAfter' => [
+                'before' => MediaTransformer::make(
+                    $project->before_image_path,
+                    null,
+                    'project.beforeafter',
+                ),
+                'after' => MediaTransformer::make(
+                    $project->after_image_path,
+                    null,
+                    'project.beforeafter',
+                ),
+            ],
+
+            'banner' => MediaTransformer::make(
+                $project->banner_path,
+                $project->getTranslation('cover_alt'),
+                'project.banner',
+            ),
+
+            'next' => $next === null ? null : [
+                'slug' => $next->slugForLocale(app()->getLocale()),
+                'title' => (string) $next->getTranslation('title'),
+                'url' => $next->url(absolute: false),
+            ],
+        ]);
+    }
+
+    /* ----------------------------------------------------------- services */
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function service(Service $service): array
+    {
+        return [
+            /*
+             | Locale-independent identity. `slug` is per-locale, so the front
+             | end cannot use it to recognise a specific service — the orbit
+             | (ServicesOrbit.vue) needs to know *which* service a payload is
+             | regardless of the language it is being read in. The fallback
+             | locale's slug is the stable name; withTranslations() always
+             | eager-loads that row alongside the active one, so this stays a
+             | zero-query read.
+             */
+            'key' => (string) $service->getTranslation('slug', config('locales.fallback')),
+            'slug' => (string) $service->getTranslation('slug'),
+            'title' => (string) $service->getTranslation('title'),
+            'description' => (string) $service->getTranslation('description'),
+            'features' => (array) ($service->getTranslation('features') ?? []),
+            'homeOrbitGroup' => $service->home_orbit_group,
+            'externalUrl' => $service->external_url,
+            'icon' => IconUrl::resolve($service->icon),
+            'image' => MediaTransformer::make(
+                $service->image_path,
+                $service->getTranslation('image_alt'),
+                'service',
+            ),
+        ];
+    }
+
+    /* -------------------------------------------------------------- posts */
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function postSummary(Post $post): array
+    {
+        return [
+            'slug' => $post->slugForLocale(app()->getLocale()),
+            'title' => (string) $post->getTranslation('title'),
+            'excerpt' => (string) $post->getTranslation('excerpt'),
+            'url' => $post->url(absolute: false),
+
+            /*
+             | Display string in the locale's own format (config/locales.php:
+             | en "M d, Y" → "May 09, 2024", fa "Y/m/d", and ar
+             | "d F Y" → "09 مايو 2024"). Date digits are handled
+             | separately from other generated numbers so Arabic dates remain
+             | Latin-digit. The ISO value is deliberately NOT converted — it
+             | feeds <time datetime> and must stay machine readable.
+             */
+            'publishedAt' => Numerals::localiseDate(
+                $post->published_at?->translatedFormat(
+                    (string) config('locales.supported.'.app()->getLocale().'.date_format', 'M d, Y'),
+                ) ?? '',
+            ),
+            'publishedAtIso' => $post->published_at?->toIso8601String() ?? '',
+
+            // Numeric, so the frontend can pluralise; the locale-formatted
+            // string sits beside it for direct rendering.
+            'readingTime' => $post->reading_minutes,
+            'readingTimeLabel' => Numerals::localiseNumber($post->reading_minutes),
+            'category' => $post->category === null ? null : [
+                'slug' => (string) $post->category->getTranslation('slug'),
+                'name' => (string) $post->category->getTranslation('name'),
+            ],
+            'image' => MediaTransformer::make(
+                $post->cover_path,
+                $post->getTranslation('cover_alt'),
+                'post.cover',
+            ),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function postDetail(Post $post): array
+    {
+        return array_merge(self::postSummary($post), [
+            'subtitle' => (string) $post->getTranslation('subtitle'),
+            'content' => (string) $post->getTranslation('content'),
+            'image' => MediaTransformer::make(
+                $post->cover_path,
+                $post->getTranslation('cover_alt'),
+                'post.hero',
+            ),
+            'author' => $post->author === null ? null : [
+                'name' => $post->author->name,
+                'email' => $post->author->email,
+            ],
+            'tags' => $post->tags
+                ->map(fn ($tag): array => [
+                    'slug' => (string) $tag->getTranslation('slug'),
+                    'name' => (string) $tag->getTranslation('name'),
+                ])
+                ->all(),
+            'related' => $post->relatedPosts()
+                ->map(fn (Post $p): array => self::postSummary($p))
+                ->all(),
+        ]);
+    }
+
+    /* --------------------------------------------------------- components */
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function teamMember(TeamMember $member): array
+    {
+        return [
+            'name' => (string) $member->getTranslation('name'),
+            'role' => (string) $member->getTranslation('role'),
+            'image' => MediaTransformer::make(
+                $member->photo_path,
+                $member->getTranslation('photo_alt'),
+                'team',
+            ),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function testimonial(Testimonial $testimonial): array
+    {
+        return [
+            'quote' => (string) $testimonial->getTranslation('quote'),
+            'name' => (string) $testimonial->getTranslation('author_name'),
+            'role' => (string) $testimonial->getTranslation('author_role'),
+            'avatar' => MediaTransformer::make(
+                $testimonial->avatar_path,
+                $testimonial->getTranslation('avatar_alt'),
+                'testimonial',
+            ),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function faq(Faq $faq): array
+    {
+        return [
+            'question' => (string) $faq->getTranslation('question'),
+            'answer' => (string) $faq->getTranslation('answer'),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function client(Client $client): array
+    {
+        return [
+            'name' => (string) $client->getTranslation('name'),
+            'logo' => MediaTransformer::url($client->logo_path),
+            'url' => $client->website_url,
+        ];
+    }
+
+    /* ----------------------------------------------------------- sections */
+
+    /**
+     * Full section payload including its items.
+     *
+     * @return array<string, mixed>
+     */
+    public static function section(PageSection $section): array
+    {
+        return [
+            'type' => $section->type->value,
+            'eyebrow' => (string) $section->getTranslation('eyebrow'),
+            'title' => (string) $section->getTranslation('title'),
+            'subtitle' => (string) $section->getTranslation('subtitle'),
+            'description' => (string) $section->getTranslation('description'),
+            'content' => (string) $section->getTranslation('content'),
+            'orbitBrandLabel' => (string) $section->getTranslation('orbit_brand_label'),
+            'orbitProductLabel' => (string) $section->getTranslation('orbit_product_label'),
+            'orbitCoreLabel' => (string) $section->getTranslation('orbit_core_label'),
+            'colors' => [
+                'eyebrow' => $section->eyebrow_color,
+                'title' => $section->title_color,
+                'subtitle' => $section->subtitle_color,
+                'description' => $section->description_color,
+                'content' => $section->content_color,
+            ],
+            'primaryCta' => self::cta(
+                $section->getTranslation('primary_cta_label'),
+                $section->getTranslation('primary_cta_url'),
+                $section->primary_cta_icon,
+            ),
+            'secondaryCta' => self::cta(
+                $section->getTranslation('secondary_cta_label'),
+                $section->getTranslation('secondary_cta_url'),
+                $section->secondary_cta_icon,
+            ),
+            'image' => MediaTransformer::make(
+                $section->image_path,
+                $section->getTranslation('image_alt'),
+                self::imageContextFor($section->type),
+            ),
+            'items' => $section->items
+                ->map(fn (SectionItem $item): array => self::sectionItem($item))
+                ->all(),
+        ];
+    }
+
+    /**
+     * Keyed map of every visible section on a page, so a Vue page can read
+     * `sections.hero` instead of searching an array.
+     *
+     * @param  Collection<int, PageSection>  $sections
+     * @return array<string, array<string, mixed>>
+     */
+    public static function sectionMap(Collection $sections): array
+    {
+        return $sections
+            ->mapWithKeys(fn (PageSection $s): array => [
+                $s->type->value => self::section($s),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function sectionItem(SectionItem $item): array
+    {
+        return [
+            'id' => $item->getKey(),
+            'value' => (string) $item->getTranslation('value'),
+            'label' => (string) $item->getTranslation('label'),
+            'suffix' => (string) $item->getTranslation('suffix'),
+            'title' => (string) $item->getTranslation('title'),
+            'description' => (string) $item->getTranslation('description'),
+            'badge' => (string) $item->getTranslation('badge'),
+            'features' => (array) ($item->getTranslation('features') ?? []),
+            'footer' => (string) $item->getTranslation('footer'),
+            'icon' => IconUrl::resolve($item->icon),
+            'image' => MediaTransformer::make(
+                $item->image_path,
+                $item->getTranslation('image_alt'),
+                'section',
+            ),
+        ];
+    }
+
+    /* ------------------------------------------------------------ helpers */
+
+    /**
+     * CardItem[] — title + description only. Used for goals, strategy,
+     * deliverables and the why-us / how-we-think grids.
+     *
+     * @return array<int, array{title: string, description: string}>
+     */
+    private static function cardsFor(Project $project, SectionType $type): array
+    {
+        $section = $project->section($type);
+
+        if ($section === null) {
+            return [];
+        }
+
+        return $section->items
+            ->map(fn (SectionItem $item): array => [
+                'title' => (string) $item->getTranslation('title'),
+                'description' => (string) $item->getTranslation('description'),
+            ])
+            ->all();
+    }
+
+    /**
+     * ResultStat[] — label + value + optional uploaded icon.
+     *
+     * @return array<int, array{label: string, value: string, icon: string|null}>
+     */
+    private static function resultsFor(Project $project): array
+    {
+        $section = $project->section(SectionType::Results);
+
+        if ($section === null) {
+            return [];
+        }
+
+        return $section->items
+            ->map(fn (SectionItem $item): array => [
+                'label' => (string) $item->getTranslation('title'),
+                'value' => (string) $item->getTranslation('value'),
+                'icon' => IconUrl::resolve($item->icon),
+            ])
+            ->all();
+    }
+
+    /**
+     * @return array{label: string, url: string, icon: string|null}|null
+     */
+    private static function cta(?string $label, ?string $url, ?string $icon = null): ?array
+    {
+        if ($label === null || $label === '') {
+            return null;
+        }
+
+        return ['label' => $label, 'url' => $url ?? '#', 'icon' => IconUrl::resolve($icon)];
+    }
+
+    private static function imageContextFor(SectionType $type): string
+    {
+        return match ($type) {
+            SectionType::Hero => 'page.hero',
+            SectionType::AboutHero => 'page.about',
+            default => 'section',
+        };
+    }
+}
+=====FILE:database/migrations/2026_09_03_000001_add_orbit_labels_to_page_section_translations.php=====
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('page_section_translations', function (Blueprint $table): void {
+            $table->string('orbit_brand_label', 100)->nullable()->after('content');
+            $table->string('orbit_product_label', 100)->nullable()->after('orbit_brand_label');
+            $table->string('orbit_core_label', 100)->nullable()->after('orbit_product_label');
+        });
+
+        $labels = [
+            'en' => ['Brand', 'Product', 'Service Mastery'],
+            'fa' => ['برند', 'محصول', 'تسلط خدماتی'],
+            'ar' => ['العلامة التجارية', 'المنتج', 'إتقان الخدمة'],
+        ];
+
+        foreach ($labels as $locale => [$brand, $product, $core]) {
+            DB::table('page_section_translations')
+                ->where('locale', $locale)
+                ->whereIn('page_section_id', function ($query): void {
+                    $query->select('id')
+                        ->from('page_sections')
+                        ->where('type', 'services_cloud');
+                })
+                ->update([
+                    'orbit_brand_label' => $brand,
+                    'orbit_product_label' => $product,
+                    'orbit_core_label' => $core,
+                ]);
+        }
+    }
+
+    public function down(): void
+    {
+        Schema::table('page_section_translations', function (Blueprint $table): void {
+            $table->dropColumn([
+                'orbit_brand_label',
+                'orbit_product_label',
+                'orbit_core_label',
+            ]);
+        });
+    }
+};
+=====FILE:database/seeders/PageSeeder.php=====
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Seeders;
+
+use App\Enums\PublicationStatus;
+use App\Enums\SectionType;
+use App\Models\Page;
+use App\Models\PageSection;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+/**
+ * Pages and their content sections.
+ *
+ * Copy comes from the Figma frames listed per section. FA/AR strings are
+ * working translations pending native review (docs/IMPLEMENTATION-LOG.md).
+ */
+final class PageSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::transaction(function (): void {
+            $this->home();
+            $this->about();
+            $this->work();
+            $this->services();
+            $this->insights();
+            $this->contact();
+            $this->legal();
+        });
+    }
+
+    /**
+     * Home — Figma 1419:9192.
+     */
+    private function home(): void
+    {
+        $page = $this->page('home', [
+            'en' => [
+                'title' => 'We build content systems for brands ready to grow',
+                'seo_title' => 'Sahra — Digital Marketing Agency in Muscat',
+                'seo_description' => 'Sahra helps businesses in Oman create stronger brand presence through strategy, content, branding, video, and digital marketing.',
+            ],
+            'fa' => [
+                'title' => 'ما سیستم‌های محتوایی می‌سازیم برای برندهایی که آماده رشدند',
+                'seo_title' => 'صحرا — آژانس بازاریابی دیجیتال در مسقط',
+                'seo_description' => 'صحرا به کسب‌وکارها در عمان کمک می‌کند حضور برند قوی‌تری بسازند.',
+            ],
+            'ar' => [
+                'title' => 'نبني أنظمة محتوى للعلامات التجارية المستعدة للنمو',
+                'seo_title' => 'صحرا — وكالة تسويق رقمي في مسقط',
+                'seo_description' => 'تساعد صحرا الشركات في عُمان على بناء حضور أقوى لعلامتها التجارية.',
+            ],
+        ]);
+
+        $page->sections()->delete();
+
+        // Hero — 1419:9194. Copy verified against the live Figma node text
+        // runs (corrected from an earlier approximation — the real CTA order
+        // is Explore Projects (primary) then Start a Conversation (secondary),
+        // and "marketing systems" is a distinct gradient-styled phrase).
+        $this->section($page, SectionType::Hero, 0, [
+            'en' => [
+                'eyebrow' => 'Digital Marketing Agency in Muscat',
+                'title' => 'We build',
+                'subtitle' => 'Sahra connects strategy, identity, content, and campaigns into one clear direction for business growth',
+                'primary_cta_label' => 'Explore Projects',
+                'primary_cta_url' => '/work',
+                'secondary_cta_label' => 'Start a Conversation',
+                'secondary_cta_url' => '/contact',
+                'image_alt' => 'Golden desert dunes meeting the horizon at sunrise',
+                'content' => 'marketing systems',
+                'description' => 'for brands ready to grow',
+            ],
+            'fa' => [
+                'eyebrow' => 'آژانس بازاریابی دیجیتال در مسقط',
+                'title' => 'ما می‌سازیم',
+                'subtitle' => 'صحرا استراتژی، هویت، محتوا و کمپین را در یک مسیر شفاف برای رشد کسب‌وکار به‌هم متصل می‌کند.',
+                'primary_cta_label' => 'مشاهده پروژه‌ها',
+                'primary_cta_url' => '/work',
+                'secondary_cta_label' => 'شروع گفتگو',
+                'secondary_cta_url' => '/contact',
+                'image_alt' => 'تپه‌های طلایی کویر در افق هنگام طلوع',
+                'content' => 'سیستم‌های بازاریابی',
+                'description' => 'برای برندهای آماده رشد',
+            ],
+            // Arabic runs come from the ar home frame 1365:9950 (hero texts
+            // 1365:9952), not from translating the en runs: that frame breaks
+            // the sentence one word later, so the gradient run is "للعلامات
+            // التجارية" — "أنظمة تسويقية" stays on the dark first line.
+            'ar' => [
+                'eyebrow' => 'وكالة تسويق رقمي في مسقط',
+                'title' => 'نبني أنظمة تسويقية',
+                'subtitle' => 'تربط صحرا بين الاستراتيجية، والهوية، والمحتوى، والحملات ضمن اتجاه واضح يساعد العلامات التجارية على النمو',
+                'primary_cta_label' => 'استكشف المشاريع',
+                'primary_cta_url' => '/work',
+                'secondary_cta_label' => 'ابدأ المحادثة',
+                'secondary_cta_url' => '/contact',
+                'image_alt' => 'كثبان رملية ذهبية عند الأفق وقت الشروق',
+                'content' => 'للعلامات التجارية',
+                'description' => 'المستعدة للنمو',
+            ],
+        ]);
+
+        // KPI strip — 1419:9318
+        $kpi = $this->section($page, SectionType::Kpi, 1, [
+            'en' => ['title' => 'Results that compound'],
+            'fa' => ['title' => 'نتایجی که انباشته می‌شوند'],
+            'ar' => ['title' => 'نتائج تتراكم'],
+        ]);
+
+        // Card copy is the literal text of 1419:9319 / 9320 / 9321 — value
+        // (Poppins Medium 32), gold label (Medium 18), grey note (Regular 14).
+        $this->items($kpi, [
+            [
+                'en' => [
+                    'value' => '+70K',
+                    'title' => 'Audience Growth',
+                    'description' => 'Followers gained from one reel',
+                ],
+                'fa' => [
+                    'value' => '+۷۰ هزار',
+                    'title' => 'رشد مخاطب',
+                    'description' => 'دنبال‌کننده به‌دست‌آمده از یک ریلز',
+                ],
+                // Arabic-Indic digits (U+0660–U+0669), matching the fa row's use
+                // of the Persian set. See config/locales.php `digits`.
+                'ar' => [
+                    'value' => '+٧٠ ألف',
+                    'title' => 'نمو الجمهور',
+                    'description' => 'متابعون من مقطع واحد',
+                ],
+            ],
+            [
+                'en' => [
+                    'value' => '+40%',
+                    'title' => 'Engagement Lift',
+                    'description' => 'Average growth after strategy refresh',
+                ],
+                'fa' => [
+                    'value' => '+۴۰٪',
+                    'title' => 'افزایش تعامل',
+                    'description' => 'میانگین رشد پس از بازنگری استراتژی',
+                ],
+                'ar' => [
+                    'value' => '+٤٠٪',
+                    'title' => 'ارتفاع التفاعل',
+                    'description' => 'متوسط النمو بعد تحديث الاستراتيجية',
+                ],
+            ],
+            [
+                'en' => [
+                    'value' => '+90%',
+                    'title' => 'Client Retention',
+                    'description' => 'Across monthly marketing plans',
+                ],
+                'fa' => [
+                    'value' => '+۹۰٪',
+                    'title' => 'حفظ مشتری',
+                    'description' => 'در طرح‌های ماهانه بازاریابی',
+                ],
+                'ar' => [
+                    'value' => '+٩٠٪',
+                    'title' => 'الاحتفاظ بالعملاء',
+                    'description' => 'ضمن خطط التسويق الشهرية',
+                ],
+            ],
+        ]);
+
+        // Trust proof — 1419:9205. Figma sets the heading as three runs:
+        // "Trusted by " (22 / black-600) + "+50" (28 / black-900) + " brands".
+        // Stored as three fields so the emphasis survives translation.
+        $this->section($page, SectionType::TrustProof, 2, [
+            'en' => [
+                'title' => 'Trusted by',
+                'content' => '+50',
+                'subtitle' => 'brands',
+            ],
+            'fa' => [
+                'title' => 'مورد اعتماد',
+                'content' => '+۵۰',
+                'subtitle' => 'برند',
+            ],
+            'ar' => [
+                'title' => 'موضع ثقة',
+                'content' => '+٥٠',
+                'subtitle' => 'علامة تجارية',
+            ],
+        ]);
+
+        // Services cloud — 1419:9279
+        $this->section($page, SectionType::ServicesCloud, 3, [
+            'en' => [
+                'eyebrow' => 'Our Services',
+                'title' => 'A Connected System for Brand Growth',
+                'description' => 'From strategy and identity to content and campaigns, Sahra brings every part of your marketing into one clear direction',
+                'orbit_brand_label' => 'Brand',
+                'orbit_product_label' => 'Product',
+                'orbit_core_label' => 'Service Mastery',
+            ],
+            'fa' => [
+                'eyebrow' => 'خدمات ما',
+                'title' => 'چهار سیستم، یک مسیر',
+                'description' => 'هر آنچه انجام می‌دهیم برای ایجاد شفافیت، ساختار و مسیر بلندمدت برند شماست.',
+                'orbit_brand_label' => 'برند',
+                'orbit_product_label' => 'محصول',
+                'orbit_core_label' => 'تسلط خدماتی',
+            ],
+            'ar' => [
+                'eyebrow' => 'خدماتنا',
+                'title' => 'أربعة أنظمة، اتجاه واحد',
+                'description' => 'كل ما نقوم به مصمم لمنح علامتك التجارية وضوحاً وبنية واتجاهاً طويل الأمد.',
+                'orbit_brand_label' => 'العلامة التجارية',
+                'orbit_product_label' => 'المنتج',
+                'orbit_core_label' => 'إتقان الخدمة',
+            ],
+        ]);
+
+        // Lead magnet — 1419:9322
+        $this->section($page, SectionType::LeadMagnet, 4, [
+            'en' => [
+                'title' => 'Is your content really directed or just consistent?',
+                'description' => 'Get the Content Direction Checklist and evaluate your brand system.',
+                'primary_cta_label' => 'Get checklist',
+                'primary_cta_url' => '/contact',
+            ],
+            'fa' => [
+                'title' => 'آیا محتوای شما واقعاً جهت‌مند است یا فقط منظم؟',
+                'description' => 'چک‌لیست جهت‌گیری محتوا را دریافت و سیستم برند خود را ارزیابی کنید.',
+                'primary_cta_label' => 'دریافت چک‌لیست',
+                'primary_cta_url' => '/contact',
+            ],
+            'ar' => [
+                'title' => 'هل محتواك موجّه فعلاً أم أنه منتظم فقط؟',
+                'description' => 'احصل على قائمة توجيه المحتوى وقيّم نظام علامتك التجارية.',
+                'primary_cta_label' => 'احصل على القائمة',
+                'primary_cta_url' => '/contact',
+            ],
+        ]);
+
+        // Projects showcase — 1419:9216
+        $this->section($page, SectionType::ProjectsShowcase, 5, [
+            'en' => [
+                'eyebrow' => 'Our Projects',
+                'title' => 'Where Strategy Becomes Visible',
+                'subtitle' => 'A collection of brand, content, and marketing design projects created to help businesses communicate with clarity and grow with direction',
+                'primary_cta_label' => 'View all work',
+                'primary_cta_url' => '/work',
+            ],
+            'fa' => [
+                'eyebrow' => 'پروژه‌های ما',
+                'title' => 'جایی که استراتژی دیده می‌شود',
+                'subtitle' => 'مجموعه‌ای از پروژه‌های برند، محتوا و طراحی بازاریابی برای کمک به کسب‌وکارها تا شفاف‌تر ارتباط برقرار کنند و هدفمند رشد کنند.',
+                'primary_cta_label' => 'مشاهده همه نمونه‌کارها',
+                'primary_cta_url' => '/work',
+            ],
+            'ar' => [
+                'eyebrow' => 'مشاريعنا',
+                'title' => 'حيث تصبح الاستراتيجية مرئية',
+                'subtitle' => 'مجموعة من مشاريع العلامة والمحتوى والتصميم التسويقي لمساعدة الشركات على التواصل بوضوح والنمو باتجاه هادف.',
+                'primary_cta_label' => 'شاهد كل الأعمال',
+                'primary_cta_url' => '/work',
+            ],
+        ]);
+
+        // Process — 1419:9302
+        $process = $this->section($page, SectionType::Process, 6, [
+            'en' => [
+                'eyebrow' => 'Our Process',
+                'title' => 'A Clear Path to Brand Growth',
+                'subtitle' => 'Our process keeps every project clear, structured, and aligned with your brand’s real needs.',
+            ],
+            'fa' => [
+                'eyebrow' => 'فرایند ما',
+                'title' => 'مسیری روشن برای رشد برند',
+                'subtitle' => 'فرایند ما هر پروژه را شفاف، ساختاریافته و هم‌راستا با نیازهای واقعی برند شما نگه می‌دارد.',
+            ],
+            'ar' => [
+                'eyebrow' => 'عمليتنا',
+                'title' => 'مسار واضح لنمو العلامة',
+                'subtitle' => 'تحافظ عمليتنا على وضوح كل مشروع وتنظيمه وتوافقه مع الاحتياجات الحقيقية لعلامتك.',
+            ],
+        ]);
+
+        $this->items($process, [
+            [
+                '_icon' => 'discovery',
+                'en' => ['value' => '01', 'title' => 'Discovery & Brand Review', 'description' => 'Deep analysis of your brand, audience, and market position'],
+                'fa' => ['value' => '۰۱', 'title' => 'کشف و بررسی برند', 'description' => 'تحلیل عمیق برند، مخاطب و جایگاه شما در بازار'],
+                'ar' => ['value' => '٠١', 'title' => 'اكتشاف ومراجعة العلامة', 'description' => 'تحليل عميق لعلامتك وجمهورك وموقعك في السوق'],
+            ],
+            [
+                '_icon' => 'strategy',
+                'en' => ['value' => '02', 'title' => 'Strategy & Content Plan', 'description' => 'Custom content plans focused on consistency and growth'],
+                'fa' => ['value' => '۰۲', 'title' => 'استراتژی و برنامه محتوا', 'description' => 'برنامه‌های محتوایی اختصاصی با تمرکز بر ثبات و رشد'],
+                'ar' => ['value' => '٠٢', 'title' => 'الاستراتيجية وخطة المحتوى', 'description' => 'خطط محتوى مخصصة تركز على الاتساق والنمو'],
+            ],
+            [
+                '_icon' => 'production',
+                'en' => ['value' => '03', 'title' => 'Design & Production', 'description' => 'High-quality visuals aligned with your brand'],
+                'fa' => ['value' => '۰۳', 'title' => 'طراحی و تولید', 'description' => 'تصاویر باکیفیت و هم‌راستا با برند شما'],
+                'ar' => ['value' => '٠٣', 'title' => 'التصميم والإنتاج', 'description' => 'مرئيات عالية الجودة ومتوافقة مع علامتك'],
+            ],
+            [
+                '_icon' => 'approval',
+                'en' => ['value' => '04', 'title' => 'Review & Approval', 'description' => 'Review and refine all content before it goes live'],
+                'fa' => ['value' => '۰۴', 'title' => 'بازبینی و تأیید', 'description' => 'بازبینی و اصلاح تمام محتوا پیش از انتشار'],
+                'ar' => ['value' => '٠٤', 'title' => 'المراجعة والموافقة', 'description' => 'مراجعة وتحسين كل المحتوى قبل نشره'],
+            ],
+            [
+                '_icon' => 'publishing',
+                'en' => ['value' => '05', 'title' => 'Publishing & Management', 'description' => 'Professional scheduling and active platform management'],
+                'fa' => ['value' => '۰۵', 'title' => 'انتشار و مدیریت', 'description' => 'زمان‌بندی حرفه‌ای و مدیریت فعال پلتفرم‌ها'],
+                'ar' => ['value' => '٠٥', 'title' => 'النشر والإدارة', 'description' => 'جدولة احترافية وإدارة فعالة للمنصات'],
+            ],
+            [
+                '_icon' => 'optimization',
+                'en' => ['value' => '06', 'title' => 'Reporting & Optimization', 'description' => 'Performance tracking and data-driven optimization'],
+                'fa' => ['value' => '۰۶', 'title' => 'گزارش‌دهی و بهینه‌سازی', 'description' => 'پایش عملکرد و بهینه‌سازی داده‌محور'],
+                'ar' => ['value' => '٠٦', 'title' => 'التقارير والتحسين', 'description' => 'تتبع الأداء والتحسين القائم على البيانات'],
+            ],
+        ]);
+
+        // Packages — 1419:9323
+        $packages = $this->section($page, SectionType::Packages, 7, [
+            'en' => [
+                'eyebrow' => 'Our Packages',
+                'title' => 'Packages Built for Brand Growth',
+                'subtitle' => 'Three focused packages designed for different business needs, growth stages, and levels of support.',
+                'content' => 'Need help choosing the right package?',
+                'description' => 'Let’s talk about your goals and find the best solution for your brand.',
+                'primary_cta_label' => 'Contact Us',
+                'primary_cta_url' => '/contact',
+            ],
+            'fa' => [
+                'eyebrow' => 'پکیج‌های ما',
+                'title' => 'پکیج‌هایی برای رشد برند',
+                'subtitle' => 'سه پکیج هدفمند برای نیازها، مراحل رشد و سطوح پشتیبانی متفاوت.',
+                'content' => 'برای انتخاب پکیج مناسب کمک می‌خواهید؟',
+                'description' => 'درباره اهدافتان صحبت کنیم و بهترین راهکار را برای برند شما پیدا کنیم.',
+                'primary_cta_label' => 'تماس با ما',
+                'primary_cta_url' => '/contact',
+            ],
+            'ar' => [
+                'eyebrow' => 'باقاتنا',
+                'title' => 'باقات مصممة لنمو العلامة',
+                'subtitle' => 'ثلاث باقات مركزة لاحتياجات ومراحل نمو ومستويات دعم مختلفة.',
+                'content' => 'هل تحتاج مساعدة في اختيار الباقة المناسبة؟',
+                'description' => 'لنتحدث عن أهدافك ونجد أفضل حل لعلامتك.',
+                'primary_cta_label' => 'تواصل معنا',
+                'primary_cta_url' => '/contact',
+            ],
+        ]);
+
+        $this->items($packages, [
+            [
+                'en' => [
+                    'title' => 'Sahra Essential', 'label' => 'Starts From', 'value' => '199',
+                    'suffix' => 'OMR / 1 Month', 'description' => 'A clear foundation for your brand presence',
+                    'features' => ['Content Planning', 'Visual Direction', 'Social Media Support', 'Monthly Execution'],
+                    'footer' => 'Best for small businesses',
+                ],
+                'fa' => [
+                    'title' => 'صحرا اسنشال', 'label' => 'شروع از', 'value' => '۱۹۹',
+                    'suffix' => 'ریال عمان / ۱ ماه', 'description' => 'پایه‌ای شفاف برای حضور برند شما',
+                    'features' => ['برنامه‌ریزی محتوا', 'جهت‌گیری بصری', 'پشتیبانی شبکه‌های اجتماعی', 'اجرای ماهانه'],
+                    'footer' => 'مناسب کسب‌وکارهای کوچک',
+                ],
+                'ar' => [
+                    'title' => 'صحرا الأساسية', 'label' => 'تبدأ من', 'value' => '١٩٩',
+                    'suffix' => 'ر.ع / شهر واحد', 'description' => 'أساس واضح لحضور علامتك',
+                    'features' => ['تخطيط المحتوى', 'التوجيه البصري', 'دعم وسائل التواصل', 'التنفيذ الشهري'],
+                    'footer' => 'الأفضل للشركات الصغيرة',
+                ],
+            ],
+            [
+                'en' => [
+                    'title' => 'Sahra Growth', 'label' => 'Starts From', 'value' => '499',
+                    'suffix' => 'OMR / 1 Month', 'description' => 'A structured approach to build and grow your presence',
+                    'badge' => 'Most Popular',
+                    'features' => ['Content Strategy', 'Brand-Aligned Content', 'Campaign Support', 'Performance Optimization'],
+                    'footer' => 'Best for growing brands',
+                ],
+                'fa' => [
+                    'title' => 'صحرا گروث', 'label' => 'شروع از', 'value' => '۴۹۹',
+                    'suffix' => 'ریال عمان / ۱ ماه', 'description' => 'رویکردی ساختاریافته برای ساخت و رشد حضور برند',
+                    'badge' => 'محبوب‌ترین',
+                    'features' => ['استراتژی محتوا', 'محتوای هم‌راستا با برند', 'پشتیبانی کمپین', 'بهینه‌سازی عملکرد'],
+                    'footer' => 'مناسب برندهای در حال رشد',
+                ],
+                'ar' => [
+                    'title' => 'صحرا للنمو', 'label' => 'تبدأ من', 'value' => '٤٩٩',
+                    'suffix' => 'ر.ع / شهر واحد', 'description' => 'نهج منظم لبناء حضورك وتنميته',
+                    'badge' => 'الأكثر شعبية',
+                    'features' => ['استراتيجية المحتوى', 'محتوى متوافق مع العلامة', 'دعم الحملات', 'تحسين الأداء'],
+                    'footer' => 'الأفضل للعلامات النامية',
+                ],
+            ],
+            [
+                'en' => [
+                    'title' => 'Sahra Horizon', 'label' => 'Starts From', 'value' => '749',
+                    'suffix' => 'OMR / 1 Month', 'description' => 'A complete partnership for brand growth',
+                    'features' => ['Full Marketing Strategy', 'Brand Development', 'Campaign Planning', 'Continuous Optimization'],
+                    'footer' => 'Best for scaling brands',
+                ],
+                'fa' => [
+                    'title' => 'صحرا هورایزن', 'label' => 'شروع از', 'value' => '۷۴۹',
+                    'suffix' => 'ریال عمان / ۱ ماه', 'description' => 'همکاری کامل برای رشد برند',
+                    'features' => ['استراتژی کامل بازاریابی', 'توسعه برند', 'برنامه‌ریزی کمپین', 'بهینه‌سازی مستمر'],
+                    'footer' => 'مناسب برندهای مقیاس‌پذیر',
+                ],
+                'ar' => [
+                    'title' => 'صحرا الأفق', 'label' => 'تبدأ من', 'value' => '٧٤٩',
+                    'suffix' => 'ر.ع / شهر واحد', 'description' => 'شراكة متكاملة لنمو العلامة',
+                    'features' => ['استراتيجية تسويق كاملة', 'تطوير العلامة', 'تخطيط الحملات', 'تحسين مستمر'],
+                    'footer' => 'الأفضل للعلامات المتوسعة',
+                ],
+            ],
+        ]);
+
+        // Why us — 1419:9230
+        $why = $this->section($page, SectionType::WhyUs, 8, [
+            'en' => [
+                'eyebrow' => 'Why us',
+                'title' => 'Why brands choose Sahra',
+                'subtitle' => 'Because every creative decision is built around brand clarity, consistency, and growth.',
+            ],
+            'fa' => [
+                'eyebrow' => 'چرا ما',
+                'title' => 'چرا برندها صحرا را انتخاب می‌کنند',
+                'subtitle' => 'زیرا هر تصمیم خلاقانه بر پایه شفافیت برند، انسجام و رشد شکل می‌گیرد.',
+            ],
+            'ar' => [
+                'eyebrow' => 'لماذا نحن',
+                'title' => 'لماذا تختار العلامات التجارية صحرا',
+                'subtitle' => 'لأن كل قرار إبداعي يُبنى حول وضوح العلامة واتساقها ونموها.',
+            ],
+        ]);
+
+        $this->items($why, [
+            [
+                'en' => ['title' => 'Creativity', 'description' => 'Ideas grounded in strategy, not decoration.'],
+                'fa' => ['title' => 'خلاقیت', 'description' => 'ایده‌هایی مبتنی بر استراتژی، نه تزئین.'],
+                'ar' => ['title' => 'الإبداع', 'description' => 'أفكار مبنية على الاستراتيجية لا الزخرفة.'],
+            ],
+            [
+                'en' => ['title' => 'Reliability', 'description' => 'Consistent delivery on an agreed rhythm.'],
+                'fa' => ['title' => 'اتکاپذیری', 'description' => 'تحویل منظم بر اساس ریتم توافق‌شده.'],
+                'ar' => ['title' => 'الموثوقية', 'description' => 'تسليم منتظم وفق إيقاع متفق عليه.'],
+            ],
+            [
+                'en' => ['title' => 'Innovation', 'description' => 'New formats tested against real business goals.'],
+                'fa' => ['title' => 'نوآوری', 'description' => 'قالب‌های تازه، سنجیده با اهداف واقعی کسب‌وکار.'],
+                'ar' => ['title' => 'الابتكار', 'description' => 'صيغ جديدة تُختبر مقابل أهداف عمل حقيقية.'],
+            ],
+            [
+                'en' => ['title' => 'Clarity', 'description' => 'One connected story instead of scattered posts.'],
+                'fa' => ['title' => 'شفافیت', 'description' => 'یک روایت پیوسته به‌جای پست‌های پراکنده.'],
+                'ar' => ['title' => 'الوضوح', 'description' => 'قصة واحدة مترابطة بدل منشورات مبعثرة.'],
+            ],
+        ]);
+
+        // Reviews — 1419:9243
+        $this->section($page, SectionType::Reviews, 9, [
+            'en' => ['eyebrow' => 'Testimonials', 'title' => 'What our customers tell about us'],
+            'fa' => ['eyebrow' => 'نظرات مشتریان', 'title' => 'مشتریان درباره ما چه می‌گویند'],
+            'ar' => ['eyebrow' => 'آراء العملاء', 'title' => 'ماذا يقول عملاؤنا عنا'],
+        ]);
+
+        // Insights — 1419:9258
+        $this->section($page, SectionType::Insights, 10, [
+            'en' => [
+                'eyebrow' => 'Insights',
+                'title' => 'Insights for Brands Ready to Grow',
+                'description' => 'Because every creative decision is built around brand clarity, consistency, and growth.',
+                'primary_cta_label' => 'Read all articles',
+                'primary_cta_url' => '/insights',
+            ],
+            'fa' => [
+                'eyebrow' => 'بینش',
+                'title' => 'بینش برای برندهایی که آماده رشدند',
+                'description' => 'چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.',
+                'primary_cta_label' => 'خواندن همه مقالات',
+                'primary_cta_url' => '/insights',
+            ],
+            'ar' => [
+                'eyebrow' => 'رؤى',
+                'title' => 'رؤى للعلامات التجارية المستعدة للنمو',
+                'description' => 'لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.',
+                'primary_cta_label' => 'اقرأ كل المقالات',
+                'primary_cta_url' => '/insights',
+            ],
+        ]);
+
+        // FAQ — 1419:9272
+        $this->section($page, SectionType::Faq, 11, [
+            'en' => [
+                'eyebrow' => 'FAQ',
+                'title' => 'Questions we hear often',
+                'subtitle' => 'Because every creative decision is built around brand clarity, consistency, and growth.',
+            ],
+            'fa' => [
+                'eyebrow' => 'پرسش‌های متداول',
+                'title' => 'پرسش‌هایی که زیاد می‌شنویم',
+                'subtitle' => 'چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.',
+            ],
+            'ar' => [
+                'eyebrow' => 'الأسئلة الشائعة',
+                'title' => 'أسئلة نسمعها كثيراً',
+                'subtitle' => 'لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.',
+            ],
+        ]);
+
+        // Final CTA — 1419:9333
+        $this->finalCta($page, 12);
+    }
+
+    /**
+     * About — Figma 908:1576.
+     */
+    private function about(): void
+    {
+        $page = $this->page('about', [
+            'en' => [
+                'title' => 'We are Sahra',
+                'subtitle' => 'About us',
+                'seo_title' => 'About Sahra — A strategy-led agency in Oman',
+            ],
+            'fa' => [
+                'title' => 'ما صحرا هستیم',
+                'subtitle' => 'درباره ما',
+                'seo_title' => 'درباره صحرا — آژانسی استراتژی‌محور در عمان',
+            ],
+            'ar' => [
+                'title' => 'نحن صحرا',
+                'subtitle' => 'من نحن',
+                'seo_title' => 'عن صحرا — وكالة قائمة على الاستراتيجية في عُمان',
+            ],
+        ]);
+
+        $page->sections()->delete();
+
+        $this->section($page, SectionType::AboutHero, 0, [
+            // Title is two runs in the file (1288:4165) — the gold Idealist
+            // line and the dark Poppins line are separate fields so a locale
+            // can re-split the sentence where its grammar needs to.
+            'en' => [
+                'eyebrow' => 'About us',
+                'title' => 'We are Sahra',
+                'content' => 'A digital marketing agency rooted in Oman',
+                'description' => 'We help brands build stronger digital presence through content, branding, social media, and creative direction.',
+                'image_alt' => 'Glass arch sculpture holding golden sand dunes and a sun disc',
+            ],
+            'fa' => [
+                'eyebrow' => 'درباره ما',
+                'title' => 'ما صحرا هستیم',
+                'content' => 'آژانس بازاریابی دیجیتال با ریشه در عمان',
+                'description' => 'ما به برندها کمک می‌کنیم از طریق محتوا، برندینگ، شبکه‌های اجتماعی و جهت‌گیری خلاق حضور دیجیتال قوی‌تری بسازند.',
+                'image_alt' => 'مجسمه شیشه‌ای قوسی با تپه‌های شنی طلایی و قرص خورشید',
+            ],
+            'ar' => [
+                'eyebrow' => 'من نحن',
+                'title' => 'نحن صحرا',
+                'content' => 'وكالة تسويق رقمي متجذّرة في عُمان',
+                'description' => 'نساعد العلامات التجارية على بناء حضور رقمي أقوى عبر المحتوى والهوية ووسائل التواصل والتوجيه الإبداعي.',
+                'image_alt' => 'منحوتة زجاجية مقوسة تحتضن كثباناً رملية ذهبية وقرص شمس',
+            ],
+        ]);
+
+        $this->section($page, SectionType::Story, 1, [
+            'en' => [
+                'title' => 'The Story Behind Sahra',
+                'description' => 'Sahra began with a simple belief: brands deserve more than scattered content and short-term visuals.',
+                'content' => 'We help businesses present themselves with more quality, clarity, and consistency — bringing content production, visual direction, branding, and social media management together to build a stronger digital presence.',
+            ],
+            'fa' => [
+                'title' => 'داستان صحرا',
+                'description' => 'صحرا با باوری ساده آغاز شد: برندها شایسته چیزی بیش از محتوای پراکنده و تصاویر کوتاه‌مدت هستند.',
+                'content' => 'ما به کسب‌وکارها کمک می‌کنیم خود را با کیفیت، شفافیت و ثبات بیشتری معرفی کنند — با گردآوردن تولید محتوا، جهت‌گیری بصری، برندینگ و مدیریت شبکه‌های اجتماعی.',
+            ],
+            'ar' => [
+                'title' => 'قصة صحرا',
+                'description' => 'بدأت صحرا بقناعة بسيطة: العلامات التجارية تستحق أكثر من محتوى مبعثر ومرئيات قصيرة الأمد.',
+                'content' => 'نساعد الشركات على تقديم نفسها بجودة ووضوح واتساق أكبر — بجمع إنتاج المحتوى والتوجيه البصري والهوية وإدارة وسائل التواصل.',
+            ],
+        ]);
+
+        $think = $this->section($page, SectionType::HowWeThink, 2, [
+            'en' => [
+                'title' => 'How We Think',
+                'description' => 'We believe strong digital presence starts with clarity, consistency, and brand-aligned execution — not random content or short-term visuals.',
+            ],
+            'fa' => [
+                'title' => 'چگونه فکر می‌کنیم',
+                'description' => 'باور داریم حضور دیجیتال قوی با شفافیت، ثبات و اجرای هم‌راستا با برند آغاز می‌شود — نه محتوای تصادفی.',
+            ],
+            'ar' => [
+                'title' => 'كيف نفكر',
+                'description' => 'نؤمن أن الحضور الرقمي القوي يبدأ بالوضوح والاتساق والتنفيذ المتوائم مع العلامة — لا بمحتوى عشوائي.',
+            ],
+        ]);
+
+        $this->items($think, [
+            [
+                'en' => ['title' => 'Quality Before Quantity', 'description' => 'Intentional work over endless output'],
+                'fa' => ['title' => 'کیفیت پیش از کمیت', 'description' => 'کار هدفمند به‌جای خروجی بی‌پایان'],
+                'ar' => ['title' => 'الجودة قبل الكمية', 'description' => 'عمل مقصود بدل إنتاج لا ينتهي'],
+            ],
+            [
+                'en' => ['title' => 'Brand Alignment Before Decoration', 'description' => 'Every visual should serve the brand'],
+                'fa' => ['title' => 'هم‌راستایی با برند پیش از تزئین', 'description' => 'هر عنصر بصری باید در خدمت برند باشد'],
+                'ar' => ['title' => 'التوافق مع العلامة قبل الزخرفة', 'description' => 'كل عنصر بصري يجب أن يخدم العلامة'],
+            ],
+            [
+                'en' => ['title' => 'Consistency Before Noise', 'description' => 'Structure creates stronger presence'],
+                'fa' => ['title' => 'ثبات پیش از هیاهو', 'description' => 'ساختار، حضور قوی‌تری می‌سازد'],
+                'ar' => ['title' => 'الاتساق قبل الضجيج', 'description' => 'البنية تصنع حضوراً أقوى'],
+            ],
+            [
+                'en' => ['title' => 'Growth Before Trends', 'description' => 'Long-term value over short-term attention'],
+                'fa' => ['title' => 'رشد پیش از ترندها', 'description' => 'ارزش بلندمدت به‌جای توجه کوتاه‌مدت'],
+                'ar' => ['title' => 'النمو قبل الرائج', 'description' => 'قيمة طويلة الأمد بدل انتباه عابر'],
+            ],
+        ]);
+
+        $this->section($page, SectionType::Team, 3, [
+            'en' => [
+                'title' => 'Small Team, Big Standards',
+                'description' => 'A focused team building stronger digital presence through strategy, design, content, and execution.',
+            ],
+            'fa' => [
+                'title' => 'تیمی کوچک، استانداردهایی بزرگ',
+                'description' => 'تیمی متمرکز که با استراتژی، طراحی، محتوا و اجرا حضور دیجیتال قوی‌تری می‌سازد.',
+            ],
+            'ar' => [
+                'title' => 'فريق صغير، معايير كبيرة',
+                'description' => 'فريق مركّز يبني حضوراً رقمياً أقوى عبر الاستراتيجية والتصميم والمحتوى والتنفيذ.',
+            ],
+        ]);
+
+        $this->finalCta($page, 4);
+    }
+
+    /**
+     * Work listing header — Figma 1362:7198.
+     */
+    private function work(): void
+    {
+        $page = $this->page('work', [
+            'en' => [
+                'title' => 'Where Strategy Becomes Visible',
+                'subtitle' => 'Our Projects',
+                'description' => 'A collection of brand, content, and marketing design projects created to help businesses communicate with clarity and grow with direction.',
+            ],
+            'fa' => [
+                'title' => 'جایی که استراتژی دیده می‌شود',
+                'subtitle' => 'پروژه‌های ما',
+                'description' => 'مجموعه‌ای از پروژه‌های برند، محتوا و طراحی بازاریابی که به کسب‌وکارها کمک می‌کند شفاف ارتباط بگیرند و هدفمند رشد کنند.',
+            ],
+            'ar' => [
+                'title' => 'حيث تصبح الاستراتيجية مرئية',
+                'subtitle' => 'مشاريعنا',
+                'description' => 'مجموعة من مشاريع الهوية والمحتوى وتصميم التسويق التي تساعد الشركات على التواصل بوضوح والنمو باتجاه.',
+            ],
+        ]);
+
+        $page->sections()->delete();
+        $this->finalCta($page, 0);
+    }
+
+    /**
+     * Services header — Figma 1323:7189.
+     */
+    private function services(): void
+    {
+        $page = $this->page('services', [
+            'en' => [
+                'title' => 'We build systems, not just services',
+                'subtitle' => 'Services',
+                'description' => 'Four core services designed to bring clarity, structure, and long-term direction to your brand.',
+            ],
+            'fa' => [
+                'title' => 'ما سیستم می‌سازیم، نه صرفاً خدمات',
+                'subtitle' => 'خدمات',
+                'description' => 'چهار خدمت اصلی برای ایجاد شفافیت، ساختار و مسیر بلندمدت برای برند شما.',
+            ],
+            'ar' => [
+                'title' => 'نبني أنظمة لا مجرد خدمات',
+                'subtitle' => 'الخدمات',
+                'description' => 'أربع خدمات أساسية مصممة لمنح علامتك وضوحاً وبنية واتجاهاً طويل الأمد.',
+            ],
+        ]);
+
+        $page->sections()->delete();
+        $this->finalCta($page, 0);
+    }
+
+    /**
+     * Insights header — Figma 1353:7935.
+     */
+    private function insights(): void
+    {
+        $page = $this->page('insights', [
+            'en' => [
+                'title' => 'Insights for Brands Ready to Grow',
+                'subtitle' => 'Insights',
+                'description' => 'Explore practical ideas on branding, content, social media, and marketing direction created to help businesses think clearer and grow stronger.',
+            ],
+            'fa' => [
+                'title' => 'بینش برای برندهایی که آماده رشدند',
+                'subtitle' => 'بینش',
+                'description' => 'ایده‌های کاربردی درباره برندینگ، محتوا، شبکه‌های اجتماعی و جهت‌گیری بازاریابی برای شفاف‌تر اندیشیدن و قوی‌تر رشد کردن.',
+            ],
+            'ar' => [
+                'title' => 'رؤى للعلامات التجارية المستعدة للنمو',
+                'subtitle' => 'رؤى',
+                'description' => 'أفكار عملية حول الهوية والمحتوى ووسائل التواصل واتجاه التسويق تساعد الشركات على التفكير بوضوح والنمو بقوة.',
+            ],
+        ]);
+
+        $page->sections()->delete();
+        $this->finalCta($page, 0);
+    }
+
+    /**
+     * Contact — Figma 1363:8934.
+     */
+    private function contact(): void
+    {
+        $page = $this->page('contact', [
+            'en' => [
+                'title' => "Let's Understand Your Brand First",
+                'subtitle' => 'Contact us',
+                'description' => "Tell us what you need, and we'll help you find the right direction for your brand.",
+            ],
+            'fa' => [
+                'title' => 'ابتدا برند شما را بشناسیم',
+                'subtitle' => 'تماس با ما',
+                'description' => 'به ما بگویید به چه نیاز دارید تا مسیر درست برند شما را پیدا کنیم.',
+            ],
+            'ar' => [
+                'title' => 'لنفهم علامتك التجارية أولاً',
+                'subtitle' => 'اتصل بنا',
+                'description' => 'أخبرنا بما تحتاجه وسنساعدك في إيجاد الاتجاه الصحيح لعلامتك.',
+            ],
+        ]);
+
+        $page->sections()->delete();
+    }
+
+    /**
+     * Legal pages — Figma 1031:2101 and 1309:4891.
+     */
+    private function legal(): void
+    {
+        $this->page('privacy-policy', [
+            'en' => [
+                'title' => 'Privacy Policy',
+                'subtitle' => 'At Sahra Marketing, we respect your privacy and are committed to protecting the personal information you share with us through our website',
+                'content' => $this->privacyBody('en'),
+            ],
+            'fa' => [
+                'title' => 'حریم خصوصی',
+                'subtitle' => 'در صحرا مارکتینگ به حریم خصوصی شما احترام می‌گذاریم و متعهد به حفاظت از اطلاعات شخصی‌ای هستیم که از طریق وب‌سایت با ما به اشتراک می‌گذارید.',
+                'content' => $this->privacyBody('fa'),
+            ],
+            'ar' => [
+                'title' => 'سياسة الخصوصية',
+                'subtitle' => 'في صحرا ماركتينغ نحترم خصوصيتك ونلتزم بحماية المعلومات الشخصية التي تشاركها معنا عبر موقعنا.',
+                'content' => $this->privacyBody('ar'),
+            ],
+        ]);
+
+        $this->page('terms', [
+            'en' => [
+                'title' => 'Terms & Conditions',
+                'subtitle' => 'At Sahra Marketing, we provide clear guidelines for using our website and services to ensure a reliable and respectful experience for all users.',
+                'content' => $this->termsBody('en'),
+            ],
+            'fa' => [
+                'title' => 'شرایط و قوانین',
+                'subtitle' => 'در صحرا مارکتینگ دستورالعمل‌های شفافی برای استفاده از وب‌سایت و خدمات ارائه می‌کنیم تا تجربه‌ای قابل‌اعتماد و محترمانه برای همه کاربران فراهم شود.',
+                'content' => $this->termsBody('fa'),
+            ],
+            'ar' => [
+                'title' => 'الشروط والأحكام',
+                'subtitle' => 'في صحرا ماركتينغ نقدم إرشادات واضحة لاستخدام موقعنا وخدماتنا لضمان تجربة موثوقة ومحترمة لجميع المستخدمين.',
+                'content' => $this->termsBody('ar'),
+            ],
+        ]);
+    }
+
+
+    /**
+     * Privacy Policy body — the literal section text of Figma 1031:2101.
+     * Kept as a helper so the three locales stay structurally identical.
+     */
+    private function privacyBody(string $locale): string
+    {
+        $sections = [
+            'en' => [
+                ['Information We Collect', [
+                    'When you contact us, submit a form, download a file, or request information about our services, we may collect basic information such as your name, email address, phone number, company name, and any message or project details you choose to share with us.',
+                    'We may also collect limited technical information, such as website usage data, browser type, device information, and general analytics data to help us improve our website experience.',
+                ]],
+                ['How We Use Your Information', [
+                    'We use the information you provide to:',
+                    ['Respond to your inquiries', 'Understand your business needs', 'Share information about our services', 'Prepare proposals or follow-up communications', 'Improve our website and user experience', 'Measure the performance of our marketing activities'],
+                    'We do not sell your personal information.',
+                ]],
+                ['Cookies &amp; Analytics', [
+                    'Our website may use cookies and analytics tools to understand how visitors use the site and to improve performance, content, and marketing efforts. You can control or disable cookies through your browser settings.',
+                ]],
+                ['Sharing Your Information', [
+                    'We may share your information only when necessary with trusted service providers who help us operate our website, manage communications, analyze website performance, or deliver our services.',
+                    'We may also disclose information if required by law or to protect our legal rights.',
+                ]],
+                ['Data Security', [
+                    'We take reasonable steps to protect your personal information from unauthorized access, loss, misuse, or disclosure. However, no online platform can guarantee complete security.',
+                ]],
+                ['Data Retention', [
+                    'We keep your information only for as long as necessary to respond to your request, manage our business relationship, provide services, or meet legal and operational requirements.',
+                ]],
+                ['Your Rights', [
+                    'You may contact us to request access to your personal information, ask for corrections, or request that your information be deleted from our records, where applicable.',
+                ]],
+                ['Contact Us', [
+                    'If you have any questions about this Privacy Policy or how we handle your information, please contact us at:',
+                    ['__address__', 'Sahra Marketing', 'Muscat, Oman', 'Email: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'fa' => [
+                ['اطلاعاتی که جمع‌آوری می‌کنیم', [
+                    'وقتی با ما تماس می‌گیرید، فرمی ارسال می‌کنید، فایلی دانلود می‌کنید یا درباره خدمات ما اطلاعات می‌خواهید، ممکن است اطلاعات پایه‌ای مانند نام، نشانی ایمیل، شماره تماس، نام شرکت و هر پیام یا جزئیات پروژه‌ای که انتخاب می‌کنید با ما به اشتراک بگذارید را جمع‌آوری کنیم.',
+                    'همچنین ممکن است اطلاعات فنی محدودی مانند داده‌های استفاده از وب‌سایت، نوع مرورگر، اطلاعات دستگاه و داده‌های تحلیلی عمومی را برای بهبود تجربه وب‌سایت جمع‌آوری کنیم.',
+                ]],
+                ['چگونه از اطلاعات شما استفاده می‌کنیم', [
+                    'از اطلاعاتی که ارائه می‌دهید برای این موارد استفاده می‌کنیم:',
+                    ['پاسخ به پرسش‌های شما', 'درک نیازهای کسب‌وکارتان', 'ارائه اطلاعات درباره خدمات ما', 'تهیه پیشنهاد یا پیگیری‌های بعدی', 'بهبود وب‌سایت و تجربه کاربری', 'سنجش عملکرد فعالیت‌های بازاریابی ما'],
+                    'ما اطلاعات شخصی شما را نمی‌فروشیم.',
+                ]],
+                ['کوکی‌ها و تحلیل‌ها', [
+                    'وب‌سایت ما ممکن است از کوکی‌ها و ابزارهای تحلیلی برای درک نحوه استفاده بازدیدکنندگان از سایت و بهبود عملکرد، محتوا و تلاش‌های بازاریابی استفاده کند. می‌توانید کوکی‌ها را از تنظیمات مرورگر خود کنترل یا غیرفعال کنید.',
+                ]],
+                ['اشتراک‌گذاری اطلاعات شما', [
+                    'اطلاعات شما را تنها در صورت لزوم با ارائه‌دهندگان خدمات مورد اعتمادی که در راه‌اندازی وب‌سایت، مدیریت ارتباطات، تحلیل عملکرد یا ارائه خدمات به ما کمک می‌کنند به اشتراک می‌گذاریم.',
+                    'همچنین ممکن است در صورت الزام قانونی یا برای حفاظت از حقوق قانونی خود اطلاعات را افشا کنیم.',
+                ]],
+                ['امنیت داده‌ها', [
+                    'ما اقدامات معقولی برای محافظت از اطلاعات شخصی شما در برابر دسترسی غیرمجاز، از دست رفتن، سوءاستفاده یا افشا انجام می‌دهیم. با این حال هیچ پلتفرم آنلاینی نمی‌تواند امنیت کامل را تضمین کند.',
+                ]],
+                ['نگهداری داده‌ها', [
+                    'اطلاعات شما را تنها تا زمانی که برای پاسخ به درخواستتان، مدیریت رابطه کاری، ارائه خدمات یا رعایت الزامات قانونی و عملیاتی لازم است نگهداری می‌کنیم.',
+                ]],
+                ['حقوق شما', [
+                    'می‌توانید برای درخواست دسترسی به اطلاعات شخصی، اصلاح آن یا حذف اطلاعاتتان از سوابق ما — در مواردی که قابل اعمال باشد — با ما تماس بگیرید.',
+                ]],
+                ['تماس با ما', [
+                    'اگر درباره این سیاست حریم خصوصی یا نحوه مدیریت اطلاعاتتان پرسشی دارید، با ما تماس بگیرید:',
+                    ['__address__', 'صحرا مارکتینگ', 'مسقط، عمان', 'ایمیل: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'ar' => [
+                ['المعلومات التي نجمعها', [
+                    'عند التواصل معنا أو إرسال نموذج أو تنزيل ملف أو طلب معلومات عن خدماتنا، قد نجمع معلومات أساسية مثل اسمك وبريدك الإلكتروني ورقم هاتفك واسم شركتك وأي رسالة أو تفاصيل مشروع تختار مشاركتها معنا.',
+                    'وقد نجمع أيضاً معلومات تقنية محدودة، مثل بيانات استخدام الموقع ونوع المتصفح ومعلومات الجهاز وبيانات التحليلات العامة لمساعدتنا في تحسين تجربة الموقع.',
+                ]],
+                ['كيف نستخدم معلوماتك', [
+                    'نستخدم المعلومات التي تقدمها من أجل:',
+                    ['الرد على استفساراتك', 'فهم احتياجات عملك', 'مشاركة معلومات عن خدماتنا', 'إعداد العروض أو المتابعات', 'تحسين موقعنا وتجربة المستخدم', 'قياس أداء أنشطتنا التسويقية'],
+                    'نحن لا نبيع معلوماتك الشخصية.',
+                ]],
+                ['ملفات الارتباط والتحليلات', [
+                    'قد يستخدم موقعنا ملفات الارتباط وأدوات التحليل لفهم كيفية استخدام الزوار للموقع ولتحسين الأداء والمحتوى وجهود التسويق. يمكنك التحكم في ملفات الارتباط أو تعطيلها من إعدادات متصفحك.',
+                ]],
+                ['مشاركة معلوماتك', [
+                    'قد نشارك معلوماتك عند الضرورة فقط مع مزودي خدمات موثوقين يساعدوننا في تشغيل موقعنا أو إدارة الاتصالات أو تحليل أداء الموقع أو تقديم خدماتنا.',
+                    'وقد نفصح عن المعلومات إذا اقتضى القانون ذلك أو لحماية حقوقنا القانونية.',
+                ]],
+                ['أمن البيانات', [
+                    'نتخذ خطوات معقولة لحماية معلوماتك الشخصية من الوصول غير المصرح به أو الفقدان أو سوء الاستخدام أو الإفصاح. ومع ذلك، لا يمكن لأي منصة إلكترونية ضمان الأمان الكامل.',
+                ]],
+                ['الاحتفاظ بالبيانات', [
+                    'نحتفظ بمعلوماتك فقط للمدة اللازمة للرد على طلبك وإدارة علاقتنا التجارية وتقديم الخدمات أو تلبية المتطلبات القانونية والتشغيلية.',
+                ]],
+                ['حقوقك', [
+                    'يمكنك التواصل معنا لطلب الوصول إلى معلوماتك الشخصية أو طلب تصحيحها أو حذفها من سجلاتنا، حيثما ينطبق ذلك.',
+                ]],
+                ['اتصل بنا', [
+                    'إذا كان لديك أي أسئلة حول سياسة الخصوصية هذه أو كيفية تعاملنا مع معلوماتك، يرجى التواصل معنا على:',
+                    ['__address__', 'صحرا ماركتينغ', 'مسقط، عُمان', 'البريد الإلكتروني: Sahramarketing@gmail.com'],
+                ]],
+            ],
+        ];
+
+        return $this->renderSections($sections[$locale]);
+    }
+
+    /**
+     * Terms & Conditions body — the literal section text of Figma 1072:2618.
+     */
+    private function termsBody(string $locale): string
+    {
+        $sections = [
+            'en' => [
+                ['Use of Website', ['By accessing this website, you agree to use it only for lawful purposes and in a way that does not harm the experience, content, or functionality of the platform.']],
+                ['Services', ['Sahra provides branding, marketing design, content production, and social media support services. All services are delivered based on agreed project scope and timelines defined during collaboration.']],
+                ['Intellectual Property', ['All content, designs, visuals, and materials created by Sahra remain the intellectual property of Sahra unless otherwise agreed in writing. Unauthorized use or reproduction is not allowed.']],
+                ['Client Responsibilities', ['Clients are responsible for providing accurate information, timely feedback, and required materials needed for project execution. Delays in communication may affect delivery timelines.']],
+                ['Payments', ['All project costs, pricing structures, and payment terms are agreed upon before starting any work. Work may be paused in case of delayed payments.']],
+                ['Limitation of Liability', ['Sahra is not responsible for any indirect, incidental, or consequential damages arising from the use of this website or services.']],
+                ['Changes to Terms', ['Sahra reserves the right to update these Terms &amp; Conditions at any time. Continued use of the website means acceptance of any updated terms.']],
+                ['Contact Us', [
+                    'For any questions regarding these terms, you can contact us at:',
+                    ['__address__', 'Sahra Marketing', 'Muscat, Oman', 'Email: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'fa' => [
+                ['استفاده از وب‌سایت', ['با دسترسی به این وب‌سایت می‌پذیرید که تنها برای مقاصد قانونی و به‌گونه‌ای از آن استفاده کنید که به تجربه، محتوا یا عملکرد پلتفرم آسیب نرساند.']],
+                ['خدمات', ['صحرا خدمات برندینگ، طراحی بازاریابی، تولید محتوا و پشتیبانی شبکه‌های اجتماعی ارائه می‌کند. همه خدمات بر اساس دامنه و زمان‌بندی توافق‌شده در جریان همکاری تحویل می‌شوند.']],
+                ['مالکیت فکری', ['تمام محتوا، طرح‌ها، تصاویر و موادی که صحرا خلق می‌کند، مگر در صورت توافق کتبی دیگر، متعلق به صحرا باقی می‌ماند. استفاده یا بازتولید غیرمجاز مجاز نیست.']],
+                ['مسئولیت‌های مشتری', ['مشتریان مسئول ارائه اطلاعات دقیق، بازخورد به‌موقع و موادی هستند که برای اجرای پروژه لازم است. تأخیر در ارتباط ممکن است بر زمان‌بندی تحویل اثر بگذارد.']],
+                ['پرداخت‌ها', ['تمام هزینه‌های پروژه، ساختار قیمت‌گذاری و شرایط پرداخت پیش از آغاز کار توافق می‌شود. در صورت تأخیر در پرداخت، کار ممکن است متوقف شود.']],
+                ['محدودیت مسئولیت', ['صحرا مسئول هیچ خسارت غیرمستقیم، تبعی یا اتفاقی ناشی از استفاده از این وب‌سایت یا خدمات نیست.']],
+                ['تغییر شرایط', ['صحرا حق به‌روزرسانی این شرایط و قوانین را در هر زمان محفوظ می‌دارد. ادامه استفاده از وب‌سایت به معنای پذیرش شرایط به‌روزشده است.']],
+                ['تماس با ما', [
+                    'برای هر پرسشی درباره این شرایط می‌توانید با ما تماس بگیرید:',
+                    ['__address__', 'صحرا مارکتینگ', 'مسقط، عمان', 'ایمیل: Sahramarketing@gmail.com'],
+                ]],
+            ],
+            'ar' => [
+                ['استخدام الموقع', ['بدخولك هذا الموقع، فإنك توافق على استخدامه للأغراض المشروعة فقط وبطريقة لا تضر بتجربة المنصة أو محتواها أو أدائها.']],
+                ['الخدمات', ['تقدم صحرا خدمات الهوية التجارية وتصميم التسويق وإنتاج المحتوى ودعم وسائل التواصل. تُقدَّم جميع الخدمات وفق نطاق المشروع والجداول الزمنية المتفق عليها أثناء التعاون.']],
+                ['الملكية الفكرية', ['يبقى كل محتوى وتصميم ومواد تنشئها صحرا ملكية فكرية لصحرا ما لم يُتفق على خلاف ذلك كتابةً. الاستخدام أو النسخ غير المصرح به غير مسموح.']],
+                ['مسؤوليات العميل', ['العملاء مسؤولون عن تقديم معلومات دقيقة وملاحظات في وقتها والمواد المطلوبة لتنفيذ المشروع. قد تؤثر التأخيرات في التواصل على مواعيد التسليم.']],
+                ['المدفوعات', ['يُتفق على جميع تكاليف المشروع وهياكل التسعير وشروط الدفع قبل بدء أي عمل. وقد يتوقف العمل في حال تأخر المدفوعات.']],
+                ['حدود المسؤولية', ['صحرا غير مسؤولة عن أي أضرار غير مباشرة أو عرضية أو تبعية تنشأ عن استخدام هذا الموقع أو الخدمات.']],
+                ['تغييرات الشروط', ['تحتفظ صحرا بحق تحديث هذه الشروط والأحكام في أي وقت. استمرار استخدام الموقع يعني قبول أي شروط محدثة.']],
+                ['اتصل بنا', [
+                    'لأي أسئلة بخصوص هذه الشروط، يمكنك التواصل معنا على:',
+                    ['__address__', 'صحرا ماركتينغ', 'مسقط، عُمان', 'البريد الإلكتروني: Sahramarketing@gmail.com'],
+                ]],
+            ],
+        ];
+
+        return $this->renderSections($sections[$locale]);
+    }
+
+    /**
+     * Turn the [heading, blocks] tuples above into the stored HTML. A nested
+     * array is a bullet list, unless its first entry is `__address__`, which
+     * marks the contact block the design renders as plain stacked lines.
+     *
+     * @param  array<int, array{0: string, 1: array<int, string|array<int, string>>}>  $sections
+     */
+    private function renderSections(array $sections): string
+    {
+        $html = '';
+
+        foreach ($sections as [$heading, $blocks]) {
+            $html .= '<h2>'.$heading.'</h2>';
+
+            foreach ($blocks as $block) {
+                if (! is_array($block)) {
+                    $html .= '<p>'.$block.'</p>';
+
+                    continue;
+                }
+
+                if (($block[0] ?? null) === '__address__') {
+                    $lines = array_slice($block, 1);
+                    $html .= '<p>'.implode('<br>', $lines).'</p>';
+
+                    continue;
+                }
+
+                $html .= '<ul>';
+                foreach ($block as $item) {
+                    $html .= '<li>'.$item.'</li>';
+                }
+                $html .= '</ul>';
+            }
+        }
+
+        return $html;
+    }
+
+    /* ------------------------------------------------------------ helpers */
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    private function page(string $key, array $translations): Page
+    {
+        $page = Page::updateOrCreate(
+            ['key' => $key],
+            [
+                'status' => PublicationStatus::Published,
+                'published_at' => now(),
+            ],
+        );
+
+        $page->setTranslations($translations);
+
+        return $page;
+    }
+
+    /**
+     * @param  array<string, array<string, mixed>>  $translations
+     */
+    private function section(
+        Page $page,
+        SectionType $type,
+        int $order,
+        array $translations,
+        bool $visible = true,
+    ): PageSection {
+        $section = $page->sections()->create([
+            'type' => $type,
+            'sort_order' => $order,
+            'is_visible' => $visible,
+        ]);
+
+        $section->setTranslations($translations);
+
+        return $section;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $items
+     */
+    private function items(PageSection $section, array $items): void
+    {
+        foreach ($items as $index => $itemData) {
+            $icon = $itemData['_icon'] ?? null;
+            unset($itemData['_icon']);
+
+            $item = $section->items()->create([
+                'sort_order' => $index,
+                'is_visible' => true,
+                'icon' => $icon,
+            ]);
+
+            /** @var array<string, array<string, mixed>> $itemData */
+            $item->setTranslations($itemData);
+        }
+    }
+
+    /**
+     * Final CTA card — Figma 1419:9333, reused on six pages.
+     */
+    private function finalCta(Page $page, int $order): void
+    {
+        $this->section($page, SectionType::FinalCta, $order, [
+            'en' => [
+                'eyebrow' => 'Start with clarity',
+                'title' => 'Ready to build your brand with direction?',
+                'description' => "Share your goals with Sahra, and let's define the right next step for your brand.",
+                'primary_cta_label' => 'Start a Conversation',
+                'primary_cta_url' => '/contact',
+                'subtitle' => 'Branding · Content Production · Social Media Support · Marketing Design',
+            ],
+            'fa' => [
+                'eyebrow' => 'با شفافیت آغاز کنید',
+                'title' => 'آماده‌اید برندتان را با جهت بسازید؟',
+                'description' => 'اهدافتان را با صحرا در میان بگذارید تا گام درست بعدی را مشخص کنیم.',
+                'primary_cta_label' => 'شروع گفتگو',
+                'primary_cta_url' => '/contact',
+                'subtitle' => 'برندینگ · تولید محتوا · پشتیبانی شبکه‌های اجتماعی · طراحی بازاریابی',
+            ],
+            'ar' => [
+                'eyebrow' => 'ابدأ بالوضوح',
+                'title' => 'هل أنت مستعد لبناء علامتك باتجاه واضح؟',
+                'description' => 'شارك أهدافك مع صحرا، ولنحدد الخطوة التالية الصحيحة لعلامتك.',
+                'primary_cta_label' => 'ابدأ محادثة',
+                'primary_cta_url' => '/contact',
+                'subtitle' => 'الهوية · إنتاج المحتوى · دعم وسائل التواصل · تصميم التسويق',
+            ],
+        ]);
+    }
+}
+=====FILE:resources/js/Components/Services/MasteryDiagram.vue=====
+<script setup lang="ts">
+/*
+ | The services diagram, from opening Venn to finished orbit.
+ |
+ | One dark silhouette does the whole journey (see lib/blob.ts): two solid
+ | overlapping circles melt into a peanut, stretch into a dumbbell, thin to a
+ | filament, and end as the two dots on the horizontal axis. Nothing is
+ | cross-faded into place — the dots on the finished axis are the Brand and
+ | Product circles the section opened with.
+ |
+ | Around it, three things resolve at the same time: the labels travel outward
+ | from inside the circles to the ends of the axis and turn from white to ink,
+ | Service Mastery rises out of the overlap to the top of the composition, and
+ | the two dashed rings fade up behind as the material leaves the middle.
+ |
+ | Not a Figma node: the services frame draws the finished rings only, with no
+ | opening state, so the transformation is authored against the motion
+ | reference rather than extracted.
+ |
+ | The markup renders the FINISHED composition. The motion layer rewinds it,
+ | gated behind `motion-ready`, so reduced motion and a failed bundle both
+ | leave a complete diagram rather than an empty box.
+ */
+import { computed, reactive, ref, useId } from "vue";
+import { useElementSize, useMediaQuery } from "@vueuse/core";
+import { useMasteryOpen } from "@/Composables/useMotion";
+import { blobPath, resolveBlob, type BlobProgress } from "@/lib/blob";
+
+defineProps<{
+  brandLabel: string;
+  productLabel: string;
+  coreLabel: string;
+}>();
+
+const stage = ref<HTMLElement | null>(null);
+
+/* Unique per instance, so two diagrams on one page cannot share a clip. */
+const clipId = useId();
+
+/*
+ | The viewBox is the element's own pixel box, so SVG units and CSS pixels are
+ | the same thing — which is what lets the labels be plain absolutely
+ | positioned HTML that lands exactly where the geometry does, at a real font
+ | size, with no letterboxing to correct for.
+ */
+const { width, height } = useElementSize(stage);
+const isMobile = useMediaQuery("(max-width: 639px)");
+
+/* Resting value: the diagram is finished until the motion layer rewinds it. */
+const progress = reactive<BlobProgress>({ t: 1 });
+
+const shape = computed(() =>
+  resolveBlob({ width: width.value, height: height.value }, progress.t),
+);
+
+const path = computed(() => blobPath(shape.value));
+
+/*
+ | The axis is pinned to the two lobe centres, so it grows with the material
+ | instead of arriving over it: by the time the bridge has thinned away, the
+ | dotted line is already strung between the same two dots.
+ */
+const axis = computed(() =>
+  isMobile.value
+    ? {
+        x1: shape.value.cx,
+        y1: shape.value.cy - shape.value.separation,
+        x2: shape.value.cx,
+        y2: shape.value.cy + shape.value.separation,
+      }
+    : {
+        x1: shape.value.cx - shape.value.separation,
+        y1: shape.value.cy,
+        x2: shape.value.cx + shape.value.separation,
+        y2: shape.value.cy,
+      },
+);
+
+const blobTransform = computed(() =>
+  isMobile.value
+    ? `rotate(90 ${shape.value.cx} ${shape.value.cy})`
+    : undefined,
+);
+
+const rings = computed(() =>
+  isMobile.value
+    ? {
+        inner: Math.min(width.value * 0.36, height.value * 0.3),
+        outer: Math.min(width.value * 0.59, height.value * 0.47),
+      }
+    : {
+        inner: Math.min(138, width.value * 0.141),
+        outer: Math.min(240, width.value * 0.245),
+      },
+);
+
+useMasteryOpen(stage, progress);
+</script>
+
+<template>
+  <div ref="stage" class="mastery-stage" aria-hidden="true">
+    <!--
+      Two layers only so the rings sit behind the axis; both stay below the
+      service columns. Nothing needs lifting over them — the row rhythm in
+      ServicesOrbit.vue leaves the axis its own empty corridor.
+    -->
+    <svg
+      class="mastery-svg mastery-svg--behind"
+      :viewBox="`0 0 ${width} ${height}`"
+      focusable="false"
+    >
+      <g data-mastery="rings" class="mastery-rings">
+        <circle
+          data-mastery="ring-inner"
+          :cx="shape.cx"
+          :cy="shape.cy"
+          :r="rings.inner"
+        />
+        <circle
+          data-mastery="ring-outer"
+          :cx="shape.cx"
+          :cy="shape.cy"
+          :r="rings.outer"
+        />
+      </g>
+
+    </svg>
+
+    <svg
+      class="mastery-svg mastery-svg--front"
+      :viewBox="`0 0 ${width} ${height}`"
+      focusable="false"
+    >
+      <!-- The bridge thins onto this, so it only resolves at the very end. -->
+      <line
+        data-mastery="axis"
+        class="mastery-axis"
+        :x1="axis.x1"
+        :y1="axis.y1"
+        :x2="axis.x2"
+        :y2="axis.y2"
+      />
+
+      <!-- The one silhouette. Opening Venn and closing dots are both this. -->
+      <path
+        data-mastery="blob"
+        class="mastery-blob"
+        :d="path"
+        :transform="blobTransform"
+      />
+
+      <!--
+        The darker core of the opening Venn — a fill treatment ON the
+        silhouette, never part of it.
+        
+        One lobe drawn and clipped to the other, so the renderer produces the
+        overlap; nothing here computes an intersection, and the shape below is
+        still the single path. It fades out over the few frames in which the
+        lobes actually part, after which there is no overlap left to shade.
+      -->
+      <defs>
+        <clipPath :id="clipId">
+          <circle
+            :cx="shape.cx - shape.separation"
+            :cy="shape.cy"
+            :r="shape.radius"
+          />
+        </clipPath>
+      </defs>
+      <g data-mastery="core" :clip-path="`url(#${clipId})`">
+        <circle
+          class="mastery-core"
+          :cx="shape.cx + shape.separation"
+          :cy="shape.cy"
+          :r="shape.radius"
+        />
+      </g>
+    </svg>
+
+    <span class="mastery-label mastery-label--brand" data-mastery-label="brand">{{
+      brandLabel
+    }}</span>
+    <span class="mastery-label mastery-label--product" data-mastery-label="product">{{
+      productLabel
+    }}</span>
+    <span class="mastery-label mastery-label--core" data-mastery-label="core">{{
+      coreLabel
+    }}</span>
+  </div>
+</template>
+
+<style scoped>
+/*
+ | No z-index: the whole diagram belongs behind the service columns, and DOM
+ | order already puts it there. Adding one would only open a stacking context
+ | to no purpose.
+ */
+.mastery-stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/*
+ | Mirrors the `.will-reveal` contract in app.css: the hidden start state is
+ | opt-in from JS, so if the bundle never loads, the diagram is simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  :where(html.motion-ready) .mastery-stage {
+    opacity: 0;
+  }
+}
+
+.mastery-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/*
+ | No transform-box/transform-origin here: the motion layer spins these about
+ | the composition centre in user units (svgOrigin), and a fill-box origin
+ | would be resolved against each circle's own bounding box instead, which
+ | swings the rings around the diagram rather than turning them in place.
+ */
+.mastery-rings circle {
+  fill: none;
+  /* Gold orbit rings remain visible without competing with the service pills. */
+  stroke: rgb(var(--color-gold-rgb) / 62%);
+  stroke-width: 2;
+  stroke-dasharray: 2 6;
+}
+.mastery-axis {
+  /* Resting value only — the motion layer draws and settles the gold stroke. */
+  stroke: rgb(var(--color-gold-rgb) / 72%);
+  stroke-width: 2;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+}
+.mastery-blob {
+  fill: var(--color-gold);
+}
+/*
+ | Black at partial alpha rather than a second hardcoded near-black, so the
+ | overlap stays a fixed step darker than the blob if `--color-ink` ever moves.
+ */
+.mastery-core {
+  fill: var(--color-gold-900);
+  fill-opacity: 0.72;
+}
+.mastery-label {
+  position: absolute;
+  translate: -50% -50%;
+  color: var(--color-paper);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-align: center;
+  white-space: pre-line;
+}
+/*
+ | Logical, not left/right: in RTL the two areas swap sides with the reading
+ | order. Both settle just outside their endpoint dot on the finished axis —
+ | the 50px the reference uses left our wider labels touching the dot, so they
+ | sit further out to keep the `Brand -- dot -- axis` run legible.
+ */
+.mastery-label--brand {
+  inset-inline-start: 20px;
+  top: calc(50% + 5px);
+  translate: 0 -50%;
+}
+.mastery-label--product {
+  inset-inline-end: 0;
+  top: calc(50% + 5px);
+  translate: 0 -50%;
+}
+.mastery-label--core {
+  inset-inline-start: 50%;
+  top: 8px;
+  translate: -50% 0;
+  max-width: 7em;
+}
+/*
+ | Compact: the service pills go nearly full-width here, so the axis and its
+ | endpoints run behind them and there is no room left on the centre line for
+ | the two labels — they would land unreadably on top of a dark pill. They drop
+ | below the stack instead. The geometry itself is untouched, so the
+ | transformation still plays out centred.
+ */
+/*
+ | Arabic runs far longer than "Brand" / "Product", and the space outside each
+ | endpoint dot is fixed by the geometry — at the reference's 20px the label
+ | would sit on top of its own dot. Slightly smaller, slightly further out, so
+ | the same `label -- dot -- axis` reading survives translation.
+ */
+html[dir="rtl"] .mastery-label--brand,
+html[dir="rtl"] .mastery-label--product {
+  font-size: 16px;
+}
+html[dir="rtl"] .mastery-label--brand {
+  inset-inline-start: 8px;
+}
+html[dir="rtl"] .mastery-label--product {
+  inset-inline-end: 8px;
+}
+
+@media (max-width: 1023px) {
+  .mastery-label {
+    font-size: 15px;
+  }
+  .mastery-label--brand {
+    inset-inline-start: 8px;
+    top: calc(50% + 5px);
+  }
+  .mastery-label--product {
+    inset-inline-end: 8px;
+    top: calc(50% + 5px);
+  }
+}
+
+@media (max-width: 639px) {
+  .mastery-label--core {
+    display: none;
+  }
+  .mastery-label--brand {
+    inset-inline-start: 50%;
+    top: 64px;
+    translate: -50% 0;
+  }
+  .mastery-label--product {
+    inset-inline-end: auto;
+    inset-inline-start: 50%;
+    top: auto;
+    bottom: 18px;
+    translate: -50% 0;
+  }
+}
+</style>
+=====FILE:resources/js/Components/Services/ServicesOrbit.vue=====
+<script setup lang="ts">
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import { useTranslations } from "@/Composables/useTranslations";
+import MasteryDiagram from "@/Components/Services/MasteryDiagram.vue";
+import type { ServiceItem, SharedProps } from "@/types";
+
+interface ServiceSection {
+  eyebrow: string;
+  title: string;
+  description: string;
+  orbitBrandLabel?: string;
+  orbitProductLabel?: string;
+  orbitCoreLabel?: string;
+}
+const props = defineProps<{
+  section: ServiceSection;
+  services: ServiceItem[];
+}>();
+const { t } = useTranslations();
+const page = usePage<SharedProps>();
+const root = ref<HTMLElement | null>(null);
+const visible = ref(false);
+let observer: IntersectionObserver | null = null;
+let revealTimer: number | null = null;
+/*
+ | One brand colour, four steps of it.
+ |
+ | These were four unrelated hues (yellow / cyan / violet / pink) carried over
+ | from the motion reference's own palette. Sahra is black-and-gold, so the
+ | cards vary along the gold ramp instead — the tints read apart from each
+ | other on the near-black pill, which flat gold at four opacities does not:
+ | over ink, low-alpha gold just goes muddy.
+ */
+/*
+ | Horizontal offset per card, in px from the column centre.
+ |
+ | The reference distributes its primary services down four rows and staggers
+ | them sideways; with four cards instead of seven we get one per row, so the
+ | stagger is what stops the column reading as a centred stack.
+ |
+ | Symmetric on purpose — centre, right, left, centre. Offsetting the first and
+ | last rows too made the group read as a staircase leaning one way, where the
+ | reference's cluster is balanced about the centre line. Logical inset, so it
+ | mirrors in RTL.
+ */
+const activePositions = [
+  { x: 50, y: 27 },
+  { x: 35, y: 39 },
+  { x: 65, y: 39 },
+  { x: 31, y: 53 },
+  { x: 50, y: 53 },
+  { x: 38, y: 68 },
+  { x: 64, y: 68 },
+];
+
+const accents = [
+  "var(--color-gold)",
+  "var(--color-gold-900)",
+  "var(--color-gold-600)",
+  "var(--color-gold-500)",
+];
+const cards = computed(() =>
+  props.services
+    .filter((service) => service.homeOrbitGroup === "active")
+    .map((service, index) => ({
+    ...service,
+    href:
+      service.externalUrl ||
+      `/${page.props.locale.current}/services#${service.slug}`,
+    accent: accents[index % accents.length],
+    position: activePositions[index % activePositions.length],
+    })),
+);
+/*
+ | How far each outer entry leans toward the centre, in px, by row.
+ |
+ | The reference does not stack its outer services in a straight column — they
+ | bow away from the middle around the row below the axis and come back in at
+ | the top and bottom, so the two groups read as arcs framing the orbit rather
+ | than as two rules. These follow the same near / mid / far / mid rhythm.
+ |
+ | The product side has five entries in four rows, so its first two share the
+ | top row's value.
+ */
+const brandPositions = [
+  { x: 18, y: 23 },
+  { x: 11, y: 38 },
+  { x: 14, y: 64 },
+  { x: 21, y: 79 },
+];
+const productPositions = [
+  { x: 82, y: 21 },
+  { x: 90, y: 36 },
+  { x: 86, y: 61 },
+  { x: 80, y: 76 },
+  { x: 88, y: 87 },
+];
+
+const brandGhosts = computed(() =>
+  props.services.filter((service) => service.homeOrbitGroup === "brand"),
+);
+const productGhosts = computed(() =>
+  props.services.filter((service) => service.homeOrbitGroup === "product"),
+);
+
+onMounted(() => {
+  if (
+    !root.value ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    visible.value = true;
+    return;
+  }
+  observer = new IntersectionObserver(
+    ([entry]) => {
+      if (!entry?.isIntersecting) return;
+      // Late on purpose: the pills belong to the finished composition, so
+      // they arrive while the dark material is already thinning onto the axis
+      // rather than competing with it for attention.
+      revealTimer = window.setTimeout(() => {
+        visible.value = true;
+      }, 1200);
+      observer?.disconnect();
+    },
+    { threshold: 0.2 },
+  );
+  observer.observe(root.value);
+});
+onBeforeUnmount(() => {
+  observer?.disconnect();
+  if (revealTimer !== null) window.clearTimeout(revealTimer);
+});
+</script>
+
+<template>
+  <!--
+    Opted out of the page-level reveal: this section choreographs its own
+    entrance, and the generic opacity lift would hold the opening Venn
+    half-transparent through the first third of the transformation.
+  -->
+  <section
+    ref="root"
+    class="services-cloud"
+    :class="{ 'is-visible': visible }"
+    data-no-reveal
+  >
+    <div class="container-sahra relative z-10 py-12 md:py-20 lg:py-24">
+      <div class="flex flex-col gap-6 lg:gap-12">
+        <div class="service-eyebrow">
+          <span aria-hidden="true" />{{
+            section.eyebrow || t("services.eyebrow")
+          }}
+        </div>
+        <div class="grid gap-4 lg:grid-cols-[506px_1fr] lg:gap-[130px]">
+          <h2
+            class="max-w-[506px] text-[28px] font-semibold leading-normal text-white md:text-[36px] lg:text-[40px] lg:leading-[1.5]"
+          >
+            {{ section.title }}
+          </h2>
+          <p
+            class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-200 md:text-[18px]"
+          >
+            {{ section.description }}
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="cloud-diagram"
+        role="group"
+        :aria-label="t('services.orbit_label')"
+      >
+        <MasteryDiagram
+          :brand-label="section.orbitBrandLabel || t('services.venn_brand')"
+          :product-label="section.orbitProductLabel || t('services.venn_product')"
+          :core-label="section.orbitCoreLabel || t('services.core')"
+        />
+        <div class="services-grid">
+          <div class="side-col side-col--brand" aria-hidden="true">
+            <div
+              v-for="(service, index) in brandGhosts"
+              :key="service.key"
+              class="ghost-service"
+              :class="{ 'ghost-service--no-image': !service.image }"
+              :style="{
+                '--x': `${brandPositions[index % brandPositions.length].x}%`,
+                '--y': `${brandPositions[index % brandPositions.length].y}%`,
+              }"
+            >
+              <strong>{{ service.title }}</strong>
+            </div>
+          </div>
+          <div class="mastery-col">
+            <article
+              v-for="(service, index) in cards"
+              :key="service.key"
+              class="service-card"
+              :class="{ 'service-card--has-image': !!service.image }"
+              :style="{
+                '--accent': service.accent,
+                '--x': `${service.position.x}%`,
+                '--y': `${service.position.y}%`,
+                '--delay': `${index * 70}ms`,
+              }"
+            >
+              <div class="service-card__content" aria-hidden="true">
+                <div class="service-card__asset">
+                  <img
+                    v-if="service.image"
+                    :src="service.image.src"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div v-else class="service-card__fallback" />
+                </div>
+                <div class="service-card__asset">
+                  <img
+                    v-if="cards[(index + 1) % cards.length]?.image"
+                    :src="cards[(index + 1) % cards.length].image!.src"
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                  <div v-else class="service-card__fallback" />
+                </div>
+              </div>
+              <a class="service-card__title" :href="service.href">
+                <span class="service-card__icon" aria-hidden="true" />
+                <strong>{{ service.title }}</strong>
+                <svg
+                  class="service-card__arrow"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 11 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M7.69 4.812 4.022 1.143 5.083.083l5.48 5.48-5.48 5.48-1.06-1.06 3.67-3.67H.188v-1.5H7.69Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </a>
+            </article>
+          </div>
+          <div class="side-col side-col--product" aria-hidden="true">
+            <div
+              v-for="(service, index) in productGhosts"
+              :key="service.key"
+              class="ghost-service"
+              :class="{ 'ghost-service--no-image': !service.image }"
+              :style="{
+                '--x': `${productPositions[index % productPositions.length].x}%`,
+                '--y': `${productPositions[index % productPositions.length].y}%`,
+              }"
+            >
+              <strong>{{ service.title }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<style scoped>
+.services-cloud {
+  position: relative;
+  overflow: hidden;
+  min-height: 1050px;
+  background: #050505;
+  color: #fff;
+}
+.services-cloud::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -250px;
+  width: 1068px;
+  height: 330px;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: rgb(var(--color-gold-rgb) / 35%);
+  filter: blur(190px);
+  pointer-events: none;
+}
+.service-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: fit-content;
+  color: var(--color-gold);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1;
+}
+.service-eyebrow span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 12px currentColor;
+}
+.cloud-diagram {
+  position: relative;
+  min-height: 625px;
+  margin-top: 72px;
+}
+.services-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(170px, 1fr) minmax(285px, 390px) minmax(
+      170px,
+      1fr
+    );
+  gap: 40px;
+  align-items: center;
+  min-height: 620px;
+}
+.side-col {
+  display: grid;
+  gap: 42px;
+}
+.side-col--brand {
+  justify-items: end;
+}
+.side-col--product {
+  justify-items: start;
+}
+.ghost-service {
+  color: rgb(255 255 255/27%);
+  font-size: 16px;
+  line-height: 1.4;
+  opacity: 0;
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+.side-col--brand .ghost-service {
+  transform: translateX(-45px);
+}
+.side-col--product .ghost-service {
+  transform: translateX(45px);
+}
+.is-visible .ghost-service {
+  opacity: 1;
+  transform: translateX(0);
+}
+.ghost-service:nth-child(2) {
+  transition-delay: 80ms;
+}
+.ghost-service:nth-child(3) {
+  transition-delay: 160ms;
+}
+.ghost-service:nth-child(4) {
+  transition-delay: 240ms;
+}
+.ghost-service:nth-child(5) {
+  transition-delay: 320ms;
+}
+.mastery-col {
+  display: grid;
+  gap: 18px;
+  align-content: center;
+}
+.service-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: 47px 0fr;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 8px;
+  background: rgb(23 23 23/92%);
+  color: var(--accent);
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    grid-template-rows 0.35s ease,
+    background-color 0.25s ease,
+    box-shadow 0.25s ease,
+    opacity 0.55s ease var(--delay),
+    transform 0.65s cubic-bezier(0.2, 0.75, 0.2, 1) var(--delay);
+}
+.is-visible .service-card {
+  opacity: 1;
+  transform: scale(1);
+}
+.service-card:hover,
+.service-card:focus-within {
+  grid-template-rows: 47px 150px;
+  background: #101010;
+  box-shadow:
+    0 16px 45px rgb(0 0 0/45%),
+    0 0 24px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.service-card__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 0 17px;
+  color: inherit;
+  font-size: 17px;
+  text-decoration: none;
+}
+.service-card__title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.service-card__icon {
+  width: 12px;
+  height: 12px;
+  flex: none;
+  rotate: 45deg;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+}
+.service-card:nth-child(2) .service-card__icon {
+  border-radius: 50%;
+}
+.service-card:nth-child(3) .service-card__icon {
+  width: 9px;
+  height: 16px;
+  rotate: 0deg;
+}
+.service-card:nth-child(4) .service-card__icon {
+  rotate: 0deg;
+  border-radius: 50% 50% 45% 45%;
+}
+.service-card__arrow {
+  margin-inline-start: auto;
+  flex: none;
+  transition: transform 0.25s ease;
+}
+.service-card:hover .service-card__arrow,
+.service-card:focus-within .service-card__arrow {
+  transform: translateX(4px);
+}
+[dir="rtl"] .service-card__arrow {
+  scale: -1 1;
+}
+.service-card__content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 8px;
+  opacity: 0;
+  transition:
+    opacity 0.2s ease,
+    padding 0.35s ease;
+}
+.service-card:hover .service-card__content,
+.service-card:focus-within .service-card__content {
+  padding-block: 0 8px;
+  opacity: 1;
+  transition-delay: 0.08s;
+}
+.service-card__asset {
+  overflow: hidden;
+  min-height: 0;
+  border-radius: 6px;
+  background: #222;
+}
+.service-card__asset img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1.06);
+  transition: transform 0.55s ease;
+}
+.service-card:hover img,
+.service-card:focus-within img {
+  transform: scale(1);
+}
+.service-card__fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--accent), var(--color-ink) 70%);
+  opacity: 0.6;
+}
+@media (min-width: 768px) {
+  .service-eyebrow {
+    font-size: 24px;
+  }
+}
+@media (max-width: 1023px) {
+  .services-cloud {
+    min-height: auto;
+  }
+  .cloud-diagram {
+    min-height: auto;
+    margin-top: 48px;
+    padding-block: 30px;
+  }
+  .services-grid {
+    grid-template-columns: 1fr;
+    min-height: 420px;
+  }
+  .side-col {
+    display: none;
+  }
+  .mastery-col {
+    width: min(100%, 390px);
+    margin-inline: auto;
+    gap: 12px;
+  }
+}
+
+/* Capability-map layout. Geometry only: motion and interactions stay intact. */
+.services-cloud {
+  min-height: auto;
+  background: #f7f7f7;
+  color: var(--color-ink);
+}
+.services-cloud::after {
+  display: none;
+}
+.services-cloud :is(h2, p) {
+  color: var(--color-ink) !important;
+}
+.cloud-diagram {
+  position: relative;
+  width: min(100%, 980px);
+  height: 560px;
+  min-height: 560px;
+  margin: 68px auto 0;
+  overflow: visible;
+}
+.cloud-diagram :deep(.mastery-stage) {
+  width: 100%;
+  height: 100%;
+}
+.services-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.side-col,
+.mastery-col {
+  display: contents;
+}
+.ghost-service,
+.service-card {
+  position: absolute;
+  inset-inline-start: var(--x);
+  top: var(--y);
+  width: max-content;
+  height: 38px;
+  translate: -50% -50%;
+}
+.ghost-service {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 220px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--color-ink-rgb) / 13%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 72%);
+  color: rgb(var(--color-ink-rgb) / 34%);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  opacity: 0;
+  transform: translateX(0) scale(0.96);
+}
+.side-col--brand .ghost-service,
+.side-col--product .ghost-service {
+  inset-inline-end: auto;
+  transform: translateX(0) scale(0.96);
+}
+.is-visible .ghost-service {
+  opacity: 1;
+  transform: translateX(0) scale(1);
+}
+.service-card {
+  display: block;
+  max-width: 250px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  opacity: 0;
+  transform: scale(0.82);
+  transition:
+    opacity 0.5s ease var(--delay),
+    transform 0.8s cubic-bezier(0.89, 0.34, 0.2, 0.83) var(--delay);
+}
+.is-visible .service-card {
+  opacity: 1;
+  transform: scale(1);
+}
+.service-card__title {
+  height: 38px;
+  gap: 9px;
+  padding: 0 14px;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  background: var(--color-ink);
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+.service-card__title strong {
+  color: var(--color-paper);
+}
+.service-card__icon {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  background: currentColor;
+}
+.service-card__arrow {
+  width: 10px;
+  height: 10px;
+  margin-inline-start: 3px;
+}
+.service-card__content {
+  bottom: 38px;
+}
+.service-card--has-image:hover,
+.service-card--has-image:focus-within,
+.service-card--has-image:hover .service-card__title,
+.service-card--has-image:focus-within .service-card__title {
+  border-color: var(--color-gold);
+  background: var(--color-gold);
+  color: var(--color-paper);
+}
+.service-card--has-image:hover .service-card__title strong,
+.service-card--has-image:focus-within .service-card__title strong,
+.service-card--has-image:hover .service-card__title .service-card__icon,
+.service-card--has-image:focus-within .service-card__title .service-card__icon {
+  color: var(--color-paper);
+}
+
+@media (max-width: 1023px) {
+  .cloud-diagram {
+    width: min(100%, 760px);
+    height: 500px;
+    min-height: 500px;
+    margin-top: 48px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .ghost-service {
+    font-size: 12px;
+    padding-inline: 10px;
+  }
+  .service-card__title {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 639px) {
+  .cloud-diagram {
+    height: 500px;
+    min-height: 500px;
+    margin-top: 36px;
+  }
+  .side-col {
+    display: none;
+  }
+  .mastery-col {
+    position: absolute;
+    inset: 102px 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    justify-items: center;
+  }
+  .service-card {
+    position: relative;
+    inset: auto;
+    top: auto;
+    translate: none;
+  }
+  .service-card__content {
+    display: none;
+  }
+}
+@media (max-width: 520px) {
+  .services-grid {
+    min-height: 360px;
+  }
+  .service-card__title {
+    font-size: 15px;
+  }
+  .service-card:hover,
+  .service-card:focus-within {
+    grid-template-rows: 47px 132px;
+  }
+}
+@media (hover: none) {
+  .service-card:focus-within {
+    grid-template-rows: 47px 132px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ghost-service,
+  .service-card,
+  .service-card__arrow,
+  .service-card__content,
+  .service-card__asset img {
+    transition: none !important;
+  }
+}
+
+/* Ramotion services system — measured in Playwright at 1440px. */
+.services-cloud {
+  min-height: auto;
+  background: #050505;
+  color: var(--color-paper);
+}
+.services-cloud::after {
+  display: block;
+  left: 0;
+  bottom: -110px;
+  width: 100%;
+  height: 360px;
+  translate: none;
+  border-radius: 0;
+  background: radial-gradient(
+    ellipse 65% 85% at 50% 100%,
+    rgb(var(--color-gold-rgb) / 62%) 0%,
+    rgb(var(--color-gold-rgb) / 32%) 38%,
+    transparent 76%
+  );
+  box-shadow: none;
+  filter: blur(28px);
+}
+.services-cloud :is(h2, p) {
+  color: var(--color-paper) !important;
+}
+/* Gold, as everywhere else on the site — the reference's flat ink was not ours. */
+.service-eyebrow {
+  color: var(--color-gold);
+}
+.cloud-diagram {
+  height: 628px;
+  min-height: 628px;
+  margin-top: 56px;
+  overflow: hidden;
+}
+/*
+ | All three columns share one row rhythm: 40px rows on a 74px pitch, starting
+ | at y=188. That is the reference's own grid, and it is what keeps the
+ | horizontal axis clear — rows land at 208/282/356/430, so the axis at y=319
+ | falls in the gap between the second and third rows and no service can ever
+ | sit on it. The corridor is a property of the layout, not of stacking order.
+ */
+.services-grid {
+  grid-template-columns: 312px 624px 312px;
+  gap: 0;
+  min-height: 336px;
+  height: 336px;
+  top: 188px;
+  align-items: start;
+}
+.side-col {
+  height: 336px;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(4, 40px);
+  gap: 34px;
+  align-content: start;
+}
+/*
+ | Five entries, four rows — the two narrowest share the top one.
+ |
+ | The reference does the same on its own five-entry side (it doubles a middle
+ | row), which is what keeps both outer columns spanning the same band. Giving
+ | the fifth entry a row of its own instead would hang it a full row below
+ | everything else on one side only.
+ */
+.side-col--product {
+  grid-template-columns: auto auto;
+  column-gap: 10px;
+  justify-content: start;
+}
+.side-col--product .ghost-service:nth-child(1) {
+  grid-area: 1 / 1;
+}
+.side-col--product .ghost-service:nth-child(2) {
+  grid-area: 1 / 2;
+}
+.side-col--product .ghost-service:nth-child(n + 3) {
+  grid-column: 1 / span 2;
+}
+/* Positive `--fan` leans an entry toward the centre, whichever side it is on. */
+.side-col--brand .ghost-service {
+  position: relative;
+  inset-inline-start: var(--fan, 0);
+}
+.side-col--product .ghost-service {
+  position: relative;
+  inset-inline-end: var(--fan, 0);
+}
+/*
+ | Both outer columns lean toward the middle, not centred in their own column.
+ | Centred left a wide empty gutter either side of the primary cluster that the
+ | reference does not have — its outer entries sit much closer in. `start`/`end`
+ | are flow-relative, so this mirrors correctly in RTL.
+ */
+.side-col--brand {
+  justify-items: end;
+}
+.side-col--product {
+  justify-items: start;
+}
+.ghost-service {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: max-content;
+  max-width: 250px;
+  height: 40px;
+  padding: 0 13px;
+  border: 2px solid rgb(var(--color-gold-rgb) / 70%);
+  border-radius: 20px;
+  color: var(--color-paper);
+  font-size: 17px;
+  font-weight: 500;
+  background: #050505;
+}
+.side-col--brand .ghost-service,
+.side-col--product .ghost-service {
+  transform: translateX(0);
+}
+/*
+ | One card per row, not a 2x2 block: the reference runs its primary services
+ | the full height of the inner orbit, and paired rows left the lower half of
+ | ours empty.
+ */
+.mastery-col {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-rows: 40px;
+  gap: 34px 0;
+  height: 336px;
+  align-content: start;
+  justify-items: center;
+}
+.service-card {
+  display: block;
+  width: max-content;
+  max-width: 285px;
+  height: 40px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--color-paper);
+  /* Staggered off the column centre — see `nudges` above. */
+  inset-inline-start: var(--nudge, 0);
+  color: var(--color-ink);
+  opacity: 0;
+  transform: scale(0);
+  transition:
+    opacity 0.5s ease var(--delay),
+    transform 0.8s cubic-bezier(0.89, 0.34, 0.2, 0.83) var(--delay);
+}
+.is-visible .service-card {
+  opacity: 1;
+  transform: scale(1);
+}
+.service-card:hover,
+.service-card:focus-within {
+  display: block;
+  background: var(--color-paper);
+  box-shadow: none;
+}
+.service-card__title {
+  height: 40px;
+  padding: 0 14px;
+  border: 2px solid var(--color-paper);
+  border-radius: 20px;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-size: 17px;
+}
+.service-card__title strong {
+  color: var(--color-ink);
+}
+.service-card__title .service-card__icon {
+  color: var(--accent);
+}
+.service-card__icon {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  background: currentColor;
+}
+.service-card__arrow {
+  margin-inline-start: 5px;
+}
+.service-card__content {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: 40px;
+  display: block;
+  width: 220px;
+  height: 165px;
+  min-height: 165px;
+  padding: 0;
+  overflow: visible;
+  opacity: 0;
+  pointer-events: none;
+  translate: -50% 0;
+  transition: opacity 0.25s ease;
+}
+.service-card:hover .service-card__content,
+.service-card:focus-within .service-card__content {
+  padding: 0;
+  opacity: 1;
+}
+.service-card__asset {
+  position: absolute;
+  inset: 0;
+  width: 220px;
+  height: 165px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 30px rgb(0 0 0/12%);
+  transform: translate(-40px, 20px) rotate(-24deg) scale(0.6);
+  transition: transform 0.3s ease;
+}
+.service-card__asset:nth-child(2) {
+  transform: translate(-20px, 20px) rotate(-8deg) scale(0.5);
+  opacity: 0;
+  transition:
+    transform 0.5s ease,
+    opacity 0.5s ease;
+}
+.service-card:hover .service-card__asset:first-child,
+.service-card:focus-within .service-card__asset:first-child {
+  transform: rotate(-4deg);
+}
+.service-card:hover .service-card__asset:nth-child(2),
+.service-card:focus-within .service-card__asset:nth-child(2) {
+  transform: translate(85px, -8px) rotate(8deg) scale(0.9);
+  opacity: 1;
+}
+.service-card__asset img {
+  transform: none;
+}
+.service-card:hover img,
+.service-card:focus-within img {
+  transform: none;
+}
+@media (max-width: 1279px) and (min-width: 1024px) {
+  .services-grid {
+    left: 50%;
+    width: 1248px;
+    translate: -50% 0;
+  }
+}
+@media (max-width: 1023px) {
+  .cloud-diagram {
+    height: 540px;
+    min-height: 540px;
+  }
+  .services-grid {
+    top: 116px;
+    display: grid;
+    grid-template-columns: 1fr;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+  }
+  .mastery-col {
+    display: grid;
+    width: min(100%, 390px);
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 40px;
+    gap: 16px;
+    margin-inline: auto;
+  }
+  .side-col {
+    display: none;
+  }
+  .service-card {
+    justify-self: center;
+  }
+  .service-card__content {
+    display: none;
+  }
+}
+
+/* Keep the coordinate map last so the legacy measured-grid rules cannot win. */
+.cloud-diagram {
+  width: min(100%, 980px);
+  height: 560px;
+  min-height: 560px;
+  margin: 68px auto 0;
+  overflow: visible;
+}
+.services-grid {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  translate: none;
+}
+.side-col,
+.mastery-col {
+  display: contents;
+}
+.ghost-service,
+.service-card {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-inline-end: auto;
+  top: var(--y);
+  width: max-content;
+  height: 38px;
+  translate: -50% -50%;
+}
+.ghost-service {
+  max-width: 220px;
+  padding: 0 14px;
+  border: 1px solid rgb(var(--color-ink-rgb) / 13%);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 72%);
+  color: rgb(var(--color-ink-rgb) / 34%);
+  font-size: 14px;
+  transform: scale(0.96);
+}
+.ghost-service.ghost-service--no-image {
+  border-color: var(--color-neutral-200);
+  background: #000;
+  color: var(--color-neutral-200);
+}
+.side-col--brand .ghost-service,
+.side-col--product .ghost-service {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-inline-end: auto;
+  transform: scale(0.96);
+}
+.is-visible .ghost-service {
+  transform: scale(1);
+}
+.service-card {
+  max-width: 250px;
+  border-radius: 999px;
+  inset-inline-start: var(--x);
+  transform: scale(0.82);
+}
+.is-visible .service-card {
+  transform: scale(1);
+}
+.service-card__title {
+  height: 38px;
+  gap: 9px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.service-card__icon {
+  width: 12px;
+  height: 12px;
+}
+.service-card__arrow {
+  width: 10px;
+  height: 10px;
+  margin-inline-start: 3px;
+}
+.service-card__content {
+  bottom: 38px;
+}
+
+@media (max-width: 1023px) {
+  .cloud-diagram {
+    width: min(100%, 760px);
+    height: 500px;
+    min-height: 500px;
+    margin-top: 48px;
+    padding: 0;
+    overflow: hidden;
+  }
+  .services-grid {
+    inset: 0;
+    top: 0;
+    display: block;
+    height: 100%;
+  }
+  .side-col,
+  .mastery-col {
+    display: contents;
+  }
+}
+
+@media (max-width: 639px) {
+  .cloud-diagram {
+    margin-top: 36px;
+  }
+  .side-col {
+    display: none;
+  }
+  .mastery-col {
+    position: absolute;
+    inset: 102px 0 auto;
+    display: grid;
+    width: 100%;
+    height: auto;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 38px;
+    gap: 12px;
+    margin: 0;
+    justify-items: center;
+  }
+  .service-card {
+    position: relative;
+    inset: auto;
+    top: auto;
+    translate: none;
+  }
+}
+</style>
+=====FILE:resources/js/Composables/useMotion.ts=====
+import { nextTick, onMounted, onUnmounted, watch, type Ref } from 'vue'
+import { MOTION, directionFactor, gsap, prefersReducedMotion } from '@/lib/motion'
+import type { BlobProgress } from '@/lib/blob'
+
+/*
+ | Scroll- and load-driven motion, audit items A1/A3/A4/A7/A11
+ | (docs/FIGMA-AUDIT.md §6).
+ |
+ | WHY THESE VALUES ARE NOT READ FROM FIGMA
+ | ----------------------------------------
+ | `get_motion_context` on the Home frame (1419:9192, recursive) returns
+ | `{"nodes":[]}` — the file stores no keyframe tracks at all, which confirms
+ | audit gap G3. The only motion the file does store is the component-state
+ | `interactions` array (SMART_ANIMATE / EASE_OUT / 0.3s), already captured as
+ | `MOTION.duration.state`. Everything here therefore uses the production
+ | defaults centralised in lib/motion.ts rather than extracted curves; tune
+ | them there, not in components.
+ |
+ | Every composable below:
+ |   - no-ops under `prefers-reduced-motion: reduce`, leaving the final state,
+ |   - owns a gsap.context so the effect reverts on unmount, which is what
+ |     keeps ScrollTriggers from surviving an Inertia page swap.
+ */
+
+/** Element or template ref accepted by the composables. */
+type MotionTarget = Ref<HTMLElement | null> | (() => HTMLElement | null)
+
+function resolve(target: MotionTarget): HTMLElement | null {
+  return typeof target === 'function' ? target() : target.value
+}
+
+/**
+ * Runs `fn` inside a page-scoped GSAP context on mount and reverts it on
+ * unmount. Reverting restores the inline styles GSAP wrote, so a reveal that
+ * has already played leaves the element at its natural (visible) state.
+ */
+function useEffectScope(
+  fn: (ctx: { scope: HTMLElement | null }) => void | (() => void),
+  target?: MotionTarget,
+): void {
+  let ctx: gsap.Context | null = null
+  /*
+   | `fn` may return its own teardown. A gsap.context only captures what was
+   | created synchronously inside it, so anything that builds tweens LATER —
+   | a matchMedia that fires on a breakpoint change, for instance — has to
+   | hand back a disposer of its own or it outlives the component.
+   */
+  let dispose: (() => void) | undefined
+
+  onMounted(() => {
+    if (prefersReducedMotion()) return
+
+    const scope = target ? resolve(target) : null
+    if (target && !scope) return
+
+    ctx = gsap.context(() => {
+      dispose = fn({ scope }) ?? undefined
+    }, scope ?? undefined)
+  })
+
+  onUnmounted(() => {
+    dispose?.()
+    dispose = undefined
+    ctx?.revert()
+    ctx = null
+  })
+}
+
+/*
+ | Where a reveal fires, as a share of viewport height. Shared by the opt-in
+ | A7 reveal below and the page-wide A7b one further down.
+ |
+ | The near-bottom default assumes the block is roughly viewport-sized, so
+ | crossing the line means "the reader is about to see this". That assumption
+ | breaks on narrow screens: sections that are ~1 viewport tall on desktop
+ | become 1.3x to 2.8x the viewport once they stack, and the 0.7s tween then
+ | completes while the reader is still looking at the block's first ~80px.
+ | Measured on the live site at 390x664, sections revealed with 6-18% of
+ | themselves on screen — the motion was running, just never where anyone
+ | could see it.
+ |
+ | A block taller than the viewport can never animate "as it arrives" from a
+ | near-bottom trigger, so it fires later instead, once a substantial band of
+ | it is actually on screen.
+ */
+/*
+ | Brand colours used by the services diagram animation.
+ |
+ | GSAP interpolates concrete values, so these mirror the `--color-paper` and
+ | `--color-gold` tokens in app.css rather than reading them at runtime — keep
+ | the values in step. The axis arrives at full gold and settles to a softer
+ | gold so it stays on-brand against the dark section background.
+ */
+const PAPER = '#FFFFFF'
+const AXIS_DRAWN = 'rgba(189, 147, 59, 1)'
+const AXIS_RESTING = 'rgba(189, 147, 59, 0.72)'
+
+const REVEAL_START = 'top 88%'
+const REVEAL_START_TALL = 'top 65%'
+
+/** True when `el` is too tall to read as a single arriving gesture. */
+function isTallerThanViewport(el: HTMLElement): boolean {
+  return el.getBoundingClientRect().height > window.innerHeight * 0.9
+}
+
+/**
+ * A7 — section reveal. Every `[data-reveal]` descendant lifts into place once,
+ * on scroll entry. Children of a `[data-reveal-group]` stagger together so a
+ * card grid arrives as one gesture rather than N independent ones.
+ *
+ * Elements carry `.will-reveal` in markup, which sets the hidden start state in
+ * CSS to avoid a flash before GSAP measures. That rule is gated behind
+ * `html.motion-ready` (set by initMotion) so a JS failure can never leave the
+ * page permanently blank.
+ */
+export function useSectionReveal(target?: MotionTarget): void {
+  useEffectScope(({ scope }) => {
+    const root: ParentNode = scope ?? document
+    const groups = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal-group]'))
+    const singles = Array.from(root.querySelectorAll<HTMLElement>('[data-reveal]')).filter(
+      (el) => !el.closest('[data-reveal-group]'),
+    )
+
+    for (const el of singles) {
+      gsap.to(el, {
+        y: 0,
+        opacity: 1,
+        duration: MOTION.duration.reveal,
+        ease: MOTION.ease.brand,
+        scrollTrigger: {
+          trigger: el,
+          // Same tall-block handling as the page-level reveal — several of
+          // these opted-in blocks (Work/Show's 620px and 488px panels) are
+          // taller than a phone viewport.
+          start: () => (isTallerThanViewport(el) ? REVEAL_START_TALL : REVEAL_START),
+          once: true,
+        },
+      })
+    }
+
+    for (const group of groups) {
+      const children = Array.from(group.querySelectorAll<HTMLElement>('[data-reveal]'))
+      if (children.length === 0) continue
+
+      /*
+       | One trigger per VISUAL ROW, not one per group.
+       |
+       | Triggering the whole group off the container only reads correctly
+       | while the container fits the viewport. On a narrow screen these grids
+       | collapse to `grid-cols-1`, so a four-card group becomes a ~700px
+       | column in a ~660px viewport: the container's top crosses the line
+       | while cards 3 and 4 are still hundreds of px below the fold, and they
+       | finish their tween entirely off-screen. Measured on the live site,
+       | those two cards revealed at 0% visible — which is exactly what "the
+       | animations don't run on mobile" looks like to a reader.
+       |
+       | Bucketing by document Y restores the intent at every breakpoint: a
+       | 2-col grid still staggers its pair as one gesture, and a 1-col stack
+       | becomes N rows of one, each arriving on its own trigger.
+       */
+      for (const row of visualRows(children)) {
+        gsap.to(row, {
+          y: 0,
+          opacity: 1,
+          duration: MOTION.duration.reveal,
+          ease: MOTION.ease.brand,
+          stagger: MOTION.stagger.cards,
+          scrollTrigger: {
+            trigger: row[0],
+            start: () => (isTallerThanViewport(row[0]) ? REVEAL_START_TALL : REVEAL_START),
+            once: true,
+          },
+        })
+      }
+    }
+  }, target)
+}
+
+/*
+ | Deliberately coarse: grid items in one row can differ by a fraction of a
+ | pixel from sub-pixel layout, and cards of unequal height still share a row
+ | when their tops align.
+ */
+const ROW_TOLERANCE = 8
+
+/** Bucket elements into visual rows by their position in the document. */
+function visualRows(elements: HTMLElement[]): HTMLElement[][] {
+  const rows = new Map<number, HTMLElement[]>()
+
+  for (const el of elements) {
+    // Document-relative, so the buckets survive being measured mid-scroll.
+    const y = el.getBoundingClientRect().top + window.scrollY
+    const key = Math.round(y / ROW_TOLERANCE)
+    const row = rows.get(key)
+
+    if (row) row.push(el)
+    else rows.set(key, [el])
+  }
+
+  return [...rows.entries()].sort(([a], [b]) => a - b).map(([, row]) => row)
+}
+
+/*
+ |=============================================================================
+ | A7b — GLOBAL SECTION REVEAL
+ |=============================================================================
+ |
+ | `useSectionReveal` above is opt-in: it only touches elements an author
+ | tagged with [data-reveal]. That covered a handful of card grids on Home and
+ | left every other page with no scroll motion at all. This gives EVERY page
+ | the same subtle lift as each block enters the viewport — 20px up, 0 -> 1
+ | opacity — without needing an attribute on every section.
+ |
+ | It is deliberately conservative about what it touches:
+ |
+ |   - Blocks already carrying [data-reveal]/[data-reveal-group] are skipped,
+ |     so the existing staggers keep ownership of their own section and nothing
+ |     animates twice.
+ |   - Blocks already on screen at load are skipped entirely and never hidden.
+ |     The effect is "content rises as it ARRIVES"; hiding the hero to fade it
+ |     back in on first paint is a different (and worse) effect, and it would
+ |     fight the A1 hero stagger.
+ |   - `data-no-reveal` opts a block out; `data-reveal-section` opts a non-
+ |     <section> block in.
+ |
+ | `clearProps` on completion removes the inline transform. That matters beyond
+ | tidiness: a lingering `transform` on a section makes it the containing block
+ | for any `position: fixed` descendant.
+ */
+const AUTO_REVEAL_DISTANCE = 20
+
+/** Blocks that should carry the page-level reveal, outermost-first. */
+function autoRevealTargets(root: HTMLElement): HTMLElement[] {
+  const blocks = Array.from(
+    root.querySelectorAll<HTMLElement>('section, [data-reveal-section]'),
+  )
+
+  // Only the outermost of any nested pair — a section inside a section is one
+  // gesture, not two.
+  const outermost = blocks.filter(
+    (el) => !blocks.some((other) => other !== el && other.contains(el)),
+  )
+
+  /*
+   | Several pages (Insights/Show, Work/Index) put their whole body in a plain
+   | container <div> and use <section> only for a trailing block, so sections
+   | alone would leave most of the page static. Pick up top-level children that
+   | neither contain nor sit inside an already-chosen section.
+   */
+  const looseTopLevel = Array.from(root.children).filter(
+    (el): el is HTMLElement =>
+      el instanceof HTMLElement &&
+      !outermost.some(
+        (section) =>
+          section === el || section.contains(el) || el.contains(section),
+      ),
+  )
+
+  return [...outermost, ...looseTopLevel].filter((el) => {
+    if (el.hasAttribute('data-no-reveal')) return false
+
+    // Owned by useSectionReveal — leave it alone.
+    if (el.matches('[data-reveal], [data-reveal-group]')) return false
+    if (el.querySelector('[data-reveal], [data-reveal-group]')) return false
+
+    // Already visible at load: show it, do not animate it.
+    return el.getBoundingClientRect().top > window.innerHeight * 0.85
+  })
+}
+
+/**
+ * A7b — applies the shared section reveal across the whole page, and re-applies
+ * it after each Inertia navigation. Call once, from AppLayout.
+ *
+ * @param pageKey Reactive Inertia page component name. Changing it re-scans the
+ *                new DOM; the layout itself never unmounts, so without this the
+ *                effect would only ever run on the first page loaded.
+ */
+export function useAutoReveal(pageKey: Ref<string>): void {
+  let ctx: gsap.Context | null = null
+
+  function run(): void {
+    ctx?.revert()
+    ctx = null
+
+    if (prefersReducedMotion()) return
+
+    const main = document.getElementById('main')
+    if (!main) return
+
+    const targets = autoRevealTargets(main)
+    if (targets.length === 0) return
+
+    ctx = gsap.context(() => {
+      /*
+       | Each block gets its OWN trigger. One shared trigger across the whole
+       | set would fire every tween the moment the first block crossed the
+       | line, so the rest of the page would have finished animating long
+       | before the reader reached it.
+       */
+      for (const el of targets) {
+        gsap.fromTo(
+          el,
+          { y: AUTO_REVEAL_DISTANCE, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: MOTION.duration.reveal,
+            ease: MOTION.ease.brand,
+            clearProps: 'transform,opacity',
+            scrollTrigger: {
+              trigger: el,
+              // Function form so a resize or orientation change re-measures:
+              // a block that was viewport-sized in landscape is a tall stack
+              // in portrait, and vice versa.
+              start: () => (isTallerThanViewport(el) ? REVEAL_START_TALL : REVEAL_START),
+              once: true,
+            },
+          },
+        )
+      }
+    }, main)
+  }
+
+  onMounted(() => {
+    void nextTick(run)
+  })
+
+  watch(pageKey, () => {
+    // Two frames: the outgoing page has to leave and the incoming one has to
+    // be laid out before any of it can be measured. Mirrors app.ts's own
+    // re-init cadence on `router.on('navigate')`.
+    void nextTick(() => {
+      requestAnimationFrame(() => requestAnimationFrame(run))
+    })
+  })
+
+  onUnmounted(() => {
+    ctx?.revert()
+    ctx = null
+  })
+}
+
+/**
+ * A1 — hero stagger-in on load. Direct children of the target rise together
+ * with a short offset. Uses `from` (not `to`) because the hero is above the
+ * fold: it must not depend on a scroll event ever firing.
+ */
+export function useHeroStagger(target: MotionTarget): void {
+  useEffectScope(({ scope }) => {
+    const children = scope ? Array.from(scope.children) : []
+    if (children.length === 0) return
+
+    gsap.from(children, {
+      y: 24,
+      opacity: 0,
+      duration: MOTION.duration.hero,
+      ease: MOTION.ease.quick,
+      stagger: MOTION.stagger.hero,
+      clearProps: 'transform,opacity',
+    })
+  }, target)
+}
+
+/**
+ * A3 — KPI counters. Counts up to the number already rendered in the element,
+ * so the final DOM text is the source of truth and the value stays correct
+ * when JS is unavailable or motion is reduced.
+ *
+ * The displayed strings carry affixes and are locale-formatted ("+70k", "%95"),
+ * so the numeric run is isolated and its prefix/suffix preserved. Western,
+ * Persian, and Arabic-Indic digit sets are normalised for the calculation and
+ * converted back to the active digit set on every animation frame.
+ */
+export function useCounters(target?: MotionTarget): void {
+  useEffectScope(({ scope }) => {
+    const root: ParentNode = scope ?? document
+
+    for (const el of Array.from(root.querySelectorAll<HTMLElement>('[data-counter]'))) {
+      const text = el.textContent?.trim() ?? ''
+      const match = text.match(/^([^\p{N}]*?)([\p{N}][\p{N},.٬٫]*)([^\p{N}]*)$/u)
+      if (!match) continue
+
+      const [, prefix, digits, suffix] = match
+      const asciiDigits = digits
+        .replace(/[٠-٩]/g, (digit) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)))
+        .replace(/[۰-۹]/g, (digit) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
+        .replace(/٬/g, ',')
+        .replace(/٫/g, '.')
+      const decimals = asciiDigits.includes('.')
+        ? (asciiDigits.split('.')[1]?.length ?? 0)
+        : 0
+      const endValue = Number(asciiDigits.replace(/,/g, ''))
+      if (!Number.isFinite(endValue)) continue
+
+      const state = { value: 0 }
+      const grouped = /[,٬]/.test(digits)
+      const groupSeparator = digits.includes('٬') ? '٬' : ','
+      const decimalSeparator = digits.includes('٫') ? '٫' : '.'
+      const documentLanguage = document.documentElement.lang.toLowerCase()
+      const digitSet = /[٠-٩]/.test(digits) || documentLanguage.startsWith('ar')
+        ? '٠١٢٣٤٥٦٧٨٩'
+        : /[۰-۹]/.test(digits) || documentLanguage.startsWith('fa')
+          ? '۰۱۲۳۴۵۶۷۸۹'
+          : '0123456789'
+
+      gsap.to(state, {
+        value: endValue,
+        duration: MOTION.duration.counter,
+        ease: 'power1.out',
+        scrollTrigger: { trigger: el, start: 'top 90%', once: true },
+        onUpdate: () => {
+          const shown = grouped
+            ? state.value.toLocaleString('en-US', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals,
+              })
+            : state.value.toFixed(decimals)
+          const localised = shown
+            .replace(/,/g, groupSeparator)
+            .replace(/\./g, decimalSeparator)
+            .replace(/\d/g, (digit) => digitSet[Number(digit)] ?? digit)
+          el.textContent = `${prefix}${localised}${suffix}`
+        },
+        // Snap back to the exact authored string so no rounding artefact sticks.
+        onComplete: () => {
+          el.textContent = text
+        },
+      })
+    }
+  }, target)
+}
+
+/**
+ * A4 — services orbit scrub. Rotates the ring across the viewport as the
+ * section scrolls (−8°→8°, linear, no easing: it is tied to scroll position,
+ * not time). Direction flips in RTL so the ring turns with the reading order.
+ */
+export function useScrubRotate(
+  target: MotionTarget,
+  options: { degrees?: number; media?: string } = {},
+): void {
+  const { degrees = 8, media } = options
+
+  useEffectScope(({ scope }) => {
+    if (!scope) return
+
+    const spin = (): void => {
+      const sweep = degrees * directionFactor()
+
+      gsap.fromTo(
+        scope,
+        { rotation: -sweep },
+        {
+          rotation: sweep,
+          ease: MOTION.ease.none,
+          scrollTrigger: {
+            trigger: scope,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        },
+      )
+    }
+
+    if (!media) {
+      spin()
+      return
+    }
+
+    /*
+     | Breakpoint-scoped rotation.
+     |
+     | A stage can swap which ring it draws at a breakpoint, leaving the other
+     | at `display: none`. A ScrollTrigger measured on a display:none element
+     | gets a zero-height rect, so its start and end collapse onto the same
+     | scroll position and the scrub never advances — the ring that IS on
+     | screen sits perfectly still. matchMedia builds the tween only while its
+     | query matches and reverts it (killing the trigger) when it stops, so
+     | rotating through a resize or an orientation change stays correct.
+     */
+    const mm = gsap.matchMedia()
+    mm.add(media, () => spin())
+
+    return () => mm.revert()
+  }, target)
+}
+
+/**
+ * Services diagram — the opening Venn becoming the orbit composition.
+ *
+ * One silhouette carries the whole transformation (see lib/blob.ts), so the
+ * three geometry channels below are the animation; everything else resolves
+ * around them. They deliberately run at different lengths: `pinch` is nearly
+ * done while `spread` is barely moving, which is what makes the material melt
+ * together BEFORE it pulls apart, rather than sliding apart as two circles.
+ *
+ * The silhouette itself is one LINEAR tween. Its shape comes from measured
+ * keyframes (lib/blob.ts), so easing it here would double-apply the reference's
+ * own timing — the snap in the middle of that table is exactly what no single
+ * curve reproduced when this was three eased channels.
+ *
+ * The labels are moved, never swapped: Brand and Product travel out from
+ * inside their circles to the ends of the axis and remain white;
+ * Service Mastery rises from the overlap to the top of the composition.
+ *
+ * Not a Figma audit item: the file draws the finished rings only, with no
+ * opening state to extract (see the note on MasteryDiagram.vue).
+ */
+export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): void {
+  useEffectScope(({ scope }) => {
+    if (!scope) return
+
+    const blob = scope.querySelector<SVGPathElement>('[data-mastery="blob"]')
+    if (!blob) return
+
+    const core = scope.querySelector<SVGGElement>('[data-mastery="core"]')
+    const rings = scope.querySelector<SVGGElement>('[data-mastery="rings"]')
+    const inner = scope.querySelector<SVGCircleElement>('[data-mastery="ring-inner"]')
+    const outer = scope.querySelector<SVGCircleElement>('[data-mastery="ring-outer"]')
+    const axis = scope.querySelector<SVGLineElement>('[data-mastery="axis"]')
+    const brand = scope.querySelector<HTMLElement>('[data-mastery-label="brand"]')
+    const product = scope.querySelector<HTMLElement>('[data-mastery-label="product"]')
+    const coreLabel = scope.querySelector<HTMLElement>('[data-mastery-label="core"]')
+
+    const { width, height } = scope.getBoundingClientRect()
+    if (width === 0) return
+
+    /*
+     | Where the labels start, in px from where they finish. Brand and Product
+     | begin inside their own circle (the reference's 38% inset) and end just
+     | outside their endpoint dot; Service Mastery begins in the overlap and
+     | ends at the top. Measured rather than declared so the travel stays right
+     | at any width — and mirrored in RTL, where the two sides swap.
+     */
+    const sideTravel = (width * 0.38 - 50) * directionFactor()
+    const coreTravel = height * 0.46 - 40
+
+    // Rotating a dashed ring reads as movement; a plain one would not. The
+    // origin is the composition centre, not the node's own box, so the rings
+    // turn in place rather than orbiting.
+    const spin = { svgOrigin: `${width / 2} ${height / 2}` }
+
+    /*
+     | The component renders the FINISHED composition, so reduced motion, a
+     | failed bundle, and the moment before this runs all leave a complete
+     | diagram. Rewinding to the opening Venn is therefore the first thing the
+     | effect does, and only ever when it is going to play.
+     */
+    Object.assign(progress, { t: 0 })
+
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: scope, start: REVEAL_START, once: true },
+    })
+
+    /*
+     | Shown outright, not faded in. The hidden state exists only to keep the
+     | finished diagram off screen until the section arrives (see the
+     | motion-ready gate in the component); the reference opens on a solid
+     | Venn, and any fade here leaves it washed out through the first third of
+     | its own transformation.
+     */
+    tl.set(scope, { opacity: 1 }, 0)
+
+    // The material: melt, pull apart, shrink into the endpoint dots.
+    tl.to(progress, { t: 1, duration: MOTION.duration.mastery, ease: MOTION.ease.none }, 0)
+
+    // The darker core belongs to the overlap, and goes with it.
+    if (core) {
+      tl.fromTo(core, { opacity: 1 }, { opacity: 0, duration: 0.13, ease: MOTION.ease.none }, 0.13)
+    }
+
+    // The rings are not part of the opening — they arrive as the middle empties.
+    if (rings && inner && outer) {
+      tl.fromTo(rings, { opacity: 0 }, { opacity: 1, duration: 0.6, ease: MOTION.ease.quick }, 0.35)
+        .fromTo(inner, { rotation: -720, ...spin }, { rotation: 0, duration: 1.8, ease: MOTION.ease.quick, ...spin }, 0.2)
+        .fromTo(outer, { rotation: 720, ...spin }, { rotation: 0, duration: 1.8, ease: MOTION.ease.quick, ...spin }, 0.2)
+    }
+
+    /*
+     | The axis arrives early and dark, while the bridge is still thick, and
+     | only then pales to the finished stroke. That ordering is what sells the
+     | handoff: the reader never sees a line fade in over a gap, they see the
+     | material itself thin out into one.
+     */
+    if (axis) {
+      tl.fromTo(axis, { opacity: 0 }, { opacity: 1, duration: 0.35, ease: MOTION.ease.quick }, 0.36)
+        .fromTo(
+          axis,
+          { stroke: AXIS_DRAWN },
+          { stroke: AXIS_RESTING, duration: 0.9, ease: MOTION.ease.none },
+          0.9,
+        )
+    }
+
+    // Labels travel and recolour — the same elements throughout.
+    if (brand && product) {
+      tl.fromTo(
+        [brand, product],
+        {
+          x: (i: number) => (i === 0 ? sideTravel : -sideTravel),
+          color: PAPER,
+        },
+        {
+          x: 0,
+          color: PAPER,
+          duration: 1.2,
+          ease: MOTION.ease.spread,
+        },
+        0.05,
+      )
+    }
+
+    if (coreLabel) {
+      tl.fromTo(
+        coreLabel,
+        { y: coreTravel, color: PAPER },
+        {
+          y: 0,
+          color: PAPER,
+          duration: 1,
+          ease: MOTION.ease.spread,
+        },
+        0.1,
+      )
+    }
+  }, stage)
+}
+
+/**
+ * A11 — final-CTA glow parallax. Drifts the decorative layer against the
+ * scroll so the gold ellipse sits behind the card with depth. Purely
+ * decorative, so it is safe to skip entirely under reduced motion.
+ */
+export function useParallax(target: MotionTarget, distance = 40): void {
+  useEffectScope(({ scope }) => {
+    if (!scope) return
+
+    gsap.fromTo(
+      scope,
+      { yPercent: -distance / 2 },
+      {
+        yPercent: distance / 2,
+        ease: MOTION.ease.none,
+        scrollTrigger: {
+          trigger: scope.parentElement ?? scope,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+        },
+      },
+    )
+  }, target)
+}
+=====FILE:resources/js/Pages/Home.vue=====
+<script setup lang="ts">
+import ButtonIcon from '@/Components/ButtonIcon.vue'
+/**
+ * Home page — Figma node 1419:9192 (desktop, 1440×10821) / 1419:9191 (mobile).
+ *
+ * FIDELITY STATUS (be precise about what was individually re-verified against
+ * get_design_context + screenshot in this pass, versus what uses the
+ * already-extracted global token system without a fresh per-node check):
+ *
+ *   VERIFIED against live Figma nodes this session:
+ *     - Header (1419:9339)               — see Layouts/AppHeader.vue
+ *     - Hero + hero texts (1419:9193/94)  — section below
+ *     - Services orbit (1419:9279)         — Components/Services/ServicesOrbit.vue
+ *     - KPI, process, why-us, reviews,
+ *       insights and FAQ card components   — sections below
+ *
+ *   Uses the token system extracted in the original audit (colors, spacing,
+ *   radii, type scale all come directly from Figma variables — see
+ *   tailwind.config.js), but individual section layout was not re-verified
+ *   node-by-node against a fresh screenshot in this pass:
+ *     - trust proof, projects showcase, final CTA, footer
+ *
+ * Continuing the same get_design_context → download_assets → build → compare
+ * loop through the remaining 13 sections (and then the other 10 pages) is
+ * the direct continuation of this work.
+ */
+import { computed, ref } from "vue";
+import { usePage } from "@inertiajs/vue3";
+import {
+  ArrowUpRight,
+  BadgeCheck,
+  CalendarDays,
+  ChartNoAxesCombined,
+  CircleMinus,
+  CirclePlus,
+  ClipboardCheck,
+  Gem,
+  Copy,
+  TrendingUp,
+  UsersRound,
+} from "lucide-vue-next";
+import {
+  useCounters,
+  useHeroStagger,
+  useSectionReveal,
+} from "@/Composables/useMotion";
+import SeoHead from "@/Components/SeoHead.vue";
+import CtaBanner from "@/Components/CtaBanner.vue";
+import ServicesOrbit from "@/Components/Services/ServicesOrbit.vue";
+import LeadMagnet from "@/Components/Sections/LeadMagnet.vue";
+import PackagesSection from "@/Components/Sections/PackagesSection.vue";
+import ProcessSection from "@/Components/Sections/ProcessSection.vue";
+import ProjectsShowcase from "@/Components/Sections/ProjectsShowcase.vue";
+import type {
+  ClientItem,
+  FaqItem,
+  PostSummary,
+  ProjectSummary,
+  ServiceItem,
+  SeoMeta,
+  SharedProps,
+  TestimonialItem,
+} from "@/types";
+
+interface SectionItemContent {
+  id: number;
+  value: string;
+  label: string;
+  suffix: string;
+  title: string;
+  description: string;
+  badge: string;
+  features: string[];
+  footer: string;
+  icon: string | null;
+}
+
+interface SectionContent {
+  type: string;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  content: string;
+  orbitBrandLabel: string;
+  orbitProductLabel: string;
+  orbitCoreLabel: string;
+  colors: Record<
+    "eyebrow" | "title" | "subtitle" | "description" | "content",
+    string | null
+  >;
+  primaryCta: { label: string; url: string; icon?: string | null } | null;
+  secondaryCta: { label: string; url: string; icon?: string | null } | null;
+  image: { src: string; alt: string; width: number; height: number } | null;
+  items: SectionItemContent[];
+}
+
+const props = defineProps<{
+  sections: Record<string, SectionContent>;
+  services: ServiceItem[];
+  projects: ProjectSummary[];
+  clients: ClientItem[];
+  testimonials: TestimonialItem[];
+  posts: PostSummary[];
+  faqs: FaqItem[];
+  seo: SeoMeta;
+}>();
+
+const page = usePage<SharedProps>();
+const hero = computed(() => props.sections.hero);
+const heroImage = computed(() => hero.value?.image ?? null);
+const kpi = computed(() => props.sections.kpi);
+const process = computed(() => props.sections.process);
+const packages = computed(() => props.sections.packages);
+const whyUs = computed(() => props.sections.why_us);
+const reviews = computed(() => props.sections.reviews);
+const insights = computed(() => props.sections.insights);
+const faqSection = computed(() => props.sections.faq);
+const faqSubtitle = computed(
+  () =>
+    faqSection.value?.subtitle ||
+    {
+      en: "Because every creative decision is built around brand clarity, consistency, and growth.",
+      fa: "چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.",
+      ar: "لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.",
+    }[page.props.locale.current],
+);
+const insightsSubtitle = computed(() => {
+  if (insights.value?.description || insights.value?.subtitle) {
+    return insights.value.description || insights.value.subtitle;
+  }
+
+  return {
+    en: "Because every creative decision is built around brand clarity, consistency, and growth.",
+    fa: "چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.",
+    ar: "لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.",
+  }[page.props.locale.current];
+});
+
+/*
+ | Testimonial marquee track (A6).
+ |
+ | The animation translates the track -50%, which requires it to be exactly
+ | two identical halves. A half must also be wider than the viewport or the
+ | row visibly runs out mid-loop — the design shows 7 cards, but the seeded
+ | data can hold as few as 1, so each half repeats the source list until it
+ | covers a wide desktop (card 328 + gap 26 = 354 per item).
+ */
+const testimonialTrack = computed(() => {
+  const source = props.testimonials;
+  if (source.length === 0) return [];
+
+  const perHalf = Math.max(1, Math.ceil(2560 / 354 / source.length));
+  const half = Array.from({ length: perHalf }, () => source).flat();
+
+  return [...half, ...half];
+});
+
+/*
+ | Figma orders the project CTA first and gives it the solid treatment.
+ | Mobile padding/font are trimmed from the desktop values (px-8/14px) so
+ | both labels fit side by side on the 402px frame instead of wrapping to
+ | two full-width rows — `flex-wrap` on the parent stays as a safety net
+ | for an admin-authored label long enough to still overflow.
+ */
+const heroCtaSolid =
+  "flex items-center gap-1 whitespace-nowrap rounded-sm bg-ink px-4 py-[10px] text-[13px] font-medium text-paper transition-colors hover:bg-gold hover:text-white md:px-8 md:py-4 md:text-title-md";
+const heroCtaOutline =
+  "flex items-center gap-1 whitespace-nowrap rounded-sm border border-ink bg-paper px-4 py-[9px] text-[13px] font-medium text-ink transition-colors hover:border-gold hover:text-gold md:px-8 md:py-[15px] md:text-title-md";
+
+const heroCtas = computed(() => {
+  const primary = hero.value?.primaryCta ?? null;
+  const secondary = hero.value?.secondaryCta ?? null;
+
+  const ordered = [primary, secondary];
+
+  return ordered.filter(
+    (cta): cta is { label: string; url: string; icon?: string | null } => cta !== null,
+  );
+});
+
+const whyUsIcons = [BadgeCheck, Copy, Gem, ClipboardCheck];
+const kpiIcons = [ChartNoAxesCombined, TrendingUp, UsersRound];
+
+/*
+ | Motion — audit A1 (hero stagger), A3 (KPI counters), A7 (section reveal).
+ | The composables no-op under reduced motion and revert on unmount, so
+ | ScrollTriggers do not survive an Inertia page swap.
+ */
+const heroStack = ref<HTMLElement | null>(null);
+
+useHeroStagger(heroStack);
+useCounters();
+useSectionReveal();
+</script>
+
+<template>
+  <!--
+    ============================================================
+    VERTICAL RHYTHM — `lg:` margin offsets on the sections below
+    ============================================================
+
+    Frame 1419:9192 positions every section absolutely. The section components
+    are shared with 6 other pages, so their own padding is left alone and the
+    correction is applied here, at the call site, as a margin.
+
+    Each value is the INCREMENTAL shift for that section: a margin moves the
+    section and everything after it, so shift[i] = d[i] - d[i-1] where d is the
+    section's measured offset from its Figma y. Verified at 1440: all 14 nodes
+    land on their Figma y exactly (0px), see AUDIT/figma-final/report.md §12.
+
+    Two things to know before editing:
+
+    1. Negative margins here consume the PRECEDING section's bottom padding
+       (112px at lg). Every value is smaller than that, so nothing collides.
+       Keep it that way — a negative margin larger than 112 overlaps content.
+    2. These are tuned against the CURRENTLY SEEDED copy. Section heights are
+       content-dependent, so a materially longer heading or excerpt re-opens
+       the drift. Re-run the harness rather than eyeballing it.
+
+    The KPI band is *designed* to overlap the hero: Figma puts it at y=850
+    while the hero image is 1440x904. Hence `lg:-mt-[54px] lg:pt-0` — it needs
+    no top padding, it sits on the hero.
+  -->
+  <SeoHead :meta="seo" />
+
+  <!--
+    ============================================================
+    HERO — Figma 1419:9193 (bg) + 1419:9194 (hero texts)
+    Verified 1:1 via get_design_context on the live node. Every
+    spacing/color/type value below is a direct Figma variable,
+    referenced in the inline comments.
+    ============================================================
+  -->
+  <!--
+    Hero img 1419:9193 is 1440×904 anchored at (0,0) — it runs full-bleed
+    behind the fixed header. Hero texts 1419:9194 sit at x=96 / y=176.
+  -->
+  <section
+    v-if="hero"
+    class="relative min-h-[765px] overflow-hidden md:min-h-[904px]"
+  >
+    <!--
+      The artwork is a *directional* composition, not a texture: the dune
+      curve and orbit ring occupy one half and the copy sits in the empty
+      half. The RTL frame (ar home 1365:11275) is the same asset mirrored, so
+      the clear half follows the text — unflipped it collides with the copy.
+      Hence its own layer rather than a background on the section: flipping
+      the section would flip the hero text with it.
+
+      Mobile (1419:9191) is a SEPARATE composition, not a crop: the frame is
+      402x765 and the artwork is re-stacked vertically — ring and dune curve
+      anchored bottom-right, the clear space above them rather than beside.
+      The desktop asset is 1024x704 landscape with everything in its right
+      half, so scaling it into a portrait viewport pushes the whole
+      composition off the right edge. Hence a per-breakpoint asset swap.
+      Both use bg-[length:100%_100%]: each asset already matches its frame's
+      aspect ratio, so this fills exactly with no crop.
+    -->
+    <img
+      v-if="heroImage"
+      :src="heroImage.src"
+      :alt="heroImage.alt"
+      :width="heroImage.width"
+      :height="heroImage.height"
+      class="absolute inset-0 size-full object-cover"
+    />
+    <div
+      v-else
+      class="absolute inset-0 bg-[url('/images/sahra/hero-brand-preview-mobile.webp')] bg-[length:100%_100%] bg-center bg-no-repeat md:bg-[url('/images/sahra/hero-brand-preview.png')] rtl:-scale-x-100"
+      aria-hidden="true"
+    ></div>
+    <!-- hero texts: x=96 y=176, gap-14 (space56) — Figma 1419:9194 -->
+    <!-- A1: the three direct children (badge / texts / CTAs) stagger in on load. -->
+    <!--
+      The background is full-bleed, but the text block is placed at x=96 inside
+      the 1440 frame — so it has to be measured from a centred frame, not from
+      the viewport edge, or past 1440 it drifts left of every `.container-sahra`
+      section below it (240px adrift at 1920). Same defect as AppHeader HD-01.
+    -->
+    <div class="mx-auto w-full max-w-frame">
+    <div
+      ref="heroStack"
+      class="relative z-10 flex w-[731px] max-w-full flex-col gap-12 px-5 pb-10 pt-36 md:ms-24 md:max-w-[calc(100%-3rem)] md:gap-14 md:px-0 md:pb-0 md:pt-[176px]"
+    >
+      <!--
+        hero badge — Figma 1419:9195: row, padding 8, gap 8, radius 1000,
+        fill gold/100. `hug` sizing, so the pill must not stretch.
+      -->
+      <div class="flex w-fit items-center gap-2 rounded-round bg-gold-100 p-2">
+        <span
+          class="inline-block size-2 rotate-45 bg-gold-700"
+          aria-hidden="true"
+        />
+        <span
+          class="text-label-md text-neutral-800"
+          :style="{ color: hero.colors.eyebrow || undefined }"
+          >{{ hero.eyebrow }}</span
+        >
+      </div>
+
+      <!-- hero texts (title+subtitle): gap-12 (space48) — Figma 1419:9199 -->
+      <div class="flex flex-col gap-8 md:gap-12">
+        <!--
+          Title — Figma 1419:9200. One text node, three runs over a
+          Poppins Medium 48 / 80px line-height / -0.05em base:
+            ts1  "We build "          56px
+            ts2  "marketing systems"  Idealist 96px, 90deg gold gradient
+            ts1  "for brands ready to grow"  56px
+          Runs are kept as separate translatable fields (title / content /
+          description) so each locale can reorder them.
+        -->
+        <h1
+          class="text-[28px] font-medium leading-normal tracking-[-0.02em] text-neutral-900 md:text-[48px] md:leading-[80px] md:tracking-[-0.05em]"
+          :style="{ color: hero.colors.title || undefined }"
+        >
+          <span class="block text-[28px] md:text-[56px]">{{ hero.title }}</span>
+          <!--
+            "marketing systems" — flat primary gold, no gradient and no glow.
+            This previously painted a 90deg white→gold→white ramp through
+            `bg-clip-text`, which faded both ends of the run towards paper and
+            read as a soft shadow. The handover spec pins it to the primary
+            gold variable outright, so the run is a plain `color` fill and
+            carries no text-shadow / drop-shadow of any kind.
+          -->
+          <span
+            class="block w-fit font-display text-[36px] leading-normal tracking-normal md:text-[96px] md:leading-[80px]"
+            :style="{
+              color: hero.colors.content || 'var(--primary-gold, #BD933B)',
+            }"
+            >{{ hero.content }}</span
+          >
+          <span class="block text-[28px] md:text-[56px]">{{
+            hero.description
+          }}</span>
+        </h1>
+
+        <!-- Subtitle — Figma 1419:9201: Poppins Medium 18, black/700, w 612 -->
+        <p
+          class="w-full max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-[18px]"
+          :style="{ color: hero.colors.subtitle || undefined }"
+        >
+          {{ hero.subtitle }}
+        </p>
+      </div>
+
+      <!--
+        hero cta: gap-[10px] — Figma 1419:9202 (en) / 1365:9960 (ar).
+        `heroCtas` keeps the authored primary/secondary order; the primary
+        project action receives the solid treatment.
+      -->
+      <div class="flex flex-wrap items-center gap-2 md:gap-[10px]">
+        <a
+          v-for="(cta, i) in heroCtas"
+          :key="cta.url"
+          :href="cta.url"
+          :class="i === 0 ? heroCtaSolid : heroCtaOutline"
+        >
+          {{ cta.label }}
+          <ButtonIcon :name="cta.icon" />
+        </a>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!--
+    ============================================================
+    Remaining sections — styled from the extracted global token
+    system (real colors/spacing/radii/type from Figma variables)
+    but layout not yet individually re-verified node-by-node in
+    this pass. Marked per-section with their Figma node for the
+    next verification round.
+    ============================================================
+  -->
+
+  <!--
+    KPI — Figma 1419:9318. Row of 3, gap 16, section width 1036.
+    Card 1419:9319: column, padding 24/12, gap 8, radius 8, fill #FFFFFF,
+    1px OUTSIDE gradient stroke (see `.edge-gold`).
+  -->
+  <section v-if="kpi" class="relative z-20 -mt-[117px] py-0 md:mt-0 md:py-24 lg:-mt-[54px] lg:py-28 lg:pt-0">
+    <div
+      class="container-sahra grid grid-cols-3 gap-2 text-center md:container-narrow md:gap-4"
+      data-reveal-group
+    >
+      <div
+        v-for="(item, i) in kpi.items"
+        :key="i"
+        class="edge-gold will-reveal flex h-[77px] flex-col items-center justify-center gap-2 rounded-[4px] px-3 py-3 md:h-auto md:px-3 md:py-6"
+        data-reveal
+      >
+        <div class="flex items-center justify-center gap-1 md:gap-4">
+          <img
+            v-if="item.icon"
+            :src="item.icon"
+            alt=""
+            class="size-4 object-contain md:size-8"
+            aria-hidden="true"
+          />
+          <component
+            v-else
+            :is="kpiIcons[i] || TrendingUp"
+            class="size-4 text-gold md:size-8"
+            :stroke-width="1.5"
+          />
+          <!-- A3: counts up to the authored value; the DOM text stays the
+               source of truth so the number is right without JS. -->
+          <p
+            class="latin-nums text-[18px] font-medium leading-none text-ink md:text-[32px]"
+            data-counter
+          >
+            {{ item.value }}
+          </p>
+        </div>
+        <div class="flex flex-col items-center gap-1">
+          <p class="whitespace-nowrap text-[12px] font-medium leading-normal text-gold md:text-title-sm">{{ item.title }}</p>
+          <p class="hidden text-body-md text-neutral-700 md:block">{{ item.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!--
+    Trust proof — Figma 1419:9205. Column gap 32 inside the 1036 track.
+    Heading 1419:9206 is Poppins Medium 22 black/600 with the count run at
+    28 / black-900. Logo rail 1419:9208: row, gap 48, each logo in a
+    128×128 centred box at 80px wide. `shade` 1419:9215 is a 90deg
+    white→transparent→white overlay (`.marquee-mask`).
+
+    Mobile pt/pb verified against the mobile frame 1419:9191: KPI
+    (Frame 96151, y648 h77) → this section (Frame 96153, y813) is an 88px
+    gap; this section (bottom y950) → services orbit (Frame 96284, y1042)
+    is a 92px gap. Was pt-115/pb-0 (mismatched — pb was implicitly 0 since
+    the next section's own dark background starts flush at its frame edge)
+    before this fix.
+  -->
+  <section class="section pb-[92px] pt-[88px] md:pb-24 md:pt-0 lg:mt-[19px] lg:pb-28">
+    <div class="container-narrow flex flex-col gap-8">
+      <h2 class="text-center text-[16px] font-medium leading-normal text-neutral-600 md:text-[22px]">
+        {{ sections.trust_proof?.title }}
+        <span class="text-[20px] leading-normal text-neutral-900 md:text-[28px]">{{
+          sections.trust_proof?.content
+        }}</span>
+        {{ sections.trust_proof?.subtitle }}
+      </h2>
+      <!--
+        A2 — the rail scrolls continuously behind the `shade` mask. The list
+        is rendered twice so the -50% loop is seamless; the duplicate is
+        aria-hidden so screen readers announce each client once.
+      -->
+      <div class="marquee-mask overflow-hidden">
+        <div
+          class="marquee-track items-center gap-12"
+          style="--marquee-duration: 28s"
+        >
+          <template v-for="copy in 2" :key="copy">
+            <span
+              v-for="(client, i) in clients"
+              :key="`${copy}-${i}`"
+              class="group flex size-32 shrink-0 items-center justify-center"
+              :aria-hidden="copy === 2 ? 'true' : undefined"
+            >
+              <img
+                :src="client.logo"
+                :alt="copy === 2 ? '' : client.name"
+                class="size-full object-contain p-2 grayscale transition-[filter] duration-300 ease-out group-hover:grayscale-0 group-focus-within:grayscale-0"
+              />
+            </span>
+          </template>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services orbit — Figma 1419:9279 -->
+  <ServicesOrbit
+    v-if="sections.services_cloud"
+    class="lg:mt-[23px]"
+    :section="sections.services_cloud"
+    :services="services"
+  />
+
+  <!--
+    Content Direction Checklist — Figma 1419:9322.
+
+    The mobile overrides here were `max-md:h-[207px] max-md:overflow-hidden
+    max-md:opacity-0`, which pinned the block to a fixed height and then made
+    it fully TRANSPARENT below 768px — the section was rendered, occupied
+    space, and was invisible on every phone. Removed: the card sizes itself
+    from its content at every width.
+  -->
+  <LeadMagnet
+    v-if="sections.lead_magnet"
+    class="lg:mt-[48px]"
+    :section="sections.lead_magnet"
+    mobile-offcanvas
+  />
+
+  <!-- Projects showcase — Figma 1419:9216 -->
+  <ProjectsShowcase
+    v-if="sections.projects_showcase"
+    class="max-md:h-[971px] lg:-mt-[64px]"
+    :section="sections.projects_showcase"
+    :projects="projects"
+  />
+
+  <!-- Process — Figma 1419:9302 -->
+  <ProcessSection
+    v-if="process"
+    class="max-md:!h-[944px] lg:mt-[7px]"
+    :section="process"
+  />
+
+  <!-- Packages — Figma 1419:9323 -->
+  <PackagesSection
+    v-if="packages"
+    class="max-md:mt-[80px] lg:mt-[126px]"
+    :section="packages"
+  />
+
+  <!-- Why us — Figma 1419:9230 -->
+  <section
+    v-if="whyUs"
+    class="py-14 md:py-24 lg:mt-[92px] lg:py-28"
+  >
+    <div class="container-sahra">
+      <div
+        class="eyebrow"
+        :style="{ color: whyUs.colors.eyebrow || undefined }"
+      >
+        {{ whyUs.eyebrow }}
+      </div>
+      <!--
+        Row 1419:9232: space-between, items-center, title column fixed 506.
+        Cards 1419:9236 are a column (gap 48) of rows (gap 40) — a 2×2 grid
+        whose two axes differ, so both gap-x and gap-y are explicit.
+      -->
+      <div
+        class="mt-6 grid gap-12 lg:mt-8 lg:grid-cols-[506px_1fr] lg:items-center lg:justify-between lg:gap-8"
+      >
+        <!-- title & subtitle 1419:9233 — column, gap 40 -->
+        <div class="flex flex-col gap-6 md:gap-10">
+          <h2
+            class="text-[26px] font-semibold leading-normal md:text-display-md"
+            :style="{ color: whyUs.colors.title || undefined }"
+          >
+            {{ whyUs.title }}
+          </h2>
+          <!-- Subtitle 1419:9235 — Poppins Medium 18, black/700 -->
+          <p
+            class="text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
+            :style="{ color: whyUs.colors.subtitle || undefined }"
+          >
+            {{ whyUs.subtitle }}
+          </p>
+        </div>
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-x-10 md:gap-y-12" data-reveal-group>
+          <div
+            v-for="(item, i) in whyUs.items"
+            :key="i"
+            class="will-reveal flex min-h-[140px] flex-col items-start gap-3 rounded-sm border border-gold-200 bg-gold-100 p-6 shadow-[0_4px_10px_rgba(0,0,0,0.05)] md:gap-4 md:p-8"
+            data-reveal
+          >
+            <img
+              v-if="item.icon"
+              :src="item.icon"
+              alt=""
+              class="size-6 object-contain md:size-8"
+              aria-hidden="true"
+            />
+            <svg
+              v-else-if="item.title.trim().toLocaleLowerCase() === 'end-to-end support'"
+              class="size-6 md:size-8"
+              viewBox="0 0 10 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                d="M1 1V6.33333C1 7.04058 1.28095 7.71885 1.78105 8.21895C2.28115 8.71905 2.95942 9 3.66667 9H9"
+                stroke="#BD933B"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            <component
+              :is="whyUsIcons[i] || BadgeCheck"
+              v-else
+              class="size-6 text-gold md:size-8"
+              :stroke-width="1.5"
+            />
+            <div class="flex flex-col gap-2">
+              <h3 class="text-[16px] font-medium text-neutral-900 md:text-title-md">{{ item.title }}</h3>
+              <!-- Description I1419:9238;398:528 is a fixed 212 in the file. -->
+              <p class="max-w-[212px] text-[12px] leading-normal text-neutral-600 md:text-body-lg">
+                {{ item.description }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Reviews — Figma 1419:9243 -->
+  <section
+    v-if="reviews"
+    class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[100px] lg:py-28"
+  >
+    <div class="container-sahra">
+      <div
+        class="eyebrow"
+        :style="{ color: reviews.colors.eyebrow || undefined }"
+      >
+        {{ reviews.eyebrow }}
+      </div>
+      <!--
+        title & subtitle 1419:9246 — row, gap 132, title column fixed 505.
+        Structurally identical to the Insights row 1419:9261 below.
+      -->
+      <div
+        class="mt-8 grid items-start gap-6 md:mt-12 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
+      >
+        <h2
+          class="text-[26px] font-semibold leading-normal md:text-display-md"
+          :style="{ color: reviews.colors.title || undefined }"
+        >
+          {{ reviews.title }}
+        </h2>
+        <!-- Subtitle 1419:9248 — Poppins Medium 18, black/700, w 612 -->
+        <p
+          v-if="reviews.subtitle"
+          class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
+          :style="{ color: reviews.colors.subtitle || undefined }"
+        >
+          {{ reviews.subtitle }}
+        </p>
+      </div>
+    </div>
+
+    <!--
+      A6 — the "cards" frame 1419:9249 is 2452 wide inside a 1248 viewport, so
+      the row travels rather than scrolls. Same duplicate-and-shift-50% trick
+      as the client rail, at the 40s the audit specifies; hovering pauses it so
+      a card can be read (and its 414:864 hover state inspected).
+    -->
+    <!--
+      The rail is clipped to the SAME track as every other section rather than
+      running to the viewport edges. It used to be a direct child of <section>,
+      so on wide screens the cards bled past `.container-sahra` and the reviews
+      block was the only band on the page without the site gutter.
+
+      `.container-sahra` supplies the gutter; `.marquee-mask` then fades inside
+      it, so the row still reads as continuous motion rather than as a boxed
+      carousel. The track itself keeps its own `width: max-content` — see below.
+    -->
+    <div class="container-sahra mt-10 md:mt-10">
+    <div class="marquee-mask hidden h-[246px] overflow-hidden md:block md:h-[297px]">
+      <!-- No padding on the track: it is `width: max-content`, so any inline
+           padding would be carried into the -50% shift and the loop would drift.
+           Viewport 1419:9249 is 297 tall for a 246 card — the surplus is shadow
+           room, so the track centres rather than sitting flush. -->
+      <div
+        class="marquee-track h-full items-center gap-[26px]"
+        style="--marquee-duration: 40s"
+      >
+        <div
+          v-for="(t, i) in testimonialTrack"
+          :key="i"
+          class="testimonial-card flex h-[220px] w-[328px] shrink-0 flex-col rounded-sm border-[0.5px] p-5 shadow-testimonial md:h-[246px] md:p-6"
+          :aria-hidden="i >= testimonials.length ? 'true' : undefined"
+        >
+          <p class="text-body-md leading-normal text-neutral-800">
+            {{ t.quote }}
+          </p>
+          <div class="mt-auto flex items-center gap-2">
+            <img
+              v-if="t.avatar"
+              :src="t.avatar.src"
+              :alt="t.avatar.alt"
+              class="size-12 rounded-full object-cover"
+            />
+            <div>
+              <p class="text-label-lg text-neutral-700">{{ t.name }}</p>
+              <p class="mt-1 text-label-md text-neutral-600">{{ t.role }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-if="testimonials[0]" class="md:hidden">
+      <div class="testimonial-card flex h-[246px] w-full flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial">
+        <p class="text-[14px] leading-normal text-neutral-800">{{ testimonials[0].quote }}</p>
+        <div class="mt-auto flex items-center gap-2">
+          <img v-if="testimonials[0].avatar" :src="testimonials[0].avatar.src" :alt="testimonials[0].avatar.alt" class="size-12 rounded-full object-cover" />
+          <div>
+            <p class="text-label-lg text-neutral-700">{{ testimonials[0].name }}</p>
+            <p class="mt-1 text-label-md text-neutral-600">{{ testimonials[0].role }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="mt-6 flex h-[10px] items-center justify-center gap-2" aria-hidden="true">
+        <span class="h-[10px] w-4 rounded-round bg-gold-600"></span>
+        <span v-for="i in 3" :key="i" class="size-[10px] rounded-round bg-neutral-200"></span>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <!-- Insights — Figma 1419:9258 -->
+  <section
+    v-if="insights"
+    class="h-[1111px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[10px] lg:py-28"
+  >
+    <div class="container-sahra flex flex-col gap-10 md:gap-12">
+      <div class="flex flex-col gap-8 md:gap-12">
+        <div
+          class="eyebrow"
+          :style="{ color: insights.colors.eyebrow || undefined }"
+        >
+          {{ insights.eyebrow }}
+        </div>
+        <div
+          class="grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"
+        >
+          <h2
+            class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-md"
+            :style="{ color: insights.colors.title || undefined }"
+          >
+            {{ insights.title }}
+          </h2>
+          <p
+            v-if="insightsSubtitle"
+            class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
+            :style="{
+              color:
+                insights.colors.description ||
+                insights.colors.subtitle ||
+                undefined,
+            }"
+          >
+            {{ insightsSubtitle }}
+          </p>
+        </div>
+      </div>
+
+      <div class="grid gap-6 lg:h-[424px] lg:grid-cols-2" data-reveal-group>
+        <a
+          v-if="posts[0]"
+          :href="posts[0].url"
+          class="group will-reveal flex min-h-[457px] flex-col gap-6 overflow-hidden rounded-sm bg-[#fbf9f5] p-4 shadow-card md:grid md:h-auto md:min-h-0 md:grid-cols-[279px_270px] md:justify-between md:gap-0"
+          data-reveal
+        >
+          <div class="h-[248px] overflow-hidden rounded-sm border border-neutral-100 shadow-card md:h-[392px]">
+            <img
+              v-if="posts[0].image"
+              :src="posts[0].image.src"
+              :alt="posts[0].image.alt"
+              class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.04]"
+            />
+          </div>
+          <!--
+            Content column I1419:9265;1210:3789 distributes with
+            space-between over a fixed 270 — not fixed margins, which would
+            stop matching the frame as soon as an excerpt changes length.
+          -->
+          <div class="flex min-w-0 flex-1 flex-col gap-6 md:justify-between md:gap-0 md:py-0">
+            <div class="flex items-center gap-2 text-[12px] leading-normal text-neutral-700 md:text-body-md">
+              <CalendarDays class="size-4 text-gold md:size-6" :stroke-width="1.5" />
+              <span>{{ posts[0].publishedAt }}</span>
+            </div>
+            <h3 class="text-[16px] font-semibold leading-normal text-gold md:text-title-md">
+              {{ posts[0].title }}
+            </h3>
+            <p class="text-[13px] leading-normal text-neutral-700 md:text-body-md">
+              {{ posts[0].excerpt }}
+            </p>
+            <span class="ms-auto hidden size-10 items-center justify-center rounded-round border border-neutral-800 bg-ink text-paper transition-colors group-hover:border-transparent group-hover:bg-gold group-hover:text-white md:flex md:size-12">
+              <ArrowUpRight class="size-8 rtl:-scale-x-100" :stroke-width="1.25" />
+            </span>
+          </div>
+        </a>
+        <div class="will-reveal flex flex-col gap-3 md:gap-6" data-reveal>
+          <a
+            v-for="(post, index) in posts.slice(1, 3)"
+            :key="post.slug"
+            :href="post.url"
+            class="group grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"
+            :class="index === 0 ? 'border-b border-neutral-200 pb-6' : ''"
+          >
+            <div class="aspect-square size-[120px] overflow-hidden rounded-sm md:size-[188px]">
+              <img
+                v-if="post.image"
+                :src="post.image.src"
+                :alt="post.image.alt"
+                class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.04]"
+              />
+            </div>
+            <div class="flex flex-col justify-center gap-3 md:gap-6">
+              <div
+                class="flex items-center gap-2 text-[12px] leading-normal text-neutral-700 md:text-body-md"
+              >
+                <CalendarDays class="size-4 text-gold md:size-6" :stroke-width="1.5" />
+                <span>{{ post.publishedAt }}</span>
+              </div>
+              <h3 class="text-[14px] font-medium leading-normal text-neutral-900 md:text-title-md">
+                {{ post.title }}
+              </h3>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ — Figma 1419:9272 -->
+  <section v-if="faqSection" class="py-14 md:py-24 lg:-mt-[98px] lg:py-28">
+    <!--
+      Section 1419:9272 is a column [eyebrow, content] at gap 48; the content
+      row 1419:9274 is gap 32 with a fixed 497 left column. The eyebrow spans
+      the full track above the row — it is not a cell inside it.
+    -->
+    <div class="container-sahra">
+      <div
+        class="eyebrow"
+        :style="{ color: faqSection.colors.eyebrow || undefined }"
+      >
+        {{ faqSection.eyebrow }}
+      </div>
+
+      <div class="mt-8 grid gap-8 md:mt-12 lg:grid-cols-[497px_1fr]">
+        <!-- 1419:9275 — fills the row height, title top / subtitle bottom. -->
+        <div class="flex flex-col justify-between gap-8">
+          <h2
+            class="text-[26px] font-semibold leading-normal md:text-display-md"
+            :style="{ color: faqSection.colors.title || undefined }"
+          >
+            {{ faqSection.title }}
+          </h2>
+          <!-- Subtitle 1419:9277 — Poppins Medium 18, black/700 -->
+          <p
+            v-if="faqSubtitle"
+            class="text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm"
+            :style="{ color: faqSection.colors.subtitle || undefined }"
+          >
+            {{ faqSubtitle }}
+          </p>
+        </div>
+
+        <div class="flex flex-col gap-3 md:gap-6" data-reveal-group>
+          <!-- First box is the `open` variant 438:561; the rest are 438:563. -->
+          <details
+            v-for="(faq, i) in faqs"
+            :key="i"
+            name="faq-accordion"
+            :open="i === 1"
+            class="group will-reveal rounded-sm border border-gold-200 bg-gold-100 p-4 md:p-8"
+            data-reveal
+          >
+            <summary
+              class="flex cursor-pointer list-none items-center justify-between gap-4 text-[14px] font-medium text-neutral-900 md:text-title-sm [&::-webkit-details-marker]:hidden"
+            >
+              {{ faq.question }}
+              <!--
+                Figma 438:571 / 438:551 export as a ringed glyph — a 20px
+                circle at stroke 1.5 #4F4C4D with the bar(s) inside it, i.e.
+                lucide `circle-plus` / `circle-minus`. The bare `plus` / `minus`
+                used here before dropped that ring, which is the "+ has no
+                border" defect. Colour is black/800 (#4F4C4D), matching the
+                exported stroke exactly — not black/700.
+              -->
+              <span class="relative size-6 shrink-0 text-neutral-800">
+                <CirclePlus
+                  class="absolute inset-0 size-6 group-open:hidden"
+                  :stroke-width="1.5"
+                />
+                <CircleMinus
+                  class="absolute inset-0 hidden size-6 group-open:block"
+                  :stroke-width="1.5"
+                />
+              </span>
+            </summary>
+            <p class="mt-3 text-[12px] leading-normal text-neutral-700 md:mt-4 md:text-body-lg">{{ faq.answer }}</p>
+          </details>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA — Figma 1419:9333 (shared component) -->
+  <CtaBanner
+    v-if="sections.final_cta"
+    class="lg:mb-[61px] lg:mt-[82px]"
+    :section="sections.final_cta"
+    spacing-class="pb-[182px] pt-24 md:pb-[260px]"
+  />
+</template>
