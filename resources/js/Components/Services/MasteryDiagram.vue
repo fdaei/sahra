@@ -293,6 +293,7 @@ useMasteryOpen(stage, progress);
   top: 8px;
   translate: -50% 0;
   max-width: 7em;
+  text-align: center;
 }
 
 @media (max-width: 1023px) {

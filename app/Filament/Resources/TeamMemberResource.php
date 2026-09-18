@@ -57,7 +57,11 @@ final class TeamMemberResource extends Resource
                     FileUpload::make('photo_path')
                         ->label('Portrait')
                         ->image()
-                        ->imageEditor()
+                        // Keep team portraits on the regular Livewire upload path.
+                        // The client-side editor can remain indefinitely in its
+                        // uploading state for this field in local/admin builds.
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                        ->maxSize(20480)
                         ->directory('team')
                         ->disk('public')
                         ->columnSpanFull(),

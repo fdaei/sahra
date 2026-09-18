@@ -198,7 +198,8 @@ final class ServiceSeeder extends Seeder
                     'sort_order' => $index + 1,
                     'show_on_home' => true,
                     'show_on_services_page' => false,
-                    'show_on_work_page' => false,
+                    // Every published service is also available as a Work filter.
+                    'show_on_work_page' => true,
                     'home_orbit_group' => $group,
                     'external_url' => $url,
                     'image_path' => $image,
@@ -214,7 +215,7 @@ final class ServiceSeeder extends Seeder
                     'sort_order' => $index + 1,
                     'show_on_home' => true,
                     'show_on_services_page' => false,
-                    'show_on_work_page' => false,
+                    'show_on_work_page' => true,
                     'home_orbit_group' => $group,
                     'external_url' => $url,
                     'image_path' => $image,
