@@ -191,6 +191,89 @@ CALL upsert_service_orbit_item('gtm-strategy', 'GTM strategy', 'product', NULL, 
 CALL upsert_service_orbit_item('smm', 'SMM', 'product', NULL, NULL, 14, 0)$$
 CALL upsert_service_orbit_item('product-writing', 'Product writing', 'product', NULL, NULL, 15, 0)$$
 
+-- Apply the localized labels after the upsert routine's English defaults.
+UPDATE service_translations AS st
+JOIN service_translations AS en ON en.service_id = st.service_id AND en.locale = 'en'
+SET st.image_alt = CASE WHEN st.image_alt IS NULL THEN NULL ELSE CASE st.locale
+        WHEN 'fa' THEN CASE en.slug
+            WHEN 'branding' THEN 'برندینگ'
+            WHEN 'design-systems' THEN 'سیستم‌های طراحی'
+            WHEN 'app-design' THEN 'طراحی اپلیکیشن'
+            WHEN 'brand-strategy' THEN 'استراتژی برند'
+            WHEN 'ui-ux-design' THEN 'طراحی رابط و تجربهٔ کاربری'
+            WHEN 'web-design' THEN 'طراحی وب‌سایت'
+            WHEN 'web-app-development' THEN 'توسعهٔ اپلیکیشن تحت وب'
+            WHEN 'printing-services' THEN 'خدمات چاپ'
+            WHEN 'packaging-design' THEN 'طراحی بسته‌بندی'
+            WHEN 'pr-campaigns' THEN 'کمپین‌های روابط عمومی'
+            WHEN 'video-productions' THEN 'تولید ویدئو'
+            WHEN 'data-science' THEN 'علم داده'
+            WHEN 'production-planning' THEN 'برنامه‌ریزی تولید'
+            WHEN 'gtm-strategy' THEN 'استراتژی ورود به بازار'
+            WHEN 'smm' THEN 'بازاریابی شبکه‌های اجتماعی'
+            WHEN 'product-writing' THEN 'محتوانویسی محصول'
+            ELSE st.title END
+        WHEN 'ar' THEN CASE en.slug
+            WHEN 'branding' THEN 'الهوية التجارية'
+            WHEN 'design-systems' THEN 'أنظمة التصميم'
+            WHEN 'app-design' THEN 'تصميم التطبيقات'
+            WHEN 'brand-strategy' THEN 'استراتيجية العلامة التجارية'
+            WHEN 'ui-ux-design' THEN 'تصميم الواجهة وتجربة المستخدم'
+            WHEN 'web-design' THEN 'تصميم المواقع'
+            WHEN 'web-app-development' THEN 'تطوير تطبيقات الويب'
+            WHEN 'printing-services' THEN 'خدمات الطباعة'
+            WHEN 'packaging-design' THEN 'تصميم التغليف'
+            WHEN 'pr-campaigns' THEN 'حملات العلاقات العامة'
+            WHEN 'video-productions' THEN 'إنتاج الفيديو'
+            WHEN 'data-science' THEN 'علوم البيانات'
+            WHEN 'production-planning' THEN 'تخطيط الإنتاج'
+            WHEN 'gtm-strategy' THEN 'استراتيجية دخول السوق'
+            WHEN 'smm' THEN 'التسويق عبر وسائل التواصل'
+            WHEN 'product-writing' THEN 'كتابة محتوى المنتجات'
+            ELSE st.title END
+        ELSE st.title END END,
+    st.title = CASE st.locale
+        WHEN 'fa' THEN CASE en.slug
+            WHEN 'branding' THEN 'برندینگ'
+            WHEN 'design-systems' THEN 'سیستم‌های طراحی'
+            WHEN 'app-design' THEN 'طراحی اپلیکیشن'
+            WHEN 'brand-strategy' THEN 'استراتژی برند'
+            WHEN 'ui-ux-design' THEN 'طراحی رابط و تجربهٔ کاربری'
+            WHEN 'web-design' THEN 'طراحی وب‌سایت'
+            WHEN 'web-app-development' THEN 'توسعهٔ اپلیکیشن تحت وب'
+            WHEN 'printing-services' THEN 'خدمات چاپ'
+            WHEN 'packaging-design' THEN 'طراحی بسته‌بندی'
+            WHEN 'pr-campaigns' THEN 'کمپین‌های روابط عمومی'
+            WHEN 'video-productions' THEN 'تولید ویدئو'
+            WHEN 'data-science' THEN 'علم داده'
+            WHEN 'production-planning' THEN 'برنامه‌ریزی تولید'
+            WHEN 'gtm-strategy' THEN 'استراتژی ورود به بازار'
+            WHEN 'smm' THEN 'بازاریابی شبکه‌های اجتماعی'
+            WHEN 'product-writing' THEN 'محتوانویسی محصول'
+            ELSE st.title END
+        WHEN 'ar' THEN CASE en.slug
+            WHEN 'branding' THEN 'الهوية التجارية'
+            WHEN 'design-systems' THEN 'أنظمة التصميم'
+            WHEN 'app-design' THEN 'تصميم التطبيقات'
+            WHEN 'brand-strategy' THEN 'استراتيجية العلامة التجارية'
+            WHEN 'ui-ux-design' THEN 'تصميم الواجهة وتجربة المستخدم'
+            WHEN 'web-design' THEN 'تصميم المواقع'
+            WHEN 'web-app-development' THEN 'تطوير تطبيقات الويب'
+            WHEN 'printing-services' THEN 'خدمات الطباعة'
+            WHEN 'packaging-design' THEN 'تصميم التغليف'
+            WHEN 'pr-campaigns' THEN 'حملات العلاقات العامة'
+            WHEN 'video-productions' THEN 'إنتاج الفيديو'
+            WHEN 'data-science' THEN 'علوم البيانات'
+            WHEN 'production-planning' THEN 'تخطيط الإنتاج'
+            WHEN 'gtm-strategy' THEN 'استراتيجية دخول السوق'
+            WHEN 'smm' THEN 'التسويق عبر وسائل التواصل'
+            WHEN 'product-writing' THEN 'كتابة محتوى المنتجات'
+            ELSE st.title END
+        ELSE st.title END,
+    st.updated_at = NOW()
+WHERE st.locale IN ('fa', 'ar')
+  AND en.slug IN ('branding', 'design-systems', 'app-design', 'brand-strategy', 'ui-ux-design', 'web-design', 'web-app-development', 'printing-services', 'packaging-design', 'pr-campaigns', 'video-productions', 'data-science', 'production-planning', 'gtm-strategy', 'smm', 'product-writing')$$
+
 COMMIT$$
 
 UPDATE services AS s

@@ -66,6 +66,7 @@ const cards = computed(() =>
     .filter((service) => service.homeOrbitGroup === "active")
     .map((service, index) => ({
     ...service,
+    displayTitle: t(`services.pills.${service.key}`),
     href:
       service.externalUrl ||
       `/${page.props.locale.current}/services#${service.slug}`,
@@ -104,6 +105,9 @@ const brandGhosts = computed(() =>
 const productGhosts = computed(() =>
   props.services.filter((service) => service.homeOrbitGroup === "product"),
 );
+
+const leftAxisLabel = computed(() => t("services.axis_left"));
+const rightAxisLabel = computed(() => t("services.axis_right"));
 
 onMounted(() => {
   if (
@@ -147,35 +151,14 @@ onBeforeUnmount(() => {
     data-no-reveal
   >
     <div class="container-sahra relative z-10 py-12 md:py-20 lg:py-24">
-      <div class="flex flex-col gap-6 lg:gap-12">
-        <div class="service-eyebrow">
-          <span aria-hidden="true" />{{
-            section.eyebrow || t("services.eyebrow")
-          }}
-        </div>
-        <div class="grid gap-4 lg:grid-cols-[506px_1fr] lg:gap-[130px]">
-          <h2
-            class="max-w-[506px] text-[28px] font-semibold leading-normal text-white md:text-[36px] lg:text-[40px] lg:leading-[1.5]"
-          >
-            {{ section.title }}
-          </h2>
-          <p
-            class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-200 md:text-[18px]"
-          >
-            {{ section.description }}
-          </p>
-        </div>
-      </div>
-
       <div
         class="cloud-diagram"
         role="group"
         :aria-label="t('services.orbit_label')"
       >
         <MasteryDiagram
-          :brand-label="section.orbitBrandLabel || t('services.venn_brand')"
-          :product-label="section.orbitProductLabel || t('services.venn_product')"
-          :core-label="section.orbitCoreLabel || t('services.core')"
+          :left-label="leftAxisLabel"
+          :right-label="rightAxisLabel"
         />
         <div class="services-grid">
           <div class="side-col side-col--brand" aria-hidden="true">
@@ -240,7 +223,7 @@ onBeforeUnmount(() => {
                   />
                 </span>
                 <span v-else class="service-card__icon" aria-hidden="true" />
-                <strong>{{ service.title }}</strong>
+                <strong>{{ service.displayTitle }}</strong>
                 <svg
                   class="service-card__arrow"
                   width="12"
@@ -317,6 +300,7 @@ onBeforeUnmount(() => {
 }
 .cloud-diagram {
   position: relative;
+  direction: ltr;
   min-height: 625px;
   margin-top: 72px;
 }
@@ -418,9 +402,12 @@ onBeforeUnmount(() => {
   text-decoration: none;
 }
 .service-card__title strong {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: start;
+  unicode-bidi: plaintext;
 }
 .service-card__icon {
   width: 12px;
@@ -1037,10 +1024,19 @@ onBeforeUnmount(() => {
   top: var(--y);
   width: max-content;
   height: 38px;
+  /*
+   | `.cloud-diagram` (below) sets `direction: ltr` and that value is
+   | inherited all the way down here, so `inset-inline-start` always resolves
+   | to physical `left` — in every locale, not just LTR ones. There must be
+   | no RTL-specific override of this centering translate: the coordinates in
+   | `--x`/`--y` are plotted against the diagram's fixed-LTR geometry, and a
+   | direction-conditional tweak here just pulls the pill off the point the
+   | diagram actually put its circle at.
+   */
   translate: -50% -50%;
 }
 .ghost-service {
-  max-width: 220px;
+  max-width: 280px;
   padding: 0 14px;
   border: 1px solid rgb(var(--color-ink-rgb) / 13%);
   border-radius: 999px;
@@ -1065,7 +1061,7 @@ onBeforeUnmount(() => {
   transform: scale(1);
 }
 .service-card {
-  max-width: 250px;
+  max-width: 300px;
   border-radius: 999px;
   inset-inline-start: var(--x);
   z-index: 1;
@@ -1145,6 +1141,9 @@ onBeforeUnmount(() => {
     position: relative;
     inset: auto;
     top: auto;
+    translate: none;
+  }
+  html[dir="rtl"] .service-card {
     translate: none;
   }
 }

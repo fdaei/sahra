@@ -14,6 +14,18 @@ return [
     'venn_brand'     => 'برند',
     'venn_product'   => 'محصول',
     'core'           => 'تسلط خدماتی',
+    'axis_left'      => 'محصول',
+    'axis_right'     => 'برند',
+
+    'pills' => [
+        'branding' => 'برندسازی',
+        'brand-strategy' => 'استراتژی برند',
+        'design-systems' => 'سیستم‌های طراحی',
+        'app-design' => 'طراحی اپلیکیشن',
+        'ui-ux-design' => 'طراحی رابط و تجربهٔ کاربری',
+        'web-design' => 'طراحی وب‌سایت',
+        'web-app-development' => 'توسعهٔ اپلیکیشن تحت وب',
+    ],
 
     'pill_social'    => 'پشتیبانی شبکه‌های اجتماعی',
     'pill_branding'  => 'برندسازی',

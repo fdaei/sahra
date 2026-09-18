@@ -19,6 +19,18 @@ return [
     'venn_brand'     => 'Brand',
     'venn_product'   => 'Product',
     'core'           => 'Service Mastery',
+    'axis_left'      => 'Marketing',
+    'axis_right'     => 'Growth',
+
+    'pills' => [
+        'branding' => 'Branding',
+        'brand-strategy' => 'Brand strategy',
+        'design-systems' => 'Design systems',
+        'app-design' => 'App design',
+        'ui-ux-design' => 'UI/UX design',
+        'web-design' => 'Web design',
+        'web-app-development' => 'Web App development',
+    ],
 
     'pill_social'    => 'Social Media support',
     'pill_branding'  => 'Branding',

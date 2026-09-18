@@ -163,6 +163,24 @@ final class ServiceSeeder extends Seeder
             ['product-writing', 'Product writing', 'product', null, null],
         ];
 
+        $localizedTitles = [
+            'design-systems' => ['fa' => 'سیستم‌های طراحی', 'ar' => 'أنظمة التصميم'],
+            'app-design' => ['fa' => 'طراحی اپلیکیشن', 'ar' => 'تصميم التطبيقات'],
+            'brand-strategy' => ['fa' => 'استراتژی برند', 'ar' => 'استراتيجية العلامة التجارية'],
+            'ui-ux-design' => ['fa' => 'طراحی رابط و تجربهٔ کاربری', 'ar' => 'تصميم الواجهة وتجربة المستخدم'],
+            'web-design' => ['fa' => 'طراحی وب‌سایت', 'ar' => 'تصميم المواقع'],
+            'web-app-development' => ['fa' => 'توسعهٔ اپلیکیشن تحت وب', 'ar' => 'تطوير تطبيقات الويب'],
+            'printing-services' => ['fa' => 'خدمات چاپ', 'ar' => 'خدمات الطباعة'],
+            'packaging-design' => ['fa' => 'طراحی بسته‌بندی', 'ar' => 'تصميم التغليف'],
+            'pr-campaigns' => ['fa' => 'کمپین‌های روابط عمومی', 'ar' => 'حملات العلاقات العامة'],
+            'video-productions' => ['fa' => 'تولید ویدئو', 'ar' => 'إنتاج الفيديو'],
+            'data-science' => ['fa' => 'علم داده', 'ar' => 'علوم البيانات'],
+            'production-planning' => ['fa' => 'برنامه‌ریزی تولید', 'ar' => 'تخطيط الإنتاج'],
+            'gtm-strategy' => ['fa' => 'استراتژی ورود به بازار', 'ar' => 'استراتيجية دخول السوق'],
+            'smm' => ['fa' => 'بازاریابی شبکه‌های اجتماعی', 'ar' => 'التسويق عبر وسائل التواصل'],
+            'product-writing' => ['fa' => 'محتوانویسی محصول', 'ar' => 'كتابة محتوى المنتجات'],
+        ];
+
         foreach ($orbitItems as $index => [$slug, $title, $group, $url, $image]) {
             $service = Service::withTrashed()
                 ->whereHas(
@@ -206,11 +224,15 @@ final class ServiceSeeder extends Seeder
             $translations = [];
             foreach (array_keys(config('locales.supported')) as $locale) {
                 $translations[$locale] = [
-                    'title' => $title,
+                    'title' => $locale === 'en'
+                        ? $title
+                        : ($localizedTitles[$slug][$locale] ?? $title),
                     'slug' => $slug,
                     'description' => null,
                     'features' => [],
-                    'image_alt' => $image === null ? null : $title,
+                    'image_alt' => $image === null
+                        ? null
+                        : ($locale === 'en' ? $title : ($localizedTitles[$slug][$locale] ?? $title)),
                 ];
             }
 

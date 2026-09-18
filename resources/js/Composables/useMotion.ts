@@ -520,22 +520,29 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
     const inner = scope.querySelector<SVGCircleElement>('[data-mastery="ring-inner"]')
     const outer = scope.querySelector<SVGCircleElement>('[data-mastery="ring-outer"]')
     const axis = scope.querySelector<SVGLineElement>('[data-mastery="axis"]')
-    const brand = scope.querySelector<HTMLElement>('[data-mastery-label="brand"]')
-    const product = scope.querySelector<HTMLElement>('[data-mastery-label="product"]')
-    const coreLabel = scope.querySelector<HTMLElement>('[data-mastery-label="core"]')
+    const brand = scope.querySelector<HTMLElement>('[data-mastery-label="left"]')
+    const product = scope.querySelector<HTMLElement>('[data-mastery-label="right"]')
 
     const { width, height } = scope.getBoundingClientRect()
     if (width === 0) return
 
-    /*
-     | Where the labels start, in px from where they finish. Brand and Product
-     | begin inside their own circle (the reference's 38% inset) and end just
-     | outside their endpoint dot; Service Mastery begins in the overlap and
-     | ends at the top. Measured rather than declared so the travel stays right
-     | at any width — and mirrored in RTL, where the two sides swap.
-     */
-    const sideTravel = (width * 0.38 - 50) * directionFactor()
-    const coreTravel = height * 0.46 - 40
+    // Read the resting flex positions so each label can begin in its Venn
+    // circle without a fixed offset that depends on the translated text.
+    const mobile = window.matchMedia('(max-width: 639px)').matches
+    const openingSeparation = width * 0.04028
+    const direction = directionFactor()
+    const labelTravel = (label: HTMLElement, first: boolean) => {
+      const bounds = label.getBoundingClientRect()
+      const labelX = bounds.left + bounds.width / 2
+      const labelY = bounds.top + bounds.height / 2
+      const stageX = scope.getBoundingClientRect().left + width / 2
+      const stageY = scope.getBoundingClientRect().top + height / 2
+      return mobile
+        ? { x: stageX - labelX, y: stageY + (first ? -openingSeparation : openingSeparation) - labelY }
+        : { x: stageX + (first ? -direction : direction) * openingSeparation - labelX, y: stageY - labelY }
+    }
+    const brandTravel = brand ? labelTravel(brand, true) : { x: 0, y: 0 }
+    const productTravel = product ? labelTravel(product, false) : { x: 0, y: 0 }
 
     // Rotating a dashed ring reads as movement; a plain one would not. The
     // origin is the composition centre, not the node's own box, so the rings
@@ -599,30 +606,18 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
       tl.fromTo(
         [brand, product],
         {
-          x: (i: number) => (i === 0 ? sideTravel : -sideTravel),
+          x: (i: number) => (i === 0 ? brandTravel.x : productTravel.x),
+          y: (i: number) => (i === 0 ? brandTravel.y : productTravel.y),
           color: PAPER,
         },
         {
           x: 0,
+          y: 0,
           color: PAPER,
           duration: 1.2,
           ease: MOTION.ease.spread,
         },
         0.05,
-      )
-    }
-
-    if (coreLabel) {
-      tl.fromTo(
-        coreLabel,
-        { y: coreTravel, color: PAPER },
-        {
-          y: 0,
-          color: PAPER,
-          duration: 1,
-          ease: MOTION.ease.spread,
-        },
-        0.1,
       )
     }
   }, stage)
