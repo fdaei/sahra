@@ -29,6 +29,7 @@ import { blobPath, resolveBlob, type BlobProgress } from "@/lib/blob";
 defineProps<{
   leftLabel: string;
   rightLabel: string;
+  coreLabel: string;
 }>();
 
 const stage = ref<HTMLElement | null>(null);
@@ -181,6 +182,9 @@ useMasteryOpen(stage, progress);
       <span class="mastery-axis-slot" aria-hidden="true" />
       <span class="mastery-label mastery-label--right" data-mastery-label="right">{{ rightLabel }}</span>
     </div>
+    <span class="mastery-label mastery-label--core" data-mastery-label="core">{{
+      coreLabel
+    }}</span>
   </div>
 </template>
 
@@ -283,6 +287,14 @@ useMasteryOpen(stage, progress);
   inset-inline-end: -40px;
   text-align: start;
 }
+.mastery-label--core {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  translate: -50% 0;
+  max-width: 7em;
+}
+
 @media (max-width: 1023px) {
   .mastery-label {
     font-size: 15px;
@@ -290,6 +302,9 @@ useMasteryOpen(stage, progress);
 }
 
 @media (max-width: 639px) {
+  .mastery-label--core {
+    display: none;
+  }
   /*
    | Mobile axis is vertical and has the full stage height to work with, so
    | the fragile shared-space problem above doesn't apply — go back to a

@@ -522,6 +522,7 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
     const axis = scope.querySelector<SVGLineElement>('[data-mastery="axis"]')
     const brand = scope.querySelector<HTMLElement>('[data-mastery-label="left"]')
     const product = scope.querySelector<HTMLElement>('[data-mastery-label="right"]')
+    const coreLabel = scope.querySelector<HTMLElement>('[data-mastery-label="core"]')
 
     const { width, height } = scope.getBoundingClientRect()
     if (width === 0) return
@@ -543,6 +544,7 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
     }
     const brandTravel = brand ? labelTravel(brand, true) : { x: 0, y: 0 }
     const productTravel = product ? labelTravel(product, false) : { x: 0, y: 0 }
+    const coreTravel = height * 0.46 - 40
 
     // Rotating a dashed ring reads as movement; a plain one would not. The
     // origin is the composition centre, not the node's own box, so the rings
@@ -618,6 +620,20 @@ export function useMasteryOpen(stage: MotionTarget, progress: BlobProgress): voi
           ease: MOTION.ease.spread,
         },
         0.05,
+      )
+    }
+
+    if (coreLabel) {
+      tl.fromTo(
+        coreLabel,
+        { y: coreTravel, color: PAPER },
+        {
+          y: 0,
+          color: PAPER,
+          duration: 1,
+          ease: MOTION.ease.spread,
+        },
+        0.1,
       )
     }
   }, stage)

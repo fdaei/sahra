@@ -151,6 +151,26 @@ onBeforeUnmount(() => {
     data-no-reveal
   >
     <div class="container-sahra relative z-10 py-12 md:py-20 lg:py-24">
+      <div class="flex flex-col gap-6 lg:gap-12">
+        <div class="service-eyebrow">
+          <span aria-hidden="true" />{{
+            section.eyebrow || t("services.eyebrow")
+          }}
+        </div>
+        <div class="grid gap-4 lg:grid-cols-[506px_1fr] lg:gap-[130px]">
+          <h2
+            class="max-w-[506px] text-[28px] font-semibold leading-normal text-white md:text-[36px] lg:text-[40px] lg:leading-[1.5]"
+          >
+            {{ section.title }}
+          </h2>
+          <p
+            class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-200 md:text-[18px]"
+          >
+            {{ section.description }}
+          </p>
+        </div>
+      </div>
+
       <div
         class="cloud-diagram"
         role="group"
@@ -159,6 +179,7 @@ onBeforeUnmount(() => {
         <MasteryDiagram
           :left-label="leftAxisLabel"
           :right-label="rightAxisLabel"
+          :core-label="section.orbitCoreLabel || t('services.core')"
         />
         <div class="services-grid">
           <div class="side-col side-col--brand" aria-hidden="true">
