@@ -22,6 +22,7 @@ const singleAssetIcons: Record<string, string> = {
   discovery: "/icons/sahra/process/discovery.svg",
   strategy: "/icons/sahra/process/strategy.svg",
   production: "/icons/sahra/process/setting.svg",
+  approval: "/icons/sahra/process/approval.svg",
   publishing: "/icons/sahra/process/publishing.svg",
   optimization: "/icons/sahra/process/optimization.svg",
 };
@@ -94,15 +95,6 @@ const isUploadedIcon = (icon: string | null): icon is string =>
                   width="36"
                   height="36"
                 />
-
-                <span
-                  v-else-if="iconKey(item, index) === 'approval'"
-                  class="relative block h-9 w-[30px]"
-                >
-                  <img src="/icons/sahra/process/approval-1.svg" alt="" class="absolute left-[19%] top-0 h-[19%] w-[38%]" />
-                  <img src="/icons/sahra/process/approval-2.svg" alt="" class="absolute left-0 top-[11%] h-[80%] w-[75%]" />
-                  <img src="/icons/sahra/process/approval-3.svg" alt="" class="absolute right-0 top-[54%] h-[38%] w-[37%]" />
-                </span>
               </span>
 
               <h3 class="min-w-0 text-[16px] font-medium leading-normal text-neutral-900 md:text-title-lg">
