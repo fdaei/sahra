@@ -13,6 +13,8 @@ use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SitemapController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +43,22 @@ Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('sitemap-{locale}.xml', [SitemapController::class, 'locale'])
     ->where('locale', $localePattern)
     ->name('sitemap.locale');
+
+// Temporary local-only SMTP smoke test. Remove after verifying delivery.
+Route::get('test-mail', function (Request $request) {
+    abort_unless(app()->environment('local'), 404);
+
+    $recipient = $request->string('to')->trim()->toString()
+        ?: (string) env('TEST_MAIL_TO', env('MAIL_FROM_ADDRESS'));
+
+    abort_unless(filter_var($recipient, FILTER_VALIDATE_EMAIL), 422, 'Invalid test recipient.');
+
+    Mail::raw('This is a test email from Sahram Marketing.', function ($message) use ($recipient): void {
+        $message->to($recipient)->subject('Sahram Marketing SMTP test');
+    });
+
+    return response()->json(['sent_to' => $recipient]);
+})->name('test-mail');
 
 Route::prefix('{locale}')
     ->where(['locale' => $localePattern])
