@@ -288,7 +288,7 @@ function submit(): void {
                   {{ heading.title }}
                 </h1>
                 <p
-                  class="text-body-lg font-normal text-neutral-700 md:text-title-sm md:font-medium"
+                  class="max-w-[520px] text-body-lg font-normal leading-relaxed text-neutral-700 md:text-title-sm md:font-medium"
                 >
                   {{ heading.description }}
                 </p>
@@ -408,6 +408,7 @@ function submit(): void {
                     >{{ t("forms.contact.phone") }}</label
                   >
                   <div
+                    dir="ltr"
                     class="flex h-12 overflow-hidden rounded-sm border bg-paper/80 transition-colors hover:border-neutral-200 focus-within:border-ink"
                     :class="
                       form.errors.phone
@@ -631,9 +632,9 @@ function submit(): void {
                 <textarea
                   id="message"
                   v-model="form.message"
-                  rows="4"
+                  rows="2"
                   :placeholder="t('forms.contact.message_placeholder')"
-                  class="min-h-[80px] w-full flex-1 resize-none rounded-sm border bg-paper/80 p-3 text-body-md shadow-none transition-colors placeholder:text-neutral-500 hover:border-neutral-200 focus:border-ink focus:ring-0"
+                  class="h-20 min-h-0 w-full resize-none rounded-sm border bg-paper/80 p-3 text-body-md shadow-none transition-colors placeholder:text-neutral-500 hover:border-neutral-200 focus:border-ink focus:ring-0"
                   :class="
                     form.errors.message
                       ? '!border-[#c94a4a] !bg-[#fdf5f5]'

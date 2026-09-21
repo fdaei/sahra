@@ -66,7 +66,7 @@ const cards = computed(() =>
     .filter((service) => service.homeOrbitGroup === "active")
     .map((service, index) => ({
     ...service,
-    displayTitle: t(`services.pills.${service.key}`),
+    displayTitle: service.title,
     href:
       service.externalUrl ||
       `/${page.props.locale.current}/services#${service.slug}`,

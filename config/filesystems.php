@@ -23,7 +23,10 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            // Keep this relative to the current host. Using APP_URL here makes
+            // Filament previews point to localhost when the panel is opened
+            // through another host or port, leaving the upload preview stuck.
+            'url' => '/storage',
             'visibility' => 'public',
             'throw' => false,
         ],
