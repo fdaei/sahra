@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TestimonialResource\Pages;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Testimonial;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -59,13 +59,7 @@ final class TestimonialResource extends Resource
             Section::make()
                 ->columns(2)
                 ->schema([
-                    FileUpload::make('avatar_path')
-                        ->label('Avatar')
-                        ->image()
-                        ->imageEditor()
-                        ->avatar()
-                        ->directory('testimonials')
-                        ->disk('public')
+                    ImageUpload::avatar('avatar_path', 'Avatar', 'testimonial', 'testimonials')
                         ->columnSpanFull(),
 
                     TextInput::make('sort_order')->numeric()->default(0),

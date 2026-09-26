@@ -30,6 +30,13 @@ php artisan sahra:publish-scheduled   # promotes due scheduled content (cron: ev
   build only has `pdo_mysql`. Install the SQLite PDO extension rather than
   editing `phpunit.xml`.
 - Local dev uses MySQL (`DB_DATABASE=sahra`); tests do not.
+- **The local PHP build has neither `gd` nor `imagick`; production has both.**
+  Nothing may depend on them, or it will work on the host and fail here. Admin
+  image resizing is client-side for its own reasons — see *Image uploads* below
+  before reaching for `intervention/image`.
+- Local `upload_max_filesize` is **2 MB** (`post_max_size` 8 MB); production is
+  256 MB for both. A large upload that the host accepts will fail locally at the
+  PHP level with an opaque error, not a Filament validation message.
 - `npm run lint` is broken — the script assumes an ESLint 10 flat config
   (`eslint.config.js`) that is not committed. Do not treat lint as a gate; add
   the config if lint is needed.
@@ -139,6 +146,32 @@ trilingual. Translatable resources build per-locale tab groups with
 `translations.{locale}.{attribute}`), and their Create/Edit pages use the
 `HandlesTranslations` concern, which splits the nested array off, saves parent
 and translations in one transaction.
+
+#### Image uploads
+
+Every image field in the panel is built by
+`App\Filament\Support\ImageUpload` — never a bare `FileUpload::make()->image()`.
+It fixes each field's crop ratio and stored pixel size from
+`MediaTransformer::DIMENSIONS`, so the uploader and the `width`/`height` the
+frontend emits read the same table, and an editor cannot store a 12 MP phone
+photo where the design asks for a 448×448 card.
+
+Resizing runs twice, both in the browser: FilePond's transform plugin crops and
+downscales automatically, and `imageEditor()` lets the editor pick the crop by
+hand. Filament renders the editor's output at `imageResizeTargetWidth` ×
+`imageResizeTargetHeight` and derives the crop box from the same pair, so both
+routes land on identical dimensions — **do not set
+`imageEditorViewportWidth/Height`**, they are ignored whenever a resize target
+exists.
+
+Stored size is the design size doubled for retina, clamped to a 640–2400 px
+longest edge. Add a context to `MediaTransformer::DIMENSIONS` rather than
+passing dimensions at the call site.
+
+Two deliberate exceptions, both vector: `ImageUpload::logo()` (client logos) and
+`SvgIconUpload` set no crop ratio and no resize target, which is what keeps
+FilePond's transform switched off — it would rasterise an SVG to canvas and
+throw away the point of uploading one.
 
 Authorization: one policy per entity extending `BasePolicy`, which derives
 Spatie permission names as `{action}_{resource}` (`view_project`,

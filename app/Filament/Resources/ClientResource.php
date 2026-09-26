@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ClientResource\Pages;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Client;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -49,11 +49,7 @@ final class ClientResource extends Resource
             Section::make()
                 ->columns(2)
                 ->schema([
-                    FileUpload::make('logo_path')
-                        ->label('Logo (SVG preferred)')
-                        ->directory('clients')
-                        ->disk('public')
-                        ->acceptedFileTypes(['image/svg+xml', 'image/png', 'image/webp'])
+                    ImageUpload::logo('logo_path', 'Logo (SVG preferred)', 'clients')
                         ->required()
                         ->columnSpanFull(),
 

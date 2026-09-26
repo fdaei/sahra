@@ -24,7 +24,7 @@ import ButtonIcon from '@/Components/ButtonIcon.vue'
  * loop through the remaining 13 sections (and then the other 10 pages) is
  * the direct continuation of this work.
  */
-import { computed, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { usePage } from "@inertiajs/vue3";
 import {
   ArrowUpRight,
@@ -160,6 +160,55 @@ const testimonialTrack = computed(() => {
 
   return [...half, ...half];
 });
+
+/*
+ | Mobile testimonial carousel. Below `md` the marquee is hidden and the
+ | cards sit in a native scroll-snap rail, so a swipe works without JS. This
+ | only keeps the dots in sync and auto-advances; it pauses while the rail is
+ | touched and is skipped entirely under reduced motion.
+ |
+ | RTL: `scrollLeft` runs 0 → negative in an RTL box, hence the abs() on read
+ | and the sign flip on write.
+ */
+const testimonialRail = ref<HTMLElement | null>(null);
+const activeTestimonial = ref(0);
+let testimonialTimer: ReturnType<typeof setInterval> | undefined;
+let testimonialPausedUntil = 0;
+
+function railStep(rail: HTMLElement): number {
+  const [a, b] = rail.children as unknown as HTMLElement[];
+  return b ? Math.abs(b.offsetLeft - a.offsetLeft) : rail.clientWidth;
+}
+
+function onTestimonialScroll() {
+  const rail = testimonialRail.value;
+  if (!rail) return;
+  activeTestimonial.value = Math.round(Math.abs(rail.scrollLeft) / railStep(rail));
+}
+
+function goToTestimonial(index: number) {
+  const rail = testimonialRail.value;
+  if (!rail) return;
+  const dir = getComputedStyle(rail).direction === "rtl" ? -1 : 1;
+  rail.scrollTo({ left: dir * index * railStep(rail), behavior: "smooth" });
+}
+
+function pauseTestimonials() {
+  testimonialPausedUntil = Date.now() + 8000;
+}
+
+onMounted(() => {
+  if (props.testimonials.length < 2) return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  testimonialTimer = setInterval(() => {
+    const rail = testimonialRail.value;
+    if (!rail || rail.offsetParent === null || Date.now() < testimonialPausedUntil) return;
+    goToTestimonial((activeTestimonial.value + 1) % props.testimonials.length);
+  }, 5000);
+});
+
+onBeforeUnmount(() => clearInterval(testimonialTimer));
 
 /*
  | Figma orders the project CTA first and gives it the solid treatment.
@@ -510,7 +559,7 @@ useSectionReveal();
   <!-- Projects showcase — Figma 1419:9216 -->
   <ProjectsShowcase
     v-if="sections.projects_showcase"
-    class="max-md:h-[971px] lg:-mt-[64px]"
+    class="max-md:min-h-[971px] lg:-mt-[64px]"
     :section="sections.projects_showcase"
     :projects="projects"
   />
@@ -699,20 +748,39 @@ useSectionReveal();
         </div>
       </div>
     </div>
-    <div v-if="testimonials[0]" class="md:hidden">
-      <div class="testimonial-card flex h-[246px] w-full flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial">
-        <p class="text-[14px] leading-normal text-neutral-800">{{ testimonials[0].quote }}</p>
-        <div class="mt-auto flex items-center gap-2">
-          <img v-if="testimonials[0].avatar" :src="testimonials[0].avatar.src" :alt="testimonials[0].avatar.alt" class="size-12 rounded-full object-cover" />
-          <div>
-            <p class="text-label-lg text-neutral-700">{{ testimonials[0].name }}</p>
-            <p class="mt-1 text-label-md text-neutral-600">{{ testimonials[0].role }}</p>
+    <div v-if="testimonials.length" class="md:hidden">
+      <div
+        ref="testimonialRail"
+        class="testimonial-rail -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 py-2"
+        @scroll.passive="onTestimonialScroll"
+        @touchstart.passive="pauseTestimonials"
+      >
+        <div
+          v-for="(t, i) in testimonials"
+          :key="i"
+          class="testimonial-card flex h-[246px] w-full shrink-0 snap-center flex-col rounded-sm border-[0.5px] p-6 shadow-testimonial"
+        >
+          <p class="text-[14px] leading-normal text-neutral-800">{{ t.quote }}</p>
+          <div class="mt-auto flex items-center gap-2">
+            <img v-if="t.avatar" :src="t.avatar.src" :alt="t.avatar.alt" class="size-12 rounded-full object-cover" />
+            <div>
+              <p class="text-label-lg text-neutral-700">{{ t.name }}</p>
+              <p class="mt-1 text-label-md text-neutral-600">{{ t.role }}</p>
+            </div>
           </div>
         </div>
       </div>
-      <div class="mt-6 flex h-[10px] items-center justify-center gap-2" aria-hidden="true">
-        <span class="h-[10px] w-4 rounded-round bg-gold-600"></span>
-        <span v-for="i in 3" :key="i" class="size-[10px] rounded-round bg-neutral-200"></span>
+      <div v-if="testimonials.length > 1" class="mt-6 flex h-[10px] items-center justify-center gap-2">
+        <button
+          v-for="(_, i) in testimonials"
+          :key="i"
+          type="button"
+          class="h-[10px] rounded-round transition-all duration-300"
+          :class="i === activeTestimonial ? 'w-4 bg-gold-600' : 'w-[10px] bg-neutral-200'"
+          :aria-label="`${i + 1} / ${testimonials.length}`"
+          :aria-current="i === activeTestimonial ? 'true' : undefined"
+          @click="pauseTestimonials(); goToTestimonial(i)"
+        ></button>
       </div>
     </div>
     </div>

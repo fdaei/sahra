@@ -20,9 +20,14 @@ final class MediaTransformer
     /**
      * Intrinsic dimensions per usage context, taken from the design.
      *
+     * Also drives the admin uploader: `App\Filament\Support\ImageUpload`
+     * reads these to fix each field's crop ratio and resize target, so what an
+     * editor uploads matches the width/height emitted here and no image is
+     * stored larger than the design asks for.
+     *
      * @var array<string, array{int, int}>
      */
-    private const DIMENSIONS = [
+    public const DIMENSIONS = [
         'project.cover' => [448, 448],      // 1362:7211 square card
         'project.banner' => [1203, 624],     // 1323:7605 case-study banner
         'project.showcase' => [400, 500],    // content showcase item
@@ -36,7 +41,19 @@ final class MediaTransformer
         'page.hero' => [1440, 904],          // 1419:9193
         'page.about' => [420, 420],          // 951:3598
         'section' => [1248, 624],            // generic section image
+        'seo.share' => [1200, 630],          // Open Graph card, not a Figma frame
     ];
+
+    /**
+     * Intrinsic width/height for a context, falling back to the generic
+     * section frame for anything unrecognised.
+     *
+     * @return array{int, int}
+     */
+    public static function dimensions(string $context): array
+    {
+        return self::DIMENSIONS[$context] ?? self::DIMENSIONS['section'];
+    }
 
     /**
      * @return array{src: string, alt: string, width: int, height: int}|null
@@ -50,7 +67,7 @@ final class MediaTransformer
             return null;
         }
 
-        [$width, $height] = self::DIMENSIONS[$context] ?? self::DIMENSIONS['section'];
+        [$width, $height] = self::dimensions($context);
 
         return [
             'src' => self::url($path),

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
 use App\Enums\SectionType;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\PageSection;
 use Filament\Forms\Components\ColorPicker;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
@@ -180,12 +180,7 @@ final class SectionsRelationManager extends RelationManager
                         ->label('Content'),
                 ]),
 
-            FileUpload::make('image_path')
-                ->label('Section image')
-                ->image()
-                ->imageEditor()
-                ->directory('sections')
-                ->disk('public')
+            ImageUpload::make('image_path', 'Section image', 'section', 'sections')
                 ->columnSpanFull(),
 
             /*

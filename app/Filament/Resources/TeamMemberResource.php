@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TeamMemberResource\Pages;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\TeamMember;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -54,16 +54,7 @@ final class TeamMemberResource extends Resource
             Section::make()
                 ->columns(2)
                 ->schema([
-                    FileUpload::make('photo_path')
-                        ->label('Portrait')
-                        ->image()
-                        // Keep team portraits on the regular Livewire upload path.
-                        // The client-side editor can remain indefinitely in its
-                        // uploading state for this field in local/admin builds.
-                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                        ->maxSize(20480)
-                        ->directory('team')
-                        ->disk('public')
+                    ImageUpload::make('photo_path', 'Portrait', 'team', 'team')
                         ->columnSpanFull(),
 
                     TextInput::make('sort_order')->numeric()->default(0),

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\ImageUpload;
 use App\Models\Setting;
 use App\Support\MailSettings;
 use App\Support\SiteSettings;
 use Filament\Actions\Action;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Tabs;
@@ -172,12 +172,8 @@ final class ManageSettings extends Page implements HasForms
                         $this->translatableTextarea('seo_default_description', 'Default description'),
                         $this->translatableInput('seo_organization_name', 'Organisation name'),
 
-                        FileUpload::make('seo_default_image')
-                            ->label('Default share image')
-                            ->image()
-                            ->directory('seo')
-                            ->disk('public')
-                            ->helperText('Shown when a page has no image. 1200×630 recommended.'),
+                        ImageUpload::make('seo_default_image', 'Default share image', 'seo.share', 'seo')
+                            ->helperText('Shown when a page has no image. Cropped to the 1200×630 Open Graph card.'),
                     ]),
 
                 Section::make('Integrations & analytics')

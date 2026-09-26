@@ -274,6 +274,14 @@
     );
   }
 
+  /* Mobile testimonial rail (Home) — swipeable, scrollbar hidden. */
+  .testimonial-rail {
+    scrollbar-width: none;
+  }
+  .testimonial-rail::-webkit-scrollbar {
+    display: none;
+  }
+
   .testimonial-card:hover :is(p),
   .testimonial-card:focus-within :is(p) {
     @apply text-paper;

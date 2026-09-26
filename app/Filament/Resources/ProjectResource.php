@@ -7,12 +7,12 @@ namespace App\Filament\Resources;
 use App\Enums\PublicationStatus;
 use App\Filament\Resources\ProjectResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Industry;
 use App\Models\Project;
 use App\Models\Service;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -157,32 +157,13 @@ final class ProjectResource extends Resource
 
                     Section::make('Media')
                         ->schema([
-                            FileUpload::make('cover_path')
-                                ->label('Cover (square)')
-                                ->image()
-                                ->imageEditor()
-                                ->directory('projects')
-                                ->disk('public')
-                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
+                            ImageUpload::make('cover_path', 'Cover (square)', 'project.cover', 'projects'),
 
-                            FileUpload::make('banner_path')
-                                ->label('Case-study banner')
-                                ->image()
-                                ->imageEditor()
-                                ->directory('projects')
-                                ->disk('public'),
+                            ImageUpload::make('banner_path', 'Case-study banner', 'project.banner', 'projects'),
 
-                            FileUpload::make('before_image_path')
-                                ->label('Before')
-                                ->image()
-                                ->directory('projects')
-                                ->disk('public'),
+                            ImageUpload::make('before_image_path', 'Before', 'project.beforeafter', 'projects'),
 
-                            FileUpload::make('after_image_path')
-                                ->label('After')
-                                ->image()
-                                ->directory('projects')
-                                ->disk('public'),
+                            ImageUpload::make('after_image_path', 'After', 'project.beforeafter', 'projects'),
                         ]),
                 ]),
             ]),

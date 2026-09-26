@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources\ProjectResource\RelationManagers;
 
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\ProjectImage;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\RelationManagers\RelationManager;
@@ -27,12 +27,7 @@ final class ImagesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            FileUpload::make('path')
-                ->label('Image')
-                ->image()
-                ->imageEditor()
-                ->directory('projects/showcase')
-                ->disk('public')
+            ImageUpload::make('path', 'Image', 'project.showcase', 'projects/showcase')
                 ->required()
                 ->columnSpanFull(),
 

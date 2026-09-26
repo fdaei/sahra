@@ -8,6 +8,7 @@ use App\Enums\PublicationStatus;
 use App\Filament\Resource;
 use App\Filament\Resources\PostResource\Pages;
 use App\Filament\Resources\PostResource\RelationManagers\LeadMagnetDeliveriesRelationManager;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
@@ -164,12 +165,7 @@ final class PostResource extends Resource
                     PublicationFields::section(),
 
                     Section::make('Cover')->schema([
-                        FileUpload::make('cover_path')
-                            ->label('Cover image')
-                            ->image()
-                            ->imageEditor()
-                            ->directory('posts')
-                            ->disk('public'),
+                        ImageUpload::make('cover_path', 'Cover image', 'post.cover', 'posts'),
                     ]),
 
                     Section::make('Article download')
@@ -193,12 +189,12 @@ final class PostResource extends Resource
                                 ->label('Email file to visitor')
                                 ->default(false)
                                 ->helperText('When enabled, the same file is attached to an email. Delivery success and response code are logged below.'),
-                            FileUpload::make('lead_magnet_image_path')
-                                ->label('Banner background')
-                                ->image()
-                                ->imageEditor()
-                                ->directory('posts/lead-magnets')
-                                ->disk('public'),
+                            ImageUpload::make(
+                                'lead_magnet_image_path',
+                                'Banner background',
+                                'post.hero',
+                                'posts/lead-magnets',
+                            ),
                         ]),
                 ]),
             ]),

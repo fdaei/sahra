@@ -7,11 +7,11 @@ namespace App\Filament\Resources;
 use App\Enums\PublicationStatus;
 use App\Filament\Resource;
 use App\Filament\Resources\ServiceResource\Pages;
+use App\Filament\Support\ImageUpload;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Service;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -140,12 +140,7 @@ final class ServiceResource extends Resource
                     PublicationFields::section(),
 
                     Section::make('Media')->schema([
-                        FileUpload::make('image_path')
-                            ->label('Service image')
-                            ->image()
-                            ->imageEditor()
-                            ->directory('services')
-                            ->disk('public'),
+                        ImageUpload::make('image_path', 'Service image', 'service', 'services'),
                     ]),
                 ]),
             ]),
