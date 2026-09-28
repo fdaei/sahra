@@ -174,6 +174,7 @@ const testimonialRail = ref<HTMLElement | null>(null);
 const activeTestimonial = ref(0);
 let testimonialTimer: ReturnType<typeof setInterval> | undefined;
 let testimonialPausedUntil = 0;
+let testimonialDirection = 1;
 
 function railStep(rail: HTMLElement): number {
   const [a, b] = rail.children as unknown as HTMLElement[];
@@ -204,7 +205,13 @@ onMounted(() => {
   testimonialTimer = setInterval(() => {
     const rail = testimonialRail.value;
     if (!rail || rail.offsetParent === null || Date.now() < testimonialPausedUntil) return;
-    goToTestimonial((activeTestimonial.value + 1) % props.testimonials.length);
+    const next = activeTestimonial.value + testimonialDirection;
+    if (next >= props.testimonials.length || next < 0) {
+      testimonialDirection *= -1;
+      goToTestimonial(activeTestimonial.value + testimonialDirection);
+      return;
+    }
+    goToTestimonial(next);
   }, 5000);
 });
 
@@ -665,7 +672,7 @@ useSectionReveal();
   <!-- Reviews — Figma 1419:9243 -->
   <section
     v-if="reviews"
-    class="h-[573px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[100px] lg:py-28"
+    class="h-auto overflow-visible py-14 md:h-auto md:py-24 lg:-mt-[100px] lg:py-28"
   >
     <div class="container-sahra">
       <div
@@ -770,13 +777,13 @@ useSectionReveal();
           </div>
         </div>
       </div>
-      <div v-if="testimonials.length > 1" class="mt-6 flex h-[10px] items-center justify-center gap-2">
+      <div v-if="testimonials.length" class="mt-6 flex h-[10px] items-center justify-center gap-2">
         <button
           v-for="(_, i) in testimonials"
           :key="i"
           type="button"
-          class="h-[10px] rounded-round transition-all duration-300"
-          :class="i === activeTestimonial ? 'w-4 bg-gold-600' : 'w-[10px] bg-neutral-200'"
+          class="size-[10px] rounded-full transition-colors duration-300"
+          :class="i === activeTestimonial ? 'bg-gold-600' : 'bg-neutral-200'"
           :aria-label="`${i + 1} / ${testimonials.length}`"
           :aria-current="i === activeTestimonial ? 'true' : undefined"
           @click="pauseTestimonials(); goToTestimonial(i)"
