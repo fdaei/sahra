@@ -161,6 +161,7 @@ function moveMobileTeamDrag(event: PointerEvent): void {
 
   const deltaX = event.clientX - mobileTeamPointerX;
   mobileTeamPointerX = event.clientX;
+  event.preventDefault();
   viewport.scrollLeft -= deltaX;
   mobileTeamScrollPosition = viewport.scrollLeft;
 }
@@ -456,6 +457,7 @@ const teamRows = computed(() => {
                   :alt="i >= mobileTeamTrack.uniqueCount ? '' : member.image.alt"
                   :width="member.image.width"
                   :height="member.image.height"
+                  draggable="false"
                   class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand hover:scale-[1.06] hover:grayscale-0 focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"
                 />
               </div>
