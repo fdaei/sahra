@@ -25,8 +25,19 @@ const icons: Record<string, typeof Link2> = {
   facebook: Facebook,
 }
 
+const imageIcons: Record<string, string> = {
+  instagram: '/icons/sahra/contact/social.svg',
+  linkedin: '/icons/sahra/contact/social-1.svg',
+  'message-circle': '/icons/sahra/contact/social-2.svg',
+  whatsapp: '/icons/sahra/contact/social-2.svg',
+  twitter: '/icons/sahra/contact/social-3.svg',
+  x: '/icons/sahra/contact/social-3.svg',
+  youtube: '/icons/sahra/contact/social-4.svg',
+}
+
 const component = computed(() => icons[props.icon] ?? Link2)
-const isImage = computed(() => props.icon.startsWith('/') || /^https?:\/\//.test(props.icon))
+const imageSource = computed(() => imageIcons[props.icon] ?? (props.icon.startsWith('/') || /^https?:\/\//.test(props.icon) ? props.icon : null))
+const isImage = computed(() => Boolean(imageSource.value))
 const hoverComponent = computed(() =>
   props.hoverIcon && !props.hoverIcon.startsWith('/') && !/^https?:\/\//.test(props.hoverIcon)
     ? icons[props.hoverIcon] ?? Link2
@@ -42,7 +53,7 @@ const hasHover = computed(() => Boolean(props.hoverIcon && (isHoverImage.value |
   <span v-if="hasHover" class="relative inline-flex size-[1em] shrink-0" aria-hidden="true">
     <img
       v-if="isImage"
-      :src="props.icon"
+      :src="imageSource!"
       alt=""
       class="size-full object-contain transition-opacity duration-200 group-hover:opacity-0 group-focus-within:opacity-0"
     />
@@ -63,6 +74,6 @@ const hasHover = computed(() => Boolean(props.hoverIcon && (isHoverImage.value |
       class="absolute inset-0 size-full opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
     />
   </span>
-  <img v-else-if="isImage" :src="props.icon" alt="" aria-hidden="true" />
+  <img v-else-if="isImage" :src="imageSource!" alt="" aria-hidden="true" />
   <component v-else :is="component" aria-hidden="true" />
 </template>

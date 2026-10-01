@@ -12,7 +12,7 @@
  * team) seeded by database/seeders/PageSeeder.php@about — see
  * docs/TRACEABILITY.md for the node mapping.
  */
-import { computed } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { BadgeCheck, Focus, Repeat2, TrendingUp } from "lucide-vue-next";
 import arcRings from "~img/decor/arc-rings.svg";
 /*
@@ -97,19 +97,41 @@ const heroImage = computed(() => hero.value?.image ?? null);
  */
 const TEAM_ITEM_WIDTH = 254;
 const TEAM_TRACK_COVER = 2560;
-const MOBILE_TEAM_ITEM_WIDTH = 190;
-const MOBILE_TEAM_TRACK_COVER = 800;
-
 const mobileTeamTrack = computed(() => {
-  if (props.team.length === 0) return { items: [], uniqueCount: 0 };
+  return { items: props.team, uniqueCount: props.team.length };
+});
 
-  const repeats = Math.max(
-    1,
-    Math.ceil(MOBILE_TEAM_TRACK_COVER / MOBILE_TEAM_ITEM_WIDTH / props.team.length),
-  );
-  const half = Array.from({ length: repeats }, () => props.team).flat();
+const mobileTeamViewport = ref<HTMLElement | null>(null);
+let mobileTeamAnimationFrame = 0;
+let mobileTeamPaused = false;
 
-  return { items: [...half, ...half], uniqueCount: props.team.length };
+function animateMobileTeam(): void {
+  const viewport = mobileTeamViewport.value;
+  if (viewport && !mobileTeamPaused && viewport.scrollWidth > viewport.clientWidth) {
+    viewport.scrollLeft += 0.35;
+
+    if (viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth) {
+      viewport.scrollLeft = 0;
+    }
+  }
+
+  mobileTeamAnimationFrame = requestAnimationFrame(animateMobileTeam);
+}
+
+function pauseMobileTeam(): void {
+  mobileTeamPaused = true;
+}
+
+function resumeMobileTeam(): void {
+  mobileTeamPaused = false;
+}
+
+onMounted(() => {
+  mobileTeamAnimationFrame = requestAnimationFrame(animateMobileTeam);
+});
+
+onBeforeUnmount(() => {
+  cancelAnimationFrame(mobileTeamAnimationFrame);
 });
 
 const teamRows = computed(() => {
@@ -358,8 +380,14 @@ const teamRows = computed(() => {
              all four members. Splitting the data into the two desktop marquee
              rows added an entire extra card row and made the page ~250px too
              tall at 402px. -->
-        <div class="marquee-mask relative z-10 overflow-hidden lg:hidden">
-          <div class="marquee-track gap-4" style="--marquee-duration: 48s">
+        <div
+          ref="mobileTeamViewport"
+          class="team-mobile-viewport relative z-10 lg:hidden"
+          @pointerdown="pauseMobileTeam"
+          @pointerup="resumeMobileTeam"
+          @pointercancel="resumeMobileTeam"
+        >
+          <div class="team-mobile-track gap-4">
             <figure
               v-for="(member, i) in mobileTeamTrack.items"
               :key="i"

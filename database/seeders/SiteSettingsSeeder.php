@@ -124,17 +124,13 @@ final class SiteSettingsSeeder extends Seeder
 
     private function socialLinks(): void
     {
-        // Order and membership are the footer frames' own: Instagram, LinkedIn,
-        // YouTube, WhatsApp (en 1419:9317 / ar 1365:10075). Neither lists X —
-        // it was invented here, so it is dropped rather than left inactive, or
-        // the footer column keeps rendering it (that query has no is_active
-        // filter). Labels carry their own per-locale spelling: the frames
-        // transliterate them, they are not left in Latin script.
+        // Order and membership match the social strip in the contact design.
         $links = [
             ['instagram', ['en' => 'Instagram', 'fa' => 'اینستاگرام', 'ar' => 'إنستغرام'], 'https://instagram.com/sahramarketing', 'instagram', 1],
             ['linkedin', ['en' => 'LinkedIn', 'fa' => 'لینکدین', 'ar' => 'لينكدإن'], 'https://linkedin.com/company/sahramarketing', 'linkedin', 2],
-            ['youtube', ['en' => 'YouTube', 'fa' => 'یوتیوب', 'ar' => 'يوتيوب'], 'https://youtube.com/@sahramarketing', 'youtube', 3],
-            ['whatsapp', ['en' => 'WhatsApp', 'fa' => 'واتساپ', 'ar' => 'واتساب'], 'https://wa.me/96777811213', 'message-circle', 4],
+            ['whatsapp', ['en' => 'WhatsApp', 'fa' => 'واتساپ', 'ar' => 'واتساب'], 'https://wa.me/96777811213', 'whatsapp', 3],
+            ['x', ['en' => 'X', 'fa' => 'X', 'ar' => 'X'], 'https://x.com/sahramarketing', 'x', 4],
+            ['youtube', ['en' => 'YouTube', 'fa' => 'یوتیوب', 'ar' => 'يوتيوب'], 'https://youtube.com/@sahramarketing', 'youtube', 5],
         ];
 
         foreach ($links as [$platform, $labels, $url, $icon, $order]) {

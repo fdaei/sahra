@@ -127,15 +127,22 @@ function showMoreInsights(): void {
       :href="featured.url"
       class="group flex min-h-[521px] flex-col gap-6 rounded-sm bg-gold-50 p-2 md:min-h-0 md:gap-8 md:rounded-lg md:p-4 lg:flex-row lg:items-center"
     >
+      <picture v-if="featured.image">
+        <source v-for="(source, format) in featured.image.formats" :key="format" :type="`image/${format}`" :srcset="source.srcset" :sizes="featured.image.sizes" />
       <img
         v-if="featured.image"
         :src="featured.image.src"
         :srcset="featured.image.srcset"
+        :sizes="featured.image.sizes"
         :alt="featured.image.alt"
+        loading="eager"
+        fetchpriority="high"
+        decoding="async"
         width="612"
         height="459"
         class="h-[248px] w-full shrink-0 rounded-sm border border-neutral-100 object-cover shadow-card md:aspect-[612/459] md:h-auto md:rounded-lg lg:w-[612px]"
       />
+      </picture>
 
       <div class="flex flex-1 flex-col gap-4 md:gap-12">
         <span
@@ -204,15 +211,21 @@ function showMoreInsights(): void {
       <ul v-if="leadRow.length > 0" class="grid gap-16 sm:grid-cols-2 sm:gap-6">
         <li v-for="post in leadRow" :key="post.slug">
           <Link :href="post.url" class="group flex min-h-[412.5px] flex-col gap-4 rounded-lg md:min-h-0">
+            <picture v-if="post.image">
+            <source v-for="(source, format) in post.image.formats" :key="format" :type="`image/${format}`" :srcset="source.srcset" :sizes="post.image.sizes" />
             <img
               v-if="post.image"
               :src="post.image.src"
               :srcset="post.image.srcset"
+              :sizes="post.image.sizes"
               :alt="post.image.alt"
+              loading="lazy"
+              decoding="async"
               width="612"
               height="400"
               class="h-[272px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
             />
+            </picture>
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
                 <time
@@ -256,15 +269,21 @@ function showMoreInsights(): void {
           :class="postIndex >= visibleRestPosts ? 'max-sm:hidden' : ''"
         >
           <Link :href="post.url" class="group flex min-h-[412.5px] flex-col gap-4 rounded-lg md:min-h-0">
+            <picture v-if="post.image">
+            <source v-for="(source, format) in post.image.formats" :key="format" :type="`image/${format}`" :srcset="source.srcset" :sizes="post.image.sizes" />
             <img
               v-if="post.image"
               :src="post.image.src"
               :srcset="post.image.srcset"
+              :sizes="post.image.sizes"
               :alt="post.image.alt"
+              loading="lazy"
+              decoding="async"
               width="400"
               height="400"
               class="h-[272px] w-full rounded-lg border border-neutral-100 object-cover shadow-card transition-transform duration-500 ease-brand group-hover:scale-[1.02] md:h-[400px]"
             />
+            </picture>
             <div class="flex flex-col gap-4">
               <div class="flex items-center gap-4">
                 <time

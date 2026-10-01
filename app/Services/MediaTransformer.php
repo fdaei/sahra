@@ -56,7 +56,7 @@ final class MediaTransformer
     }
 
     /**
-     * @return array{src: string, alt: string, width: int, height: int}|null
+     * @return array{src: string, srcset: string, sizes: string, formats: array<string, array{srcset: string}>, alt: string, width: int, height: int}|null
      */
     public static function make(
         ?string $path,
@@ -69,12 +69,31 @@ final class MediaTransformer
 
         [$width, $height] = self::dimensions($context);
 
+        // The fallback itself is resized too, so browsers without srcset or
+        // modern formats never receive the uploaded full-size file.
+        $src = self::variantUrl($path, min(736, $width), 'jpeg');
+        $sizes = $context === 'post.hero' ? '(max-width: 768px) 100vw, 1248px' : '(max-width: 768px) 100vw, 612px';
+        $variants = collect([400, 736, 1200])->mapWithKeys(fn (int $size): array => [$size => self::variantUrl($path, $size, 'jpeg')])->all();
+        $webp = collect($variants)->map(fn (string $url, int $size): string => "{$url} {$size}w")->implode(', ');
+        $formats = [];
+        foreach (['avif', 'webp'] as $format) {
+            $formats[$format] = ['srcset' => collect([400, 736, 1200])->map(fn (int $size): string => self::variantUrl($path, $size, $format)." {$size}w")->implode(', ')];
+        }
+
         return [
-            'src' => self::url($path),
+            'src' => $src,
+            'srcset' => $webp,
+            'sizes' => $sizes,
+            'formats' => $formats,
             'alt' => $alt ?? '',
             'width' => $width,
             'height' => $height,
         ];
+    }
+
+    public static function variantUrl(string $path, int $width, string $format): string
+    {
+        return route('media.variant', ['format' => $format, 'width' => $width, 'path' => ltrim($path, '/')], absolute: false);
     }
 
     /**

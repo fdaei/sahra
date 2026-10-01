@@ -872,7 +872,7 @@ useSectionReveal();
             :key="post.slug"
             :href="post.url"
             class="group grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"
-            :class="index === 0 ? 'border-b border-neutral-200 pb-6' : ''"
+            :class="index === 0 ? 'border-b border-neutral-200 pb-[9.25rem] md:pb-6' : 'pt-8 md:pt-6'"
           >
             <div class="aspect-square size-[120px] overflow-hidden rounded-sm md:size-[188px]">
               <img

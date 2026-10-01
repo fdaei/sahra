@@ -76,6 +76,8 @@ export interface SeoMeta {
 export interface MediaImage {
   src: string
   srcset?: string
+  sizes?: string
+  formats?: Record<string, { srcset: string }>
   alt: string
   width: number
   height: number

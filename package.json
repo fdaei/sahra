@@ -5,6 +5,8 @@
     "scripts": {
         "dev": "vite",
         "build": "vue-tsc --noEmit && vite build",
+        "build:ssr": "vite build --ssr resources/js/ssr.ts --outDir bootstrap/ssr",
+        "ssr": "php artisan inertia:start-ssr",
         "typecheck": "vue-tsc --noEmit",
         "lint": "eslint resources/js --ext .ts,.vue --fix",
         "format": "prettier --write resources/js",

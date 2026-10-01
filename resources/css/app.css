@@ -311,6 +311,32 @@
     }
   }
 
+  /* The mobile team rail is user-controlled: swipe or drag to browse and
+     keep a finger down on a card without the content moving underneath it. */
+  .team-mobile-viewport {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    direction: ltr;
+  }
+
+  .team-mobile-viewport::-webkit-scrollbar {
+    display: none;
+  }
+
+  .team-mobile-track {
+    display: flex;
+    width: max-content;
+    direction: ltr;
+    padding-inline: 1px;
+  }
+
+  :where(html[dir='rtl']) .team-mobile-track > * {
+    direction: rtl;
+  }
+
   .marquee-track {
     display: flex;
     width: max-content;
@@ -351,7 +377,18 @@
     animation-direction: normal;
   }
 
-  .marquee-mask:hover .marquee-track,
+  /*
+   | Touch browsers can keep `:hover` active after tapping a card. If hover
+   | pauses the marquee there, one tap makes the mobile team rail appear stuck.
+   | Only real hover devices should pause on hover; keyboard focus still pauses
+   | it everywhere so the focused card can be read.
+   */
+  @media (hover: hover) and (pointer: fine) {
+    .marquee-mask:hover .marquee-track {
+      animation-play-state: paused;
+    }
+  }
+
   .marquee-mask:focus-within .marquee-track {
     animation-play-state: paused;
   }

@@ -13,13 +13,11 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import { getCountryDataList } from "countries-list";
 import {
   BadgeCheck,
-  Building2,
   ChevronDown,
   Check,
   Layers3,
   Mail,
   MapPin,
-  MessageCircle,
   Search,
   UserRound,
   ArrowUpRight,
@@ -71,7 +69,7 @@ const details = computed(() => {
 
   return [
     {
-      icon: MessageCircle,
+      icon: "/icons/sahra/contact/phone.svg",
       label: t("forms.details.whatsapp"),
       value: c.whatsapp,
       href: `https://wa.me/${c.whatsapp.replace(/\D/g, "")}`,
@@ -89,7 +87,7 @@ const details = computed(() => {
       href: `mailto:${c.email}`,
     },
     {
-      icon: Building2,
+      icon: "/icons/sahra/contact/users.svg",
       label: t("forms.details.working_with"),
       value: c.workingWith,
       href: null,
@@ -97,7 +95,20 @@ const details = computed(() => {
   ].filter((row) => row.value);
 });
 
-const socialLinks = computed(() => page.props.settings.socialLinks);
+const socialLinks = computed(() => {
+  const configured = page.props.settings.socialLinks;
+  const defaults = [
+    { platform: "instagram", label: "Instagram", url: "https://instagram.com/sahramarketing", icon: "instagram", hoverIcon: null },
+    { platform: "linkedin", label: "LinkedIn", url: "https://linkedin.com/company/sahramarketing", icon: "linkedin", hoverIcon: null },
+    { platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/96777811213", icon: "whatsapp", hoverIcon: null },
+    { platform: "x", label: "X", url: "https://x.com/sahramarketing", icon: "x", hoverIcon: null },
+    { platform: "youtube", label: "YouTube", url: "https://youtube.com/@sahramarketing", icon: "youtube", hoverIcon: null },
+  ];
+
+  return defaults.map((fallback) =>
+    configured.find((link) => link.platform === fallback.platform) ?? fallback,
+  );
+});
 
 const form = useForm({
   name: "",
@@ -694,11 +705,19 @@ function submit(): void {
                   "
                 >
                   <span
-                    class="flex size-12 shrink-0 items-center justify-center rounded-round"
+                    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-round"
                   >
+                    <img
+                      v-if="typeof row.icon === 'string'"
+                      :src="row.icon"
+                      alt=""
+                      class="h-12 w-12 object-contain"
+                      aria-hidden="true"
+                    />
                     <component
+                      v-else
                       :is="row.icon"
-                      class="size-6 text-neutral-700"
+                      class="h-6 w-6 text-neutral-700"
                       :stroke-width="1.5"
                       aria-hidden="true"
                     />
@@ -726,24 +745,28 @@ function submit(): void {
             <!-- Follow block — Figma 1288:4129 -->
             <div
               v-if="socialLinks.length > 0"
-              class="flex flex-col gap-6 lg:gap-10"
+              class="flex flex-col gap-6 rounded-lg  p-6 backdrop-blur-[3px] lg:gap-8 lg:p-7"
             >
               <p
-                class="text-label-lg font-medium text-neutral-800 lg:text-body-lg"
+                class="max-w-[340px] text-label-lg font-medium leading-relaxed text-neutral-800 lg:text-body-lg"
               >
                 {{ t("forms.details.follow") }}
               </p>
 
-              <ul class="flex items-center justify-between gap-4">
+              <ul class="flex items-center justify-between gap-3">
                 <li v-for="link in socialLinks" :key="link.platform">
                   <a
                     :href="link.url"
                     target="_blank"
                     rel="noopener noreferrer"
                     :aria-label="link.label"
-                    class="group flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold lg:size-10"
+                    class="group flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink lg:size-12"
                   >
-                    <SocialIcon :icon="link.icon" :hover-icon="link.hoverIcon" class="size-6" />
+                    <SocialIcon
+                      :icon="link.icon"
+                      :hover-icon="link.hoverIcon"
+                      class="size-14"
+                    />
                   </a>
                 </li>
               </ul>

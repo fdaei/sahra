@@ -3,7 +3,7 @@ import laravel from 'laravel-vite-plugin'
 import vue from '@vitejs/plugin-vue'
 import path from 'node:path'
 
-export default defineConfig({
+export default defineConfig(() => ({
   plugins: [
     laravel({
       input: ['resources/js/app.ts'],
@@ -34,19 +34,14 @@ export default defineConfig({
 
   build: {
     // Long-cached hashed assets; the manifest tells Laravel what to emit.
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // GSAP is ~70kb and only needed once the page is interactive.
-          gsap: ['gsap'],
-          vendor: ['vue', '@inertiajs/vue3'],
-        },
-      },
-    },
+  },
+
+  ssr: {
+    noExternal: ['@inertiajs/vue3', 'ziggy-js'],
   },
 
   server: {
     host: '127.0.0.1',
     hmr: { host: '127.0.0.1' },
   },
-})
+}))

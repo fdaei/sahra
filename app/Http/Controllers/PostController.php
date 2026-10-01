@@ -13,6 +13,7 @@ use App\Services\SeoBuilder;
 use App\Support\IconUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -88,15 +89,13 @@ final class PostController extends Controller
                 'prevPageUrl' => $posts->previousPageUrl(),
             ],
 
-            'categories' => PostCategory::query()
-                ->ordered()
-                ->withTranslations()
-                ->get()
+            'categories' => Cache::remember('insights.categories.'.app()->getLocale(), 86400, fn () => PostCategory::query()
+                ->ordered()->withTranslations()->get()
                 ->map(fn (PostCategory $c): array => [
                     'slug' => (string) $c->getTranslation('slug'),
                     'name' => (string) $c->getTranslation('name'),
                 ])
-                ->all(),
+                ->all()),
 
             'filters' => [
                 'category' => $categoryFilter ?: null,

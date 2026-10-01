@@ -12,6 +12,7 @@ use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\MediaVariantController;
 use App\Http\Controllers\SitemapController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -43,6 +44,10 @@ Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('sitemap-{locale}.xml', [SitemapController::class, 'locale'])
     ->where('locale', $localePattern)
     ->name('sitemap.locale');
+
+Route::get('media/{format}/{width}/{path}', MediaVariantController::class)
+    ->whereIn('format', ['avif', 'webp', 'jpeg'])
+    ->whereNumber('width')->where('path', '.*')->name('media.variant');
 
 // Temporary local-only SMTP smoke test. Remove after verifying delivery.
 Route::get('test-mail', function (Request $request) {

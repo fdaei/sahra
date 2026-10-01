@@ -46,8 +46,9 @@ const currentLocale = computed(() => page.props.locale?.current ?? 'en')
 const siteName = computed(() => page.props.settings?.siteName ?? 'Sahra')
 
 function isActive(url: string): boolean {
-  const current = new URL(page.url, window.location.origin).pathname
-  const target = new URL(url, window.location.origin).pathname
+  // Use a fixed base so this computed helper is also safe during Inertia SSR.
+  const current = new URL(page.url, 'http://sahra.local').pathname
+  const target = new URL(url, 'http://sahra.local').pathname
 
   const homePath = `/${currentLocale.value}`
   if (target === homePath) return current === homePath

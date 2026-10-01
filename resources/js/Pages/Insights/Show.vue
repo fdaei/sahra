@@ -158,7 +158,7 @@ const linkedInShare = computed(
       <div
         class="flex flex-col gap-[38px] lg:flex-row lg:items-start lg:justify-between lg:gap-10"
       >
-        <div class="flex min-h-[181px] max-w-[612px] flex-col gap-6 md:min-h-0">
+        <div class="flex min-h-[181px] max-w-[612px] flex-col gap-6 px-3 md:min-h-0 md:px-0">
           <h1 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-[40px]">
             {{ post.title }}
           </h1>

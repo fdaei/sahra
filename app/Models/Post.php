@@ -137,6 +137,7 @@ final class Post extends Model implements HasLocalisedSlugs
 
         return $query
             ->published()
+            ->select(['posts.id', 'posts.post_category_id', 'posts.status', 'posts.published_at', 'posts.is_featured', 'posts.cover_path', 'posts.reading_minutes'])
             ->with([
                 'translations' => fn ($q) => $q->whereIn('locale', $locales),
                 'category.translations' => fn ($q) => $q->whereIn('locale', $locales),

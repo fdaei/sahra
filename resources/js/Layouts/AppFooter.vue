@@ -119,7 +119,7 @@ function columnHeading(index: number, fallback: string): string {
                        text-neutral-600 md:mt-4 md:gap-3 md:font-medium"
               >
                 <li v-if="settings.contact.location" class="flex items-center gap-2">
-                  <MapPin class="size-4 shrink-0 text-neutral-600" aria-hidden="true" />
+                  <MapPin class="size-6 shrink-0 text-neutral-600" aria-hidden="true" />
                   <span>{{ settings.contact.location }}</span>
                 </li>
 
@@ -134,7 +134,7 @@ function columnHeading(index: number, fallback: string): string {
                 </li>
 
                 <li v-if="settings.contact.email" class="flex items-center gap-2">
-                  <Mail class="size-4 shrink-0 text-neutral-600" aria-hidden="true" />
+                  <Mail class="size-6 shrink-0 text-neutral-600" aria-hidden="true" />
                   <a
                     :href="`mailto:${settings.contact.email}`"
                     class="break-all transition-colors hover:text-gold"
