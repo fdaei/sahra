@@ -318,8 +318,15 @@
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
+    /* Horizontal dragging is handled by the pointer handlers in About.vue;
+       keep vertical page scrolling available while the rail is touched. */
+    touch-action: pan-y;
     direction: ltr;
+    cursor: grab;
+  }
+
+  .team-mobile-viewport:active {
+    cursor: grabbing;
   }
 
   .team-mobile-viewport::-webkit-scrollbar {

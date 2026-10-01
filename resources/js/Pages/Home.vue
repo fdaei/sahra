@@ -796,7 +796,7 @@ useSectionReveal();
   <!-- Insights — Figma 1419:9258 -->
   <section
     v-if="insights"
-    class="h-[1111px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[10px] lg:py-28"
+    class="py-14 md:py-24 lg:-mt-[10px] lg:py-28"
   >
     <div class="container-sahra flex flex-col gap-10 md:gap-12">
       <div class="flex flex-col gap-8 md:gap-12">

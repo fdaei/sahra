@@ -104,25 +104,79 @@ const mobileTeamTrack = computed(() => {
 const mobileTeamViewport = ref<HTMLElement | null>(null);
 let mobileTeamAnimationFrame = 0;
 let mobileTeamPaused = false;
+let mobileTeamScrollPosition = 0;
+let mobileTeamPreviousTime = 0;
+let mobileTeamDirection = 1;
+let mobileTeamPointerId: number | null = null;
+let mobileTeamPointerX = 0;
+let mobileTeamDragging = false;
+const MOBILE_TEAM_SPEED = 21; // Pixels per second, independent of refresh rate.
 
-function animateMobileTeam(): void {
+function animateMobileTeam(time: number): void {
   const viewport = mobileTeamViewport.value;
-  if (viewport && !mobileTeamPaused && viewport.scrollWidth > viewport.clientWidth) {
-    viewport.scrollLeft += 0.35;
+  const elapsed = mobileTeamPreviousTime ? Math.min(time - mobileTeamPreviousTime, 50) : 0;
+  mobileTeamPreviousTime = time;
 
-    if (viewport.scrollLeft >= viewport.scrollWidth - viewport.clientWidth) {
-      viewport.scrollLeft = 0;
+  if (viewport && !mobileTeamPaused && viewport.scrollWidth > viewport.clientWidth) {
+    // Keep fractional progress outside scrollLeft: Chromium rounds small writes
+    // to zero, so reading it back every frame would discard all progress.
+    mobileTeamScrollPosition +=
+      mobileTeamDirection * (MOBILE_TEAM_SPEED * elapsed) / 1000;
+
+    const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+
+    // Reverse at both edges so the rail travels left and right without a
+    // visible jump, then repeats the same route as a ping-pong loop.
+    if (mobileTeamScrollPosition >= maxScroll) {
+      mobileTeamScrollPosition = maxScroll;
+      mobileTeamDirection = -1;
+    } else if (mobileTeamScrollPosition <= 0) {
+      mobileTeamScrollPosition = 0;
+      mobileTeamDirection = 1;
     }
+
+    viewport.scrollLeft = mobileTeamScrollPosition;
+  } else if (viewport) {
+    mobileTeamScrollPosition = viewport.scrollLeft;
   }
 
   mobileTeamAnimationFrame = requestAnimationFrame(animateMobileTeam);
 }
 
-function pauseMobileTeam(): void {
+function startMobileTeamDrag(event: PointerEvent): void {
+  const viewport = mobileTeamViewport.value;
+  if (!viewport) return;
+
+  mobileTeamPointerId = event.pointerId;
+  mobileTeamPointerX = event.clientX;
+  mobileTeamDragging = true;
   mobileTeamPaused = true;
+  mobileTeamScrollPosition = viewport.scrollLeft;
+  viewport.setPointerCapture?.(event.pointerId);
+}
+
+function moveMobileTeamDrag(event: PointerEvent): void {
+  const viewport = mobileTeamViewport.value;
+  if (!viewport || !mobileTeamDragging || event.pointerId !== mobileTeamPointerId) return;
+
+  const deltaX = event.clientX - mobileTeamPointerX;
+  mobileTeamPointerX = event.clientX;
+  viewport.scrollLeft -= deltaX;
+  mobileTeamScrollPosition = viewport.scrollLeft;
+}
+
+function endMobileTeamDrag(event: PointerEvent): void {
+  if (event.pointerId !== mobileTeamPointerId) return;
+
+  mobileTeamViewport.value?.releasePointerCapture?.(event.pointerId);
+  mobileTeamPointerId = null;
+  mobileTeamDragging = false;
+  resumeMobileTeam();
 }
 
 function resumeMobileTeam(): void {
+  mobileTeamScrollPosition = mobileTeamViewport.value?.scrollLeft ?? 0;
+  mobileTeamPreviousTime = 0;
   mobileTeamPaused = false;
 }
 
@@ -383,9 +437,10 @@ const teamRows = computed(() => {
         <div
           ref="mobileTeamViewport"
           class="team-mobile-viewport relative z-10 lg:hidden"
-          @pointerdown="pauseMobileTeam"
-          @pointerup="resumeMobileTeam"
-          @pointercancel="resumeMobileTeam"
+          @pointerdown="startMobileTeamDrag"
+          @pointermove="moveMobileTeamDrag"
+          @pointerup="endMobileTeamDrag"
+          @pointercancel="endMobileTeamDrag"
         >
           <div class="team-mobile-track gap-4">
             <figure
