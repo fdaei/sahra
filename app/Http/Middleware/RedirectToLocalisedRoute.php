@@ -45,6 +45,15 @@ final class RedirectToLocalisedRoute
         $locale = $this->preferred($request, $supported);
 
         $path = trim($request->path(), '/');
+
+        // Only legacy public paths are redirected. An arbitrary unknown path
+        // must remain a real 404; redirecting every typo to /en/<typo> creates
+        // crawlable soft-404 URLs.
+        $legacy = ['about', 'work', 'services', 'insights', 'contact', 'privacy-policy', 'terms'];
+        if ($path !== '' && ! in_array($path, $legacy, true)) {
+            throw new NotFoundHttpException;
+        }
+
         $target = $path === '' ? "/{$locale}" : "/{$locale}/{$path}";
 
         if ($query = $request->getQueryString()) {

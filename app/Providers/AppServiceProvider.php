@@ -20,7 +20,7 @@ final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->bind(\Inertia\Ssr\Gateway::class, \App\Services\RequiredSsrGateway::class);
     }
 
     public function boot(): void
@@ -50,6 +50,11 @@ final class AppServiceProvider extends ServiceProvider
 
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
+        }
+
+        if ($origin = config('seo.canonical_origin')) {
+            URL::forceRootUrl($origin);
+            URL::forceScheme(parse_url($origin, PHP_URL_SCHEME));
         }
 
         $this->shareTranslations();

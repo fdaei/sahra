@@ -46,20 +46,16 @@
 
     {{-- Self-hosted fonts: see docs/ASSET-MANIFEST.md §10 --}}
     @if ($config['font'] === 'arabic')
-        <link rel="preload" href="/fonts/doran/DoranFaNum-Regular.ttf" as="font" type="font/ttf" crossorigin>
-        <link rel="preload" href="/fonts/doran/DoranFaNum-Medium.ttf" as="font" type="font/ttf" crossorigin>
+        <link rel="preload" href="/fonts/doran/DoranFaNum-Regular.woff2" as="font" type="font/woff2" crossorigin>
     @else
         <link rel="preload" href="/fonts/poppins/Poppins-Regular.woff2" as="font" type="font/woff2" crossorigin>
-        <link rel="preload" href="/fonts/poppins/Poppins-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
     @endif
 
-    {{-- hreflang: every page in every language + x-default --}}
     @isset($page['props']['alternates'])
-        @foreach ($page['props']['alternates'] as $code => $url)
-            <link rel="alternate" hreflang="{{ config("locales.supported.{$code}.html_lang") }}" href="{{ $url }}">
+        @foreach ($page['props']['alternates'] as $code => $alternate)
+            <link rel="alternate" hreflang="{{ config("locales.supported.{$code}.html_lang") }}" href="{{ $alternate }}">
         @endforeach
-        <link rel="alternate" hreflang="x-default"
-              href="{{ $page['props']['alternates'][config('locales.default')] ?? url('/') }}">
+        <link rel="alternate" hreflang="x-default" href="{{ $page['props']['alternates'][config('locales.default')] ?? reset($page['props']['alternates']) }}">
     @endisset
 
     @if (filled($integrations['gaId']))

@@ -8,6 +8,7 @@ use App\Models\Post;
 use App\Models\Project;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Support\CanonicalUrl;
 
 /**
  * XML sitemaps.
@@ -25,7 +26,7 @@ final class SitemapController extends Controller
         $xml = view('sitemap.index', [
             'sitemaps' => array_map(
                 fn (string $locale): array => [
-                    'url' => route('sitemap.locale', ['locale' => $locale]),
+                    'url' => CanonicalUrl::route('sitemap.locale', ['locale' => $locale]),
                     'lastmod' => now()->toAtomString(),
                 ],
                 $locales,
@@ -57,7 +58,7 @@ final class SitemapController extends Controller
             'legal.terms' => 0.3,
         ] as $name => $priority) {
             $urls[] = [
-                'loc' => route($name, ['locale' => $locale]),
+                'loc' => CanonicalUrl::route($name, ['locale' => $locale]),
                 'lastmod' => now()->toAtomString(),
                 'priority' => $priority,
                 'changefreq' => 'weekly',
@@ -70,6 +71,7 @@ final class SitemapController extends Controller
             ->published()
             ->withTranslations()
             ->get()
+            ->filter(fn (Project $project): bool => $project->hasSlugForLocale($locale))
             ->each(function (Project $project) use (&$urls, $locale): void {
                 $urls[] = [
                     'loc' => $project->url($locale),
@@ -85,6 +87,7 @@ final class SitemapController extends Controller
             ->published()
             ->withTranslations()
             ->get()
+            ->filter(fn (Post $post): bool => $post->hasSlugForLocale($locale))
             ->each(function (Post $post) use (&$urls, $locale): void {
                 $urls[] = [
                     'loc' => $post->url($locale),
@@ -108,7 +111,7 @@ final class SitemapController extends Controller
         return collect(config('locales.supported'))
             ->map(fn (array $config, string $code): array => [
                 'hreflang' => $config['html_lang'],
-                'href' => route($name, ['locale' => $code]),
+                'href' => CanonicalUrl::route($name, ['locale' => $code]),
             ])
             ->values()
             ->all();
@@ -123,9 +126,10 @@ final class SitemapController extends Controller
         string $parameter,
     ): array {
         return collect(config('locales.supported'))
+            ->filter(fn (array $config, string $code): bool => $model->hasSlugForLocale($code))
             ->map(fn (array $config, string $code): array => [
                 'hreflang' => $config['html_lang'],
-                'href' => route($routeName, [
+                'href' => CanonicalUrl::route($routeName, [
                     'locale' => $code,
                     $parameter => $model->slugForLocale($code),
                 ]),

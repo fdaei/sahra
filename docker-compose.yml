@@ -5,6 +5,18 @@
 # loaded explicitly via env_file: below — never the implicit `.env` lookup
 # Compose would otherwise perform.
 services:
+  ssr:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: ssr
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:13714/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   db:
     image: mariadb:11.4
     restart: unless-stopped
@@ -49,12 +61,16 @@ services:
     restart: unless-stopped
     env_file: .env.docker
     environment:
+      INERTIA_SSR_ENABLED: 'true'
+      INERTIA_SSR_URL: http://ssr:13714
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: sahra
       DB_USERNAME: sahra
       DB_PASSWORD: secret
     depends_on:
+      ssr:
+        condition: service_healthy
       migrate:
         condition: service_completed_successfully
     ports:

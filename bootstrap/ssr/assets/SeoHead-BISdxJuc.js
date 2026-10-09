@@ -41,11 +41,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         "@type": "Organization",
         name: settings.value.seo.organizationName,
         url: props.meta.canonical,
-        logo: image.value,
+        ...image.value ? { logo: image.value } : {},
         email: settings.value.contact.email || void 0,
         telephone: settings.value.contact.phone || void 0,
         address: settings.value.contact.location ? { "@type": "PostalAddress", addressLocality: settings.value.contact.location } : void 0,
         sameAs: settings.value.socialLinks.map((l) => l.url)
+      })
+    );
+    const websiteLd = computed(
+      () => JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: settings.value.siteName,
+        url: props.meta.canonical,
+        inLanguage: locale.value.htmlLang
       })
     );
     const articleLd = computed(() => {
@@ -62,7 +71,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         publisher: {
           "@type": "Organization",
           name: settings.value.seo.organizationName,
-          logo: { "@type": "ImageObject", url: image.value }
+          ...image.value ? { logo: { "@type": "ImageObject", url: image.value } } : {}
         },
         mainEntityOfPage: { "@type": "WebPage", "@id": props.meta.canonical },
         inLanguage: locale.value.htmlLang
@@ -136,6 +145,18 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 } else {
                   return [
                     createTextVNode(toDisplayString(organizationLd.value), 1)
+                  ];
+                }
+              }),
+              _: 1
+            }), _parent2, _scopeId);
+            ssrRenderVNode(_push2, createVNode(resolveDynamicComponent("script"), { type: "application/ld+json" }, {
+              default: withCtx((_2, _push3, _parent3, _scopeId2) => {
+                if (_push3) {
+                  _push3(`${ssrInterpolate(websiteLd.value)}`);
+                } else {
+                  return [
+                    createTextVNode(toDisplayString(websiteLd.value), 1)
                   ];
                 }
               }),
@@ -263,6 +284,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               (openBlock(), createBlock(resolveDynamicComponent("script"), { type: "application/ld+json" }, {
                 default: withCtx(() => [
                   createTextVNode(toDisplayString(organizationLd.value), 1)
+                ]),
+                _: 1
+              })),
+              (openBlock(), createBlock(resolveDynamicComponent("script"), { type: "application/ld+json" }, {
+                default: withCtx(() => [
+                  createTextVNode(toDisplayString(websiteLd.value), 1)
                 ]),
                 _: 1
               })),

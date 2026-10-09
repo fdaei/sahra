@@ -18,4 +18,6 @@ interface HasLocalisedSlugs
      * when no translation exists.
      */
     public function slugForLocale(string $locale): string;
+
+    public function hasSlugForLocale(string $locale): bool;
 }

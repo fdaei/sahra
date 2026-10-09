@@ -40,6 +40,9 @@ Route::get('admin/language/{locale}', AdminLocaleController::class)
     ->name('admin.locale');
 
 // SEO endpoints — not locale-prefixed.
+Route::get('robots.txt', function () {
+    return response("User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ".rtrim(\App\Support\CanonicalUrl::origin(), '/')."/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+})->name('robots');
 Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('sitemap-{locale}.xml', [SitemapController::class, 'locale'])
     ->where('locale', $localePattern)

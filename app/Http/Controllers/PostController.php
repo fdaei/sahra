@@ -106,7 +106,11 @@ final class PostController extends Controller
                 ? []
                 : ContentTransformer::sectionMap($page->sections),
 
-            'seo' => SeoBuilder::forPage($page, $request->url()),
+            'seo' => SeoBuilder::forPage(
+                $page,
+                $request->url(),
+                noindex: $categoryFilter !== '' || $search !== '' || $request->integer('page', 1) > 1,
+            ),
         ]);
     }
 

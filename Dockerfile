@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---- Stage 1: build frontend assets (Vite) --------------------------------
-FROM node:20-alpine AS assets
+FROM node:22-bookworm-slim AS assets
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
@@ -9,6 +9,10 @@ COPY tsconfig.json vite.config.ts tailwind.config.js postcss.config.js ./
 COPY resources ./resources
 COPY public ./public
 RUN npm run build
+
+# SSR runs separately and retains the Node dependencies used by the bundle.
+FROM assets AS ssr
+CMD ["node", "bootstrap/ssr/ssr.js"]
 
 # ---- Stage 2: PHP application ----------------------------------------------
 FROM php:8.3-apache AS app
@@ -38,6 +42,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 COPY . .
 COPY --from=assets /app/public/build ./public/build
+COPY --from=assets /app/bootstrap/ssr ./bootstrap/ssr
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

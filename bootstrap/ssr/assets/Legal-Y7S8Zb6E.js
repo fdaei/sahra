@@ -1,7 +1,7 @@
 import { defineComponent, computed, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrRenderClass, ssrInterpolate } from "vue/server-renderer";
 import { a as usePage, u as useTranslations } from "../ssr.js";
-import { _ as _sfc_main$1 } from "./SeoHead-DbuqnLLJ.js";
+import { _ as _sfc_main$1 } from "./SeoHead-BISdxJuc.js";
 import "@inertiajs/core";
 import "lodash-es";
 import "laravel-precognition";

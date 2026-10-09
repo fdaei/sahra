@@ -294,6 +294,8 @@ const teamRows = computed(() => {
           :alt="heroImage?.alt ?? ''"
           width="321"
           height="405"
+          loading="eager"
+          fetchpriority="high"
           class="w-[151px] shrink-0 object-contain lg:w-[321px]"
           :aria-hidden="heroImage ? undefined : 'true'"
         />

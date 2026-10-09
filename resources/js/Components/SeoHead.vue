@@ -67,13 +67,23 @@ const organizationLd = computed(() =>
     '@type': 'Organization',
     name: settings.value.seo.organizationName,
     url: props.meta.canonical,
-    logo: image.value,
+    ...(image.value ? { logo: image.value } : {}),
     email: settings.value.contact.email || undefined,
     telephone: settings.value.contact.phone || undefined,
     address: settings.value.contact.location
       ? { '@type': 'PostalAddress', addressLocality: settings.value.contact.location }
       : undefined,
     sameAs: settings.value.socialLinks.map((l) => l.url),
+  }),
+)
+
+const websiteLd = computed(() =>
+  JSON.stringify({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: settings.value.siteName,
+    url: props.meta.canonical,
+    inLanguage: locale.value.htmlLang,
   }),
 )
 
@@ -94,7 +104,7 @@ const articleLd = computed(() => {
     publisher: {
       '@type': 'Organization',
       name: settings.value.seo.organizationName,
-      logo: { '@type': 'ImageObject', url: image.value },
+      ...(image.value ? { logo: { '@type': 'ImageObject', url: image.value } } : {}),
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': props.meta.canonical },
     inLanguage: locale.value.htmlLang,
@@ -149,6 +159,7 @@ const breadcrumbLd = computed(() => {
 
     <!-- Structured data -->
     <component :is="'script'" type="application/ld+json">{{ organizationLd }}</component>
+    <component :is="'script'" type="application/ld+json">{{ websiteLd }}</component>
     <component :is="'script'" v-if="articleLd" type="application/ld+json">{{ articleLd }}</component>
     <component :is="'script'" v-if="breadcrumbLd" type="application/ld+json">{{ breadcrumbLd }}</component>
   </Head>

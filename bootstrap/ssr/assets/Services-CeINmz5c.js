@@ -1,7 +1,7 @@
 import { defineComponent, unref, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrRenderAttr, ssrInterpolate, ssrRenderList, ssrRenderClass } from "vue/server-renderer";
 import { C as CtaBanner } from "./CtaBanner-Cb3ia_15.js";
-import { _ as _sfc_main$1 } from "./SeoHead-DbuqnLLJ.js";
+import { _ as _sfc_main$1 } from "./SeoHead-BISdxJuc.js";
 import "../ssr.js";
 import "@inertiajs/core";
 import "lodash-es";

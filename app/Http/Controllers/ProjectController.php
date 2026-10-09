@@ -71,7 +71,7 @@ final class ProjectController extends Controller
                 ? []
                 : ContentTransformer::sectionMap($page->sections),
 
-            'seo' => SeoBuilder::forPage($page, $request->url()),
+            'seo' => SeoBuilder::forPage($page, $request->url(), noindex: $serviceFilter !== ''),
         ]);
     }
 

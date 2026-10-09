@@ -51,7 +51,7 @@ return [
             'native'      => 'فارسی',
             'direction'   => 'rtl',
             'font'        => 'arabic',
-            'html_lang'   => 'fa-IR',
+            'html_lang'   => 'fa',
             'locale'      => 'fa_IR',
             'flag'        => 'IR',
             'date_format' => 'Y/m/d',

@@ -41,7 +41,10 @@ final class LocaleAlternates
         $alternates = [];
 
         foreach ($supported as $locale) {
-            $alternates[$locale] = self::buildUrl($name, $params, $locale, $request);
+            $url = self::buildUrl($name, $params, $locale, $request);
+            if ($url !== null) {
+                $alternates[$locale] = $url;
+            }
         }
 
         return $alternates;
@@ -55,13 +58,13 @@ final class LocaleAlternates
         array $params,
         string $locale,
         Request $request,
-    ): string {
+    ): ?string {
         // Unnamed route (rare — fallback pages): swap the first segment.
         if ($name === null || ! Route::has($name)) {
             $segments = $request->segments();
             $segments[0] = $locale;
 
-            return url(implode('/', $segments));
+            return CanonicalUrl::for('/'.implode('/', $segments));
         }
 
         $translated = $params;
@@ -69,6 +72,9 @@ final class LocaleAlternates
         foreach ($params as $key => $value) {
             // Route-model-bound parameter that carries per-locale slugs.
             if ($value instanceof HasLocalisedSlugs) {
+                if (! $value->hasSlugForLocale($locale)) {
+                    return null;
+                }
                 $translated[$key] = $value->slugForLocale($locale);
 
                 continue;

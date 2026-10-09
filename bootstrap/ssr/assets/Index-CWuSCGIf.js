@@ -4,7 +4,7 @@ import { a as usePage, u as useTranslations, l as link_default } from "../ssr.js
 import { CalendarDays, ArrowUpRight, ChevronDown } from "lucide-vue-next";
 import { C as CtaBanner } from "./CtaBanner-Cb3ia_15.js";
 import { _ as _sfc_main$2 } from "./FilterChips-CH5NxcNu.js";
-import { _ as _sfc_main$1 } from "./SeoHead-DbuqnLLJ.js";
+import { _ as _sfc_main$1 } from "./SeoHead-BISdxJuc.js";
 import "@inertiajs/core";
 import "lodash-es";
 import "laravel-precognition";

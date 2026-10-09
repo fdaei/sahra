@@ -1,7 +1,7 @@
-import { defineComponent, computed, unref, createVNode, resolveDynamicComponent, useSSRContext } from "vue";
+import { defineComponent, computed, ref, onMounted, onBeforeUnmount, unref, createVNode, resolveDynamicComponent, useSSRContext } from "vue";
 import { ssrRenderComponent, ssrRenderAttr, ssrRenderStyle, ssrInterpolate, ssrRenderList, ssrRenderVNode, ssrRenderClass } from "vue/server-renderer";
 import { BadgeCheck, Focus, Repeat2, TrendingUp } from "lucide-vue-next";
-import { _ as _sfc_main$1 } from "./SeoHead-DbuqnLLJ.js";
+import { _ as _sfc_main$1 } from "./SeoHead-BISdxJuc.js";
 import { C as CtaBanner } from "./CtaBanner-Cb3ia_15.js";
 import { _ as _sfc_main$2 } from "./HoverIcon-Cu-t3PJE.js";
 import "../ssr.js";
@@ -19,8 +19,7 @@ const arcRings = "/build/assets/arc-rings-B4rWaPkT.svg";
 const duneContours = "/build/assets/dune-contours-DV3d6otK.webp";
 const TEAM_ITEM_WIDTH = 254;
 const TEAM_TRACK_COVER = 2560;
-const MOBILE_TEAM_ITEM_WIDTH = 190;
-const MOBILE_TEAM_TRACK_COVER = 800;
+const MOBILE_TEAM_SPEED = 21;
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "About",
   __ssrInlineRender: true,
@@ -42,13 +41,38 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       return ((_a = hero.value) == null ? void 0 : _a.image) ?? null;
     });
     const mobileTeamTrack = computed(() => {
-      if (props.team.length === 0) return { items: [], uniqueCount: 0 };
-      const repeats = Math.max(
-        1,
-        Math.ceil(MOBILE_TEAM_TRACK_COVER / MOBILE_TEAM_ITEM_WIDTH / props.team.length)
-      );
-      const half = Array.from({ length: repeats }, () => props.team).flat();
-      return { items: [...half, ...half], uniqueCount: props.team.length };
+      return { items: props.team, uniqueCount: props.team.length };
+    });
+    const mobileTeamViewport = ref(null);
+    let mobileTeamAnimationFrame = 0;
+    let mobileTeamScrollPosition = 0;
+    let mobileTeamPreviousTime = 0;
+    let mobileTeamDirection = 1;
+    function animateMobileTeam(time) {
+      const viewport = mobileTeamViewport.value;
+      const elapsed = mobileTeamPreviousTime ? Math.min(time - mobileTeamPreviousTime, 50) : 0;
+      mobileTeamPreviousTime = time;
+      if (viewport && true && viewport.scrollWidth > viewport.clientWidth) {
+        mobileTeamScrollPosition += mobileTeamDirection * (MOBILE_TEAM_SPEED * elapsed) / 1e3;
+        const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+        if (mobileTeamScrollPosition >= maxScroll) {
+          mobileTeamScrollPosition = maxScroll;
+          mobileTeamDirection = -1;
+        } else if (mobileTeamScrollPosition <= 0) {
+          mobileTeamScrollPosition = 0;
+          mobileTeamDirection = 1;
+        }
+        viewport.scrollLeft = mobileTeamScrollPosition;
+      } else if (viewport) {
+        mobileTeamScrollPosition = viewport.scrollLeft;
+      }
+      mobileTeamAnimationFrame = requestAnimationFrame(animateMobileTeam);
+    }
+    onMounted(() => {
+      mobileTeamAnimationFrame = requestAnimationFrame(animateMobileTeam);
+    });
+    onBeforeUnmount(() => {
+      cancelAnimationFrame(mobileTeamAnimationFrame);
     });
     const teamRows = computed(() => {
       const members = props.team;
@@ -75,7 +99,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         } else {
           _push(`<!---->`);
         }
-        _push(`</h1><p class="text-body-md text-neutral-700 md:text-title-sm md:font-medium" style="${ssrRenderStyle({ color: hero.value.colors.description || void 0 })}">${ssrInterpolate(hero.value.description)}</p></div></div><img${ssrRenderAttr("src", ((_a = heroImage.value) == null ? void 0 : _a.src) ?? "/images/sahra/about-hero-sculpture.png")}${ssrRenderAttr("alt", ((_b = heroImage.value) == null ? void 0 : _b.alt) ?? "")} width="321" height="405" class="w-[151px] shrink-0 object-contain lg:w-[321px]"${ssrRenderAttr("aria-hidden", heroImage.value ? void 0 : "true")}></div>`);
+        _push(`</h1><p class="text-body-md text-neutral-700 md:text-title-sm md:font-medium" style="${ssrRenderStyle({ color: hero.value.colors.description || void 0 })}">${ssrInterpolate(hero.value.description)}</p></div></div><img${ssrRenderAttr("src", ((_a = heroImage.value) == null ? void 0 : _a.src) ?? "/images/sahra/about-hero-sculpture.png")}${ssrRenderAttr("alt", ((_b = heroImage.value) == null ? void 0 : _b.alt) ?? "")} width="321" height="405" loading="eager" fetchpriority="high" class="w-[151px] shrink-0 object-contain lg:w-[321px]"${ssrRenderAttr("aria-hidden", heroImage.value ? void 0 : "true")}></div>`);
       } else {
         _push(`<!---->`);
       }
@@ -114,11 +138,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         _push(`<!---->`);
       }
       if (team.value) {
-        _push(`<div class="relative isolate mt-[98px] flex flex-col gap-12 md:gap-24 lg:mt-0"><img${ssrRenderAttr("src", unref(duneContours))} alt="" aria-hidden="true" loading="lazy" decoding="async" width="1160" height="1000" class="pointer-events-none absolute -top-[104px] start-[37px] z-0 hidden w-[1160px] max-w-none opacity-100 lg:block"><div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-[328px]"><h2 class="max-w-[287px] text-[22px] font-semibold leading-normal [text-wrap:initial] md:text-display-md lg:shrink-0" style="${ssrRenderStyle({ color: team.value.colors.title || void 0 })}">${ssrInterpolate(team.value.title)}</h2><p class="hidden text-title-xl text-neutral-800 md:block lg:max-w-[612px]" style="${ssrRenderStyle({ color: team.value.colors.description || void 0 })}">${ssrInterpolate(team.value.description)}</p></div><div class="marquee-mask relative z-10 overflow-hidden lg:hidden"><div class="marquee-track gap-4" style="${ssrRenderStyle({ "--marquee-duration": "48s" })}"><!--[-->`);
+        _push(`<div class="relative isolate mt-[98px] flex flex-col gap-12 md:gap-24 lg:mt-0"><img${ssrRenderAttr("src", unref(duneContours))} alt="" aria-hidden="true" loading="lazy" decoding="async" width="1160" height="1000" class="pointer-events-none absolute -top-[104px] start-[37px] z-0 hidden w-[1160px] max-w-none opacity-100 lg:block"><div class="relative z-10 flex flex-col gap-6 lg:flex-row lg:justify-between lg:gap-[328px]"><h2 class="max-w-[287px] text-[22px] font-semibold leading-normal [text-wrap:initial] md:text-display-md lg:shrink-0" style="${ssrRenderStyle({ color: team.value.colors.title || void 0 })}">${ssrInterpolate(team.value.title)}</h2><p class="hidden text-title-xl text-neutral-800 md:block lg:max-w-[612px]" style="${ssrRenderStyle({ color: team.value.colors.description || void 0 })}">${ssrInterpolate(team.value.description)}</p></div><div class="team-mobile-viewport relative z-10 lg:hidden"><div class="team-mobile-track gap-4"><!--[-->`);
         ssrRenderList(mobileTeamTrack.value.items, (member, i) => {
           _push(`<figure class="flex w-[174px] shrink-0 flex-col gap-2 overflow-hidden rounded-sm border border-neutral-200 bg-paper/60"${ssrRenderAttr("aria-hidden", i >= mobileTeamTrack.value.uniqueCount ? "true" : void 0)}>`);
           if (member.image) {
-            _push(`<div class="aspect-square w-full overflow-hidden rounded-sm"><img${ssrRenderAttr("src", member.image.src)}${ssrRenderAttr("srcset", member.image.srcset)}${ssrRenderAttr("alt", i >= mobileTeamTrack.value.uniqueCount ? "" : member.image.alt)}${ssrRenderAttr("width", member.image.width)}${ssrRenderAttr("height", member.image.height)} class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand hover:scale-[1.06] hover:grayscale-0 focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"></div>`);
+            _push(`<div class="aspect-square w-full overflow-hidden rounded-sm"><img${ssrRenderAttr("src", member.image.src)}${ssrRenderAttr("srcset", member.image.srcset)}${ssrRenderAttr("alt", i >= mobileTeamTrack.value.uniqueCount ? "" : member.image.alt)}${ssrRenderAttr("width", member.image.width)}${ssrRenderAttr("height", member.image.height)} draggable="false" class="size-full object-cover grayscale transition-[filter,transform] duration-500 ease-brand hover:scale-[1.06] hover:grayscale-0 focus-visible:scale-[1.06] focus-visible:grayscale-0 motion-reduce:transition-none"></div>`);
           } else {
             _push(`<div class="aspect-square w-full rounded-sm bg-neutral-100"></div>`);
           }

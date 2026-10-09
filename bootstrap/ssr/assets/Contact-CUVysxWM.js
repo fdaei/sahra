@@ -2,8 +2,8 @@ import { defineComponent, computed, mergeProps, createVNode, resolveDynamicCompo
 import { ssrRenderAttrs, ssrRenderAttr, ssrRenderVNode, ssrRenderComponent, ssrInterpolate, ssrRenderClass, ssrRenderList, ssrIncludeBooleanAttr, ssrRenderTeleport } from "vue/server-renderer";
 import { u as useTranslations, a as usePage, b as useForm } from "../ssr.js";
 import { getCountryDataList } from "countries-list";
-import { Facebook, Youtube, Twitter, MessageCircle, Linkedin, Instagram, Link2, MapPin, Mail, Building2, UserRound, BadgeCheck, ChevronDown, Search, Layers3, Check, X, ArrowUpRight } from "lucide-vue-next";
-import { _ as _sfc_main$2 } from "./SeoHead-DbuqnLLJ.js";
+import { Facebook, Youtube, Twitter, MessageCircle, Linkedin, Instagram, Link2, MapPin, Mail, UserRound, BadgeCheck, ChevronDown, Search, Layers3, Check, X, ArrowUpRight } from "lucide-vue-next";
+import { _ as _sfc_main$2 } from "./SeoHead-BISdxJuc.js";
 import "@inertiajs/core";
 import "lodash-es";
 import "laravel-precognition";
@@ -33,8 +33,18 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       youtube: Youtube,
       facebook: Facebook
     };
+    const imageIcons = {
+      instagram: "/icons/sahra/contact/social.svg",
+      linkedin: "/icons/sahra/contact/social-1.svg",
+      "message-circle": "/icons/sahra/contact/social-2.svg",
+      whatsapp: "/icons/sahra/contact/social-2.svg",
+      twitter: "/icons/sahra/contact/social-3.svg",
+      x: "/icons/sahra/contact/social-3.svg",
+      youtube: "/icons/sahra/contact/social-4.svg"
+    };
     const component = computed(() => icons[props.icon] ?? Link2);
-    const isImage = computed(() => props.icon.startsWith("/") || /^https?:\/\//.test(props.icon));
+    const imageSource = computed(() => imageIcons[props.icon] ?? (props.icon.startsWith("/") || /^https?:\/\//.test(props.icon) ? props.icon : null));
+    const isImage = computed(() => Boolean(imageSource.value));
     const hoverComponent = computed(
       () => props.hoverIcon && !props.hoverIcon.startsWith("/") && !/^https?:\/\//.test(props.hoverIcon) ? icons[props.hoverIcon] ?? Link2 : null
     );
@@ -49,7 +59,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           "aria-hidden": "true"
         }, _attrs))}>`);
         if (isImage.value) {
-          _push(`<img${ssrRenderAttr("src", props.icon)} alt="" class="size-full object-contain transition-opacity duration-200 group-hover:opacity-0 group-focus-within:opacity-0">`);
+          _push(`<img${ssrRenderAttr("src", imageSource.value)} alt="" class="size-full object-contain transition-opacity duration-200 group-hover:opacity-0 group-focus-within:opacity-0">`);
         } else {
           ssrRenderVNode(_push, createVNode(resolveDynamicComponent(component.value), { class: "size-full transition-opacity duration-200 group-hover:opacity-0 group-focus-within:opacity-0" }, null), _parent);
         }
@@ -61,7 +71,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         _push(`</span>`);
       } else if (isImage.value) {
         _push(`<img${ssrRenderAttrs(mergeProps({
-          src: props.icon,
+          src: imageSource.value,
           alt: "",
           "aria-hidden": "true"
         }, _attrs))}>`);
@@ -94,7 +104,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       const c = page.props.settings.contact;
       return [
         {
-          icon: MessageCircle,
+          icon: "/icons/sahra/contact/phone.svg",
           label: t("forms.details.whatsapp"),
           value: c.whatsapp,
           href: `https://wa.me/${c.whatsapp.replace(/\D/g, "")}`
@@ -112,14 +122,26 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           href: `mailto:${c.email}`
         },
         {
-          icon: Building2,
+          icon: "/icons/sahra/contact/users.svg",
           label: t("forms.details.working_with"),
           value: c.workingWith,
           href: null
         }
       ].filter((row) => row.value);
     });
-    const socialLinks = computed(() => page.props.settings.socialLinks);
+    const socialLinks = computed(() => {
+      const configured = page.props.settings.socialLinks;
+      const defaults = [
+        { platform: "instagram", label: "Instagram", url: "https://instagram.com/sahramarketing", icon: "instagram", hoverIcon: null },
+        { platform: "linkedin", label: "LinkedIn", url: "https://linkedin.com/company/sahramarketing", icon: "linkedin", hoverIcon: null },
+        { platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/96777811213", icon: "whatsapp", hoverIcon: null },
+        { platform: "x", label: "X", url: "https://x.com/sahramarketing", icon: "x", hoverIcon: null },
+        { platform: "youtube", label: "YouTube", url: "https://youtube.com/@sahramarketing", icon: "youtube", hoverIcon: null }
+      ];
+      return defaults.map(
+        (fallback) => configured.find((link) => link.platform === fallback.platform) ?? fallback
+      );
+    });
     const form = useForm({
       name: "",
       brand_name: "",
@@ -363,12 +385,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         _push(`<li class="${ssrRenderClass([
           i < details.value.length - 1 ? "border-b border-neutral-200 pb-4 lg:pb-6" : "",
           "flex items-center gap-4"
-        ])}"><span class="flex size-12 shrink-0 items-center justify-center rounded-round">`);
-        ssrRenderVNode(_push, createVNode(resolveDynamicComponent(row.icon), {
-          class: "size-6 text-neutral-700",
-          "stroke-width": 1.5,
-          "aria-hidden": "true"
-        }, null), _parent);
+        ])}"><span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-round">`);
+        if (typeof row.icon === "string") {
+          _push(`<img${ssrRenderAttr("src", row.icon)} alt="" class="h-12 w-12 object-contain" aria-hidden="true">`);
+        } else {
+          ssrRenderVNode(_push, createVNode(resolveDynamicComponent(row.icon), {
+            class: "h-6 w-6 text-neutral-700",
+            "stroke-width": 1.5,
+            "aria-hidden": "true"
+          }, null), _parent);
+        }
         _push(`</span><span class="flex min-w-0 flex-col gap-1"><span class="text-label-lg text-neutral-900">${ssrInterpolate(row.label)}</span>`);
         if (row.href) {
           _push(`<a${ssrRenderAttr("href", row.href)} class="truncate text-body-md text-neutral-700 hover:text-gold">${ssrInterpolate(row.value)}</a>`);
@@ -379,13 +405,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       });
       _push(`<!--]--></ul></div>`);
       if (socialLinks.value.length > 0) {
-        _push(`<div class="flex flex-col gap-6 lg:gap-10"><p class="text-label-lg font-medium text-neutral-800 lg:text-body-lg">${ssrInterpolate(unref(t)("forms.details.follow"))}</p><ul class="flex items-center justify-between gap-4"><!--[-->`);
+        _push(`<div class="flex flex-col gap-6 rounded-lg p-6 backdrop-blur-[3px] lg:gap-8 lg:p-7"><p class="max-w-[340px] text-label-lg font-medium leading-relaxed text-neutral-800 lg:text-body-lg">${ssrInterpolate(unref(t)("forms.details.follow"))}</p><ul class="flex items-center justify-between gap-3"><!--[-->`);
         ssrRenderList(socialLinks.value, (link) => {
-          _push(`<li><a${ssrRenderAttr("href", link.url)} target="_blank" rel="noopener noreferrer"${ssrRenderAttr("aria-label", link.label)} class="group flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold lg:size-10">`);
+          _push(`<li><a${ssrRenderAttr("href", link.url)} target="_blank" rel="noopener noreferrer"${ssrRenderAttr("aria-label", link.label)} class="group flex size-12 items-center justify-center text-neutral-700 transition-colors hover:text-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink lg:size-12">`);
           _push(ssrRenderComponent(_sfc_main$1, {
             icon: link.icon,
             "hover-icon": link.hoverIcon,
-            class: "size-6"
+            class: "size-14"
           }, null, _parent));
           _push(`</a></li>`);
         });

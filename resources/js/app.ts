@@ -1,6 +1,6 @@
 import '../css/app.css'
 
-import { createApp, h, type DefineComponent } from 'vue'
+import { createApp, createSSRApp, h, type DefineComponent } from 'vue'
 import { createInertiaApp, router } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { ZiggyVue } from 'ziggy-js'
@@ -9,11 +9,7 @@ import AppLayout from './Layouts/AppLayout.vue'
 import { installTranslations } from './Composables/useTranslations'
 import { initMotion, killPageAnimations } from './lib/motion'
 
-const appName = import.meta.env.VITE_APP_NAME ?? 'Sahra'
-
 createInertiaApp({
-  title: (title) => (title ? `${title} — ${appName}` : appName),
-
   resolve: (name) => {
     const page = resolvePageComponent(
       `./Pages/${name}.vue`,
@@ -29,7 +25,7 @@ createInertiaApp({
   },
 
   setup({ el, App, props, plugin }) {
-    const app = createApp({ render: () => h(App, props) })
+    const app = (el.hasChildNodes() ? createSSRApp : createApp)({ render: () => h(App, props) })
       .use(plugin)
       .use(ZiggyVue)
 

@@ -329,6 +329,8 @@ useSectionReveal();
       :alt="heroImage.alt"
       :width="heroImage.width"
       :height="heroImage.height"
+      loading="eager"
+      fetchpriority="high"
       class="absolute inset-0 size-full object-cover"
     />
     <div

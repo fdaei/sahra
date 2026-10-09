@@ -119,6 +119,11 @@ final class Post extends Model implements HasLocalisedSlugs
             ?? $this->getTranslation('slug', config('locales.fallback')));
     }
 
+    public function hasSlugForLocale(string $locale): bool
+    {
+        return filled($this->getTranslation('slug', $locale, false));
+    }
+
     public function url(?string $locale = null, bool $absolute = true): string
     {
         $locale ??= app()->getLocale();

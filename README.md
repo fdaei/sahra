@@ -137,6 +137,10 @@ npm run test:e2e               # Playwright — requires the app running;
 composer install --no-dev --optimize-autoloader
 npm run build
 
+# Inertia SSR is built by the command above. Keep this process running in
+# production so initial HTML contains the rendered page and SEO head.
+php artisan inertia:start-ssr
+
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -162,6 +166,8 @@ Environment checklist for production:
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] `APP_URL` set to the real domain (used for canonical URLs, sitemaps, hreflang)
+- [ ] `SEO_CANONICAL_ORIGIN=https://sahramarketing.com` (the non-www host)
+- [ ] `INERTIA_SSR_ENABLED=true` and the SSR process is supervised (Docker starts it automatically)
 - [ ] `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` pointed at real
       backends (Redis recommended over `database` at scale)
 - [ ] `MAIL_*` configured; `CONTACT_NOTIFICATION_EMAIL` set to a monitored inbox

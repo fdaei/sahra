@@ -8,6 +8,7 @@ use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
 use App\Support\SiteSettings;
+use App\Support\CanonicalUrl;
 
 /**
  * Builds the SeoMeta payload consumed by resources/js/Components/SeoHead.vue.
@@ -21,14 +22,15 @@ final class SeoBuilder
     /**
      * @return array<string, mixed>
      */
-    public static function forPage(?Page $page, string $canonical, ?string $image = null): array
+    public static function forPage(?Page $page, string $canonical, ?string $image = null, bool $noindex = false): array
     {
         return self::assemble(
             title: $page?->getTranslation('seo_title') ?: $page?->getTranslation('title'),
             description: $page?->getTranslation('seo_description') ?: $page?->getTranslation('description'),
             image: $image,
-            canonical: $canonical,
+            canonical: CanonicalUrl::for($canonical),
             type: 'website',
+            noindex: $noindex,
         );
     }
 
@@ -43,7 +45,7 @@ final class SeoBuilder
             image: $project->cover_path === null
                 ? null
                 : MediaTransformer::url($project->cover_path),
-            canonical: $project->url(),
+            canonical: CanonicalUrl::for($project->url()),
             type: 'website',
         );
     }
@@ -59,7 +61,7 @@ final class SeoBuilder
             image: $post->cover_path === null
                 ? null
                 : MediaTransformer::url($post->cover_path),
-            canonical: $post->url(),
+            canonical: CanonicalUrl::for($post->url()),
             type: 'article',
             publishedAt: $post->published_at?->toIso8601String(),
             modifiedAt: $post->updated_at?->toIso8601String(),

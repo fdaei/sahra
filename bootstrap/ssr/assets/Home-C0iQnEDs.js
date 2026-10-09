@@ -2,7 +2,7 @@ import { defineComponent, ref, useId, reactive, computed, mergeProps, unref, use
 import { ssrRenderAttrs, ssrRenderAttr, ssrInterpolate, ssrRenderComponent, ssrRenderList, ssrRenderClass, ssrRenderStyle, ssrRenderVNode, ssrIncludeBooleanAttr } from "vue/server-renderer";
 import { c as useMasteryOpen, _ as _export_sfc, u as useTranslations, a as usePage, d as _sfc_main$7, e as useHeroStagger, f as useCounters, g as useSectionReveal } from "../ssr.js";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, TrendingUp, UsersRound, BadgeCheck, Copy, Gem, ClipboardCheck, CalendarDays, CirclePlus, CircleMinus } from "lucide-vue-next";
-import { _ as _sfc_main$9 } from "./SeoHead-DbuqnLLJ.js";
+import { _ as _sfc_main$9 } from "./SeoHead-BISdxJuc.js";
 import { C as CtaBanner } from "./CtaBanner-Cb3ia_15.js";
 import { _ as _sfc_main$8 } from "./HoverIcon-Cu-t3PJE.js";
 import { useElementSize, useMediaQuery } from "@vueuse/core";
@@ -756,7 +756,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       if (hero.value) {
         _push(`<section class="relative min-h-[765px] overflow-hidden md:min-h-[904px]">`);
         if (heroImage.value) {
-          _push(`<img${ssrRenderAttr("src", heroImage.value.src)}${ssrRenderAttr("alt", heroImage.value.alt)}${ssrRenderAttr("width", heroImage.value.width)}${ssrRenderAttr("height", heroImage.value.height)} class="absolute inset-0 size-full object-cover">`);
+          _push(`<img${ssrRenderAttr("src", heroImage.value.src)}${ssrRenderAttr("alt", heroImage.value.alt)}${ssrRenderAttr("width", heroImage.value.width)}${ssrRenderAttr("height", heroImage.value.height)} loading="eager" fetchpriority="high" class="absolute inset-0 size-full object-cover">`);
         } else {
           _push(`<div class="absolute inset-0 bg-[url(&#39;/images/sahra/hero-brand-preview-mobile.webp&#39;)] bg-[length:100%_100%] bg-center bg-no-repeat md:bg-[url(&#39;/images/sahra/hero-brand-preview.png&#39;)] rtl:-scale-x-100" aria-hidden="true"></div>`);
         }
@@ -921,7 +921,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         _push(`<!---->`);
       }
       if (insights.value) {
-        _push(`<section class="h-[1111px] overflow-hidden py-14 md:h-auto md:py-24 lg:-mt-[10px] lg:py-28"><div class="container-sahra flex flex-col gap-10 md:gap-12"><div class="flex flex-col gap-8 md:gap-12"><div class="eyebrow" style="${ssrRenderStyle({ color: insights.value.colors.eyebrow || void 0 })}">${ssrInterpolate(insights.value.eyebrow)}</div><div class="grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"><h2 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-md" style="${ssrRenderStyle({ color: insights.value.colors.title || void 0 })}">${ssrInterpolate(insights.value.title)}</h2>`);
+        _push(`<section class="py-14 md:py-24 lg:-mt-[10px] lg:py-28"><div class="container-sahra flex flex-col gap-10 md:gap-12"><div class="flex flex-col gap-8 md:gap-12"><div class="eyebrow" style="${ssrRenderStyle({ color: insights.value.colors.eyebrow || void 0 })}">${ssrInterpolate(insights.value.eyebrow)}</div><div class="grid items-start gap-8 lg:grid-cols-[505px_1fr] lg:gap-[132px]"><h2 class="text-[26px] font-semibold leading-normal text-neutral-900 md:text-display-md" style="${ssrRenderStyle({ color: insights.value.colors.title || void 0 })}">${ssrInterpolate(insights.value.title)}</h2>`);
         if (insightsSubtitle.value) {
           _push(`<p class="max-w-[612px] text-[16px] font-medium leading-normal text-neutral-700 md:text-title-sm" style="${ssrRenderStyle({
             color: insights.value.colors.description || insights.value.colors.subtitle || void 0
@@ -953,7 +953,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
         _push(`<div class="will-reveal flex flex-col gap-3 md:gap-6" data-reveal><!--[-->`);
         ssrRenderList(__props.posts.slice(1, 3), (post, index) => {
-          _push(`<a${ssrRenderAttr("href", post.url)} class="${ssrRenderClass([index === 0 ? "border-b border-neutral-200 pb-6" : "", "group grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"])}"><div class="aspect-square size-[120px] overflow-hidden rounded-sm md:size-[188px]">`);
+          _push(`<a${ssrRenderAttr("href", post.url)} class="${ssrRenderClass([index === 0 ? "border-b border-neutral-200 pb-[9.25rem] md:pb-6" : "pt-8 md:pt-6", "group grid h-[120px] grid-cols-[120px_1fr] gap-4 md:h-auto md:flex-1 md:gap-6 sm:grid-cols-[188px_1fr]"])}"><div class="aspect-square size-[120px] overflow-hidden rounded-sm md:size-[188px]">`);
           if (post.image) {
             _push(`<img${ssrRenderAttr("src", post.image.src)}${ssrRenderAttr("alt", post.image.alt)} class="h-full w-full object-cover transition-transform duration-400 ease-brand group-hover:scale-[1.04]">`);
           } else {

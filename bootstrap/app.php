@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->prepend(\App\Http\Middleware\CanonicalRedirect::class);
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -47,6 +48,12 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (! \App\Exceptions\SsrUnavailable::causedBy($e)) {
+                return null;
+            }
+            return response()->view('errors.ssr-unavailable', [], 503, ['Retry-After' => '60']);
+        });
         /*
          | Render 404/403/419/500 through Inertia so error pages keep the site
          | chrome, the active locale, and the RTL/LTR direction.
@@ -54,6 +61,9 @@ return Application::configure(basePath: dirname(__DIR__))
          | Figma: 404 desktop 1027:2061, mobile 1567:13563.
          */
         $exceptions->respond(function ($response, Throwable $e, Request $request) {
+            if (\App\Exceptions\SsrUnavailable::causedBy($e)) {
+                return $response;
+            }
             if ($request->is('admin*') || $request->expectsJson()) {
                 return $response;
             }

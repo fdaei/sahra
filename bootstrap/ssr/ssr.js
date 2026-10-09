@@ -2371,7 +2371,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       if (settings.value.contact.location) {
         _push(`<li class="flex items-center gap-2">`);
         _push(ssrRenderComponent(unref(MapPin), {
-          class: "size-4 shrink-0 text-neutral-600",
+          class: "size-6 shrink-0 text-neutral-600",
           "aria-hidden": "true"
         }, null, _parent));
         _push(`<span>${ssrInterpolate(settings.value.contact.location)}</span></li>`);
@@ -2391,7 +2391,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       if (settings.value.contact.email) {
         _push(`<li class="flex items-center gap-2">`);
         _push(ssrRenderComponent(unref(Mail), {
-          class: "size-4 shrink-0 text-neutral-600",
+          class: "size-6 shrink-0 text-neutral-600",
           "aria-hidden": "true"
         }, null, _parent));
         _push(`<a${ssrRenderAttr("href", `mailto:${settings.value.contact.email}`)} class="break-all transition-colors hover:text-gold">${ssrInterpolate(settings.value.contact.email)}</a></li>`);
@@ -2826,7 +2826,7 @@ createServer(
     resolve: (name) => {
       const component2 = resolvePageComponent(
         `./Pages/${name}.vue`,
-        /* @__PURE__ */ Object.assign({ "./Pages/About.vue": () => import("./assets/About-C1rFoRdQ.js"), "./Pages/Contact.vue": () => import("./assets/Contact-C2p0oy4C.js"), "./Pages/Error.vue": () => import("./assets/Error-CdBv1sSv.js"), "./Pages/Home.vue": () => import("./assets/Home-CG_rePbz.js"), "./Pages/Insights/Index.vue": () => import("./assets/Index-b8LITWof.js"), "./Pages/Insights/Show.vue": () => import("./assets/Show-DqgXtWJQ.js"), "./Pages/Legal.vue": () => import("./assets/Legal-BgGUMbXW.js"), "./Pages/Services.vue": () => import("./assets/Services-DmJLGA2Q.js"), "./Pages/Work/Index.vue": () => import("./assets/Index-DledACm0.js"), "./Pages/Work/Show.vue": () => import("./assets/Show-BkhozoVj.js") })
+        /* @__PURE__ */ Object.assign({ "./Pages/About.vue": () => import("./assets/About-BIjKnLJu.js"), "./Pages/Contact.vue": () => import("./assets/Contact-CUVysxWM.js"), "./Pages/Error.vue": () => import("./assets/Error-BEWaS_6O.js"), "./Pages/Home.vue": () => import("./assets/Home-C0iQnEDs.js"), "./Pages/Insights/Index.vue": () => import("./assets/Index-CWuSCGIf.js"), "./Pages/Insights/Show.vue": () => import("./assets/Show-Ck27kuj8.js"), "./Pages/Legal.vue": () => import("./assets/Legal-Y7S8Zb6E.js"), "./Pages/Services.vue": () => import("./assets/Services-CeINmz5c.js"), "./Pages/Work/Index.vue": () => import("./assets/Index-fBJhpk-E.js"), "./Pages/Work/Show.vue": () => import("./assets/Show-p8DkLWqp.js") })
       );
       return component2.then((module) => {
         var _a;
