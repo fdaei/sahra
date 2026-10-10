@@ -6,142 +6,52 @@
  * hreflang tags are rendered server-side in app.blade.php (they must exist in
  * the initial HTML for crawlers that do not execute JS).
  *
- * Structured data emitted here:
- *   - Organization  (once, on every page — safe and expected)
- *   - WebSite
- *   - Article       (when type === 'article')
- *   - BreadcrumbList (when breadcrumbs provided)
+ * Structured data comes ready-made in `meta.jsonLd` from
+ * App\Services\SeoBuilder, so this component and its Blade twin
+ * (resources/views/seo/head.blade.php, used when SSR is unavailable) emit the
+ * same graph. Keep the tags below in step with that file.
  */
 import { computed } from 'vue'
 import { Head, usePage } from '@inertiajs/vue3'
 import type { SeoMeta, SharedProps } from '@/types'
 
-const props = withDefaults(
-  defineProps<{
-    meta: SeoMeta
-    breadcrumbs?: { name: string; url: string }[]
-  }>(),
-  { breadcrumbs: () => [] },
-)
+const props = defineProps<{ meta: SeoMeta }>()
 
 const page = usePage<SharedProps>()
 
 // SeoHead renders first on every page, including Error.vue — whose props can
 // be missing `settings`/`locale` when the triggering exception happened
 // before HandleInertiaRequests::share() ran (see the comment in
-// Pages/Error.vue). Fall back to the same defaults SiteSettings::forFrontend()
-// and share() use server-side, instead of throwing and blanking the page.
-const settings = computed(
-  () =>
-    page.props.settings ?? {
-      siteName: 'Sahra',
-      tagline: '',
-      description: '',
-      contact: { whatsapp: '', phone: '', email: '', location: '', workingWith: '' },
-      socialLinks: [],
-      seo: { defaultTitle: 'Sahra', defaultDescription: '', defaultImage: null, organizationName: 'Sahra' },
-    },
-)
-const locale = computed(
-  () =>
-    page.props.locale ?? {
-      current: 'en',
-      direction: 'ltr',
-      font: 'sans',
-      htmlLang: 'en',
-      supported: [],
-    },
-)
+// Pages/Error.vue). Fall back instead of throwing and blanking the page.
+const siteName = computed(() => page.props.settings?.siteName ?? 'Sahra')
+const htmlLang = computed(() => page.props.locale?.htmlLang ?? 'en')
 
-const title = computed(() => props.meta.title || settings.value.seo.defaultTitle)
+const title = computed(() => props.meta.title || page.props.settings?.seo.defaultTitle || siteName.value)
 
 const description = computed(
-  () => props.meta.description || settings.value.seo.defaultDescription,
+  () => props.meta.description || page.props.settings?.seo.defaultDescription || '',
 )
 
-const image = computed(() => props.meta.image ?? settings.value.seo.defaultImage)
+const image = computed(() => props.meta.image ?? page.props.settings?.seo.defaultImage ?? null)
 
-const organizationLd = computed(() =>
-  JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: settings.value.seo.organizationName,
-    url: props.meta.canonical,
-    ...(image.value ? { logo: image.value } : {}),
-    email: settings.value.contact.email || undefined,
-    telephone: settings.value.contact.phone || undefined,
-    address: settings.value.contact.location
-      ? { '@type': 'PostalAddress', addressLocality: settings.value.contact.location }
-      : undefined,
-    sameAs: settings.value.socialLinks.map((l) => l.url),
-  }),
-)
-
-const websiteLd = computed(() =>
-  JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: settings.value.siteName,
-    url: props.meta.canonical,
-    inLanguage: locale.value.htmlLang,
-  }),
-)
-
-const articleLd = computed(() => {
-  if (props.meta.type !== 'article') return null
-
-  return JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: title.value,
-    description: description.value,
-    image: image.value ? [image.value] : undefined,
-    datePublished: props.meta.publishedAt ?? undefined,
-    dateModified: props.meta.modifiedAt ?? props.meta.publishedAt ?? undefined,
-    author: props.meta.author
-      ? { '@type': 'Person', name: props.meta.author }
-      : { '@type': 'Organization', name: settings.value.seo.organizationName },
-    publisher: {
-      '@type': 'Organization',
-      name: settings.value.seo.organizationName,
-      ...(image.value ? { logo: { '@type': 'ImageObject', url: image.value } } : {}),
-    },
-    mainEntityOfPage: { '@type': 'WebPage', '@id': props.meta.canonical },
-    inLanguage: locale.value.htmlLang,
-  })
-})
-
-const breadcrumbLd = computed(() => {
-  if (props.breadcrumbs.length === 0) return null
-
-  return JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: props.breadcrumbs.map((crumb, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: crumb.name,
-      item: crumb.url,
-    })),
-  })
-})
+const jsonLd = computed(() => (props.meta.jsonLd ?? []).map((graph) => JSON.stringify(graph)))
 </script>
 
 <template>
   <Head :title="title">
     <meta name="description" :content="description" />
-    <link rel="canonical" :href="meta.canonical" />
+    <link v-if="meta.canonical" rel="canonical" :href="meta.canonical" />
 
-    <meta v-if="meta.noindex" name="robots" content="noindex, nofollow" />
+    <meta v-if="meta.noindex" name="robots" content="noindex, follow" />
     <meta v-else name="robots" content="index, follow, max-image-preview:large" />
 
     <!-- Open Graph -->
     <meta property="og:type" :content="meta.type" />
     <meta property="og:title" :content="title" />
     <meta property="og:description" :content="description" />
-    <meta property="og:url" :content="meta.canonical" />
-    <meta property="og:site_name" :content="settings.siteName" />
-    <meta property="og:locale" :content="locale.htmlLang.replace('-', '_')" />
+    <meta v-if="meta.canonical" property="og:url" :content="meta.canonical" />
+    <meta property="og:site_name" :content="siteName" />
+    <meta property="og:locale" :content="htmlLang.replace('-', '_')" />
     <meta v-if="image" property="og:image" :content="image" />
     <meta v-if="image" property="og:image:alt" :content="title" />
 
@@ -158,9 +68,6 @@ const breadcrumbLd = computed(() => {
     <meta v-if="image" name="twitter:image" :content="image" />
 
     <!-- Structured data -->
-    <component :is="'script'" type="application/ld+json">{{ organizationLd }}</component>
-    <component :is="'script'" type="application/ld+json">{{ websiteLd }}</component>
-    <component :is="'script'" v-if="articleLd" type="application/ld+json">{{ articleLd }}</component>
-    <component :is="'script'" v-if="breadcrumbLd" type="application/ld+json">{{ breadcrumbLd }}</component>
+    <component :is="'script'" v-for="(graph, index) in jsonLd" :key="index" type="application/ld+json">{{ graph }}</component>
   </Head>
 </template>

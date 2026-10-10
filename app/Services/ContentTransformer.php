@@ -442,10 +442,30 @@ final class ContentTransformer
 
         return [
             'label' => $label,
-            'url' => $url ?? '#',
+            'url' => self::localisePath($url ?? '#'),
             'icon' => IconUrl::resolve($icon),
             'hoverIcon' => IconUrl::resolve($hoverIcon),
         ];
+    }
+
+    /**
+     * Editors type bare paths ("/contact") into CTA fields. Those only reach
+     * the page through RedirectToLocalisedRoute's 302, so prefix the active
+     * locale here and every link points straight at the final URL.
+     */
+    private static function localisePath(string $url): string
+    {
+        if (! preg_match('#^/(?!/)([^/?\#]*)#', $url, $match)) {
+            return $url;
+        }
+
+        $publicSegments = ['', 'about', 'work', 'services', 'insights', 'contact', 'privacy-policy', 'terms'];
+
+        if (! in_array($match[1], $publicSegments, true)) {
+            return $url;
+        }
+
+        return rtrim('/'.app()->getLocale().$url, '/');
     }
 
     private static function imageContextFor(SectionType $type): string

@@ -18,7 +18,7 @@
  * the original midpoint placement until an editor chooses an exact position.
  */
 import { computed, ref } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { Link } from "@inertiajs/vue3";
 import {
   CalendarDays,
   Check,
@@ -31,7 +31,7 @@ import SeoHead from "@/Components/SeoHead.vue";
 import CtaBanner from "@/Components/CtaBanner.vue";
 import LeadMagnet from "@/Components/Sections/LeadMagnet.vue";
 import { useTranslations } from "@/Composables/useTranslations";
-import type { PostDetail, SeoMeta, SharedProps } from "@/types";
+import type { PostDetail, SeoMeta } from "@/types";
 
 const props = defineProps<{
   post: PostDetail;
@@ -40,7 +40,6 @@ const props = defineProps<{
   seo: SeoMeta;
 }>();
 
-const page = usePage<SharedProps>();
 const { t } = useTranslations();
 
 /** Meta list — Figma "infos" 1016:1839. Rows drop when the field is empty. */
@@ -139,16 +138,7 @@ const linkedInShare = computed(
 </script>
 
 <template>
-  <SeoHead
-    :meta="seo"
-    :breadcrumbs="[
-      {
-        name: t('blog.related'),
-        url: `/${page.props.locale.current}/insights`,
-      },
-      { name: post.title, url: seo.canonical },
-    ]"
-  />
+  <SeoHead :meta="seo" />
 
   <div
     class="container-sahra flex flex-col gap-0 pb-0 pt-[160px] md:gap-24 md:pb-32 md:pt-[184px]"

@@ -18,6 +18,14 @@
      * is blank, so an unconfigured integration renders nothing.
      */
     $integrations = \App\Support\SiteSettings::integrations();
+
+    /**
+     * Dispatched once here instead of through @inertiaHead/@inertia so the
+     * page can tell whether SSR answered. When it did not (the shared host
+     * cannot run Node), seo/head and seo/body put the SEO head and the page
+     * copy into the initial HTML instead — see resources/views/seo/.
+     */
+    $ssr = app(\Inertia\Ssr\Gateway::class)->dispatch($page);
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $htmlLang }}" dir="{{ $direction }}" class="{{ $fontClass }} antialiased">
@@ -25,6 +33,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    @if ($ssr)
+        {!! $ssr->head !!}
+    @else
+        @include('seo.head')
+    @endif
 
     @if (filled($integrations['gtmId']))
         {{-- Google Tag Manager --}}
@@ -85,7 +99,6 @@
 
     @routes
     @vite(['resources/js/app.ts'])
-    @inertiaHead
 </head>
 <body class="bg-paper text-neutral-900">
     @if (filled($integrations['gtmId']))
@@ -101,6 +114,10 @@
         {{ __('common.skip_to_content') }}
     </a>
 
-    @inertia
+    @if ($ssr)
+        {!! $ssr->body !!}
+    @else
+        <div id="app" data-page="{{ json_encode($page) }}">@include('seo.body')</div>
+    @endif
 </body>
 </html>

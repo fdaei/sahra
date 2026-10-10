@@ -138,6 +138,18 @@ Error responses for non-admin, non-JSON requests are rendered through the
 Inertia `Error` page in [bootstrap/app.php](bootstrap/app.php) so 404/403/500
 keep site chrome and direction; 419 redirects back with a flash message.
 
+### SEO without SSR
+
+Production is shared cPanel hosting, which cannot run the Node SSR process.
+`app.blade.php` dispatches SSR itself; when it gets no answer it renders
+`resources/views/seo/head.blade.php` (the Blade twin of `SeoHead.vue`; tags
+carry the `inertia` attribute so the head manager replaces them on mount) and
+`seo/body.blade.php`, which includes `seo/pages/{component}` inside the Inertia
+root. `app.ts` mounts over that markup (`[data-seo-fallback]`) instead of
+hydrating it. When a page shows new copy, update its `seo/pages/` partial; when
+`SeoHead.vue` gains a tag, add it to `seo/head.blade.php`. JSON-LD is built
+once, in `SeoBuilder`, and sent as `seo.jsonLd`.
+
 ### Filament admin
 
 Panel is English-only and not locale-prefixed, while the content it edits is

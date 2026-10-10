@@ -25,7 +25,11 @@ createInertiaApp({
   },
 
   setup({ el, App, props, plugin }) {
-    const app = (el.hasChildNodes() ? createSSRApp : createApp)({ render: () => h(App, props) })
+    // Hydrate real SSR markup only. Without SSR the root holds the plain Blade
+    // copy from resources/views/seo/body.blade.php, which createApp discards
+    // on mount.
+    const isSsr = el.hasChildNodes() && !el.querySelector(':scope > [data-seo-fallback]')
+    const app = (isSsr ? createSSRApp : createApp)({ render: () => h(App, props) })
       .use(plugin)
       .use(ZiggyVue)
 

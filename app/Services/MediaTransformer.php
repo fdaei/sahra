@@ -18,6 +18,11 @@ use Illuminate\Support\Facades\Storage;
 final class MediaTransformer
 {
     /**
+     * Widths MediaVariantController will generate, ascending.
+     */
+    public const VARIANT_WIDTHS = [400, 736, 1200];
+
+    /**
      * Intrinsic dimensions per usage context, taken from the design.
      *
      * Also drives the admin uploader: `App\Filament\Support\ImageUpload`
@@ -70,14 +75,15 @@ final class MediaTransformer
         [$width, $height] = self::dimensions($context);
 
         // The fallback itself is resized too, so browsers without srcset or
-        // modern formats never receive the uploaded full-size file.
-        $src = self::variantUrl($path, min(736, $width), 'jpeg');
+        // modern formats never receive the uploaded full-size file. It must be
+        // one of VARIANT_WIDTHS — MediaVariantController 404s anything else.
+        $src = self::variantUrl($path, self::variantWidthFor(min(736, $width)), 'jpeg');
         $sizes = $context === 'post.hero' ? '(max-width: 768px) 100vw, 1248px' : '(max-width: 768px) 100vw, 612px';
-        $variants = collect([400, 736, 1200])->mapWithKeys(fn (int $size): array => [$size => self::variantUrl($path, $size, 'jpeg')])->all();
+        $variants = collect(self::VARIANT_WIDTHS)->mapWithKeys(fn (int $size): array => [$size => self::variantUrl($path, $size, 'jpeg')])->all();
         $webp = collect($variants)->map(fn (string $url, int $size): string => "{$url} {$size}w")->implode(', ');
         $formats = [];
         foreach (['avif', 'webp'] as $format) {
-            $formats[$format] = ['srcset' => collect([400, 736, 1200])->map(fn (int $size): string => self::variantUrl($path, $size, $format)." {$size}w")->implode(', ')];
+            $formats[$format] = ['srcset' => collect(self::VARIANT_WIDTHS)->map(fn (int $size): string => self::variantUrl($path, $size, $format)." {$size}w")->implode(', ')];
         }
 
         return [
@@ -89,6 +95,20 @@ final class MediaTransformer
             'width' => $width,
             'height' => $height,
         ];
+    }
+
+    /**
+     * Smallest generated variant at least $width wide (the largest otherwise).
+     */
+    private static function variantWidthFor(int $width): int
+    {
+        foreach (self::VARIANT_WIDTHS as $candidate) {
+            if ($candidate >= $width) {
+                return $candidate;
+            }
+        }
+
+        return self::VARIANT_WIDTHS[array_key_last(self::VARIANT_WIDTHS)];
     }
 
     public static function variantUrl(string $path, int $width, string $format): string

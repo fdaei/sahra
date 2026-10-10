@@ -31,6 +31,7 @@ return [
     'lets_talk'           => 'لنتحدث',
 
     'projects'            => 'المشاريع',
+    'insights'            => 'المقالات',
 
     'empty_projects'      => 'لا توجد مشاريع لعرضها بعد.',
     'empty_posts'         => 'لم يتم نشر أي مقالات بعد.',

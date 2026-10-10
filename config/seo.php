@@ -9,5 +9,8 @@ return [
     'canonical_origin' => filled($configuredOrigin)
         ? $configuredOrigin
         : (env('APP_ENV') === 'production' ? 'https://sahramarketing.com' : null),
-    'require_ssr' => (bool) env('SEO_REQUIRE_SSR', env('APP_ENV') === 'production'),
+    // Off by default: without the Node SSR process, the Blade fallback in
+    // resources/views/seo/ still puts the head and page copy in the initial
+    // HTML. Turn on only where SSR is supervised and a 503 is preferable.
+    'require_ssr' => (bool) env('SEO_REQUIRE_SSR', false),
 ];

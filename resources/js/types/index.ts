@@ -71,6 +71,8 @@ export interface SeoMeta {
   modifiedAt?: string | null
   author?: string | null
   noindex?: boolean
+  /** Schema.org graphs built by App\Services\SeoBuilder. */
+  jsonLd?: Record<string, unknown>[]
 }
 
 export interface MediaImage {

@@ -2,7 +2,7 @@ import { defineComponent, ref, useId, reactive, computed, mergeProps, unref, use
 import { ssrRenderAttrs, ssrRenderAttr, ssrInterpolate, ssrRenderComponent, ssrRenderList, ssrRenderClass, ssrRenderStyle, ssrRenderVNode, ssrIncludeBooleanAttr } from "vue/server-renderer";
 import { c as useMasteryOpen, _ as _export_sfc, u as useTranslations, a as usePage, d as _sfc_main$7, e as useHeroStagger, f as useCounters, g as useSectionReveal } from "../ssr.js";
 import { ArrowUpRight, Building2, ChartNoAxesCombined, TrendingUp, UsersRound, BadgeCheck, Copy, Gem, ClipboardCheck, CalendarDays, CirclePlus, CircleMinus } from "lucide-vue-next";
-import { _ as _sfc_main$9 } from "./SeoHead-BISdxJuc.js";
+import { _ as _sfc_main$9 } from "./SeoHead-f9yQ0siM.js";
 import { C as CtaBanner } from "./CtaBanner-Cb3ia_15.js";
 import { _ as _sfc_main$8 } from "./HoverIcon-Cu-t3PJE.js";
 import { useElementSize, useMediaQuery } from "@vueuse/core";

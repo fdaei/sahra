@@ -137,8 +137,9 @@ npm run test:e2e               # Playwright — requires the app running;
 composer install --no-dev --optimize-autoloader
 npm run build
 
-# Inertia SSR is built by the command above. Keep this process running in
-# production so initial HTML contains the rendered page and SEO head.
+# Optional: Inertia SSR is built by the command above. Where a Node process
+# can be kept running (Docker, VPS), start it so the initial HTML is the fully
+# rendered page. Shared/cPanel hosting cannot run it — see "Without SSR" below.
 php artisan inertia:start-ssr
 
 php artisan config:cache
@@ -148,6 +149,19 @@ php artisan event:cache
 
 php artisan migrate --force
 ```
+
+**Without SSR (shared/cPanel hosting).** When the SSR process is not
+reachable, `resources/views/app.blade.php` falls back to Blade: the SEO head
+(title, description, canonical, robots, Open Graph, Twitter, JSON-LD) comes
+from `resources/views/seo/head.blade.php`, and a plain-HTML copy of the page
+(headings, text, internal links) from `resources/views/seo/body.blade.php` and
+`seo/pages/*`. Crawlers that read the raw HTML get the full content; visitors
+never see it, because Vue replaces it on mount. Set `INERTIA_SSR_ENABLED=false`
+on such hosts so Laravel does not try the SSR port on every request. When a
+page component changes what it shows, update its `seo/pages/` partial too.
+
+`SEO_REQUIRE_SSR=true` turns a missing SSR process into a 503 instead of
+serving the fallback. Leave it unset unless SSR is supervised.
 
 Queue worker (contact-form email notifications run through the queue):
 
@@ -167,7 +181,8 @@ Environment checklist for production:
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] `APP_URL` set to the real domain (used for canonical URLs, sitemaps, hreflang)
 - [ ] `SEO_CANONICAL_ORIGIN=https://sahramarketing.com` (the non-www host)
-- [ ] `INERTIA_SSR_ENABLED=true` and the SSR process is supervised (Docker starts it automatically)
+- [ ] Either `INERTIA_SSR_ENABLED=true` with the SSR process supervised (Docker starts it automatically), or `INERTIA_SSR_ENABLED=false` on hosts without Node (the Blade fallback serves the SEO head and page copy)
+- [ ] A share image set in Filament → Site settings → SEO (otherwise `public/images/sahra/hero-brand-preview.png` is used)
 - [ ] `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` pointed at real
       backends (Redis recommended over `database` at scale)
 - [ ] `MAIL_*` configured; `CONTACT_NOTIFICATION_EMAIL` set to a monitored inbox

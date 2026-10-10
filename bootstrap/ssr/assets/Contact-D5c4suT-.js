@@ -3,7 +3,7 @@ import { ssrRenderAttrs, ssrRenderAttr, ssrRenderVNode, ssrRenderComponent, ssrI
 import { u as useTranslations, a as usePage, b as useForm } from "../ssr.js";
 import { getCountryDataList } from "countries-list";
 import { Facebook, Youtube, Twitter, MessageCircle, Linkedin, Instagram, Link2, MapPin, Mail, UserRound, BadgeCheck, ChevronDown, Search, Layers3, Check, X, ArrowUpRight } from "lucide-vue-next";
-import { _ as _sfc_main$2 } from "./SeoHead-BISdxJuc.js";
+import { _ as _sfc_main$2 } from "./SeoHead-f9yQ0siM.js";
 import "@inertiajs/core";
 import "lodash-es";
 import "laravel-precognition";

@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
+use App\Services\MediaTransformer;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 final class MediaVariantController extends Controller
 {
     public function __invoke(string $format, int $width, string $path): Response
     {
-        abort_unless(in_array($width, [400, 736, 1200], true), 404);
+        abort_unless(in_array($width, MediaTransformer::VARIANT_WIDTHS, true), 404);
         $disk = Storage::disk('public');
         abort_unless($disk->exists($path), 404);
         $source = $disk->path($path);

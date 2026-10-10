@@ -2826,7 +2826,7 @@ createServer(
     resolve: (name) => {
       const component2 = resolvePageComponent(
         `./Pages/${name}.vue`,
-        /* @__PURE__ */ Object.assign({ "./Pages/About.vue": () => import("./assets/About-BIjKnLJu.js"), "./Pages/Contact.vue": () => import("./assets/Contact-CUVysxWM.js"), "./Pages/Error.vue": () => import("./assets/Error-BEWaS_6O.js"), "./Pages/Home.vue": () => import("./assets/Home-C0iQnEDs.js"), "./Pages/Insights/Index.vue": () => import("./assets/Index-CWuSCGIf.js"), "./Pages/Insights/Show.vue": () => import("./assets/Show-Ck27kuj8.js"), "./Pages/Legal.vue": () => import("./assets/Legal-Y7S8Zb6E.js"), "./Pages/Services.vue": () => import("./assets/Services-CeINmz5c.js"), "./Pages/Work/Index.vue": () => import("./assets/Index-fBJhpk-E.js"), "./Pages/Work/Show.vue": () => import("./assets/Show-p8DkLWqp.js") })
+        /* @__PURE__ */ Object.assign({ "./Pages/About.vue": () => import("./assets/About-CWXt42ep.js"), "./Pages/Contact.vue": () => import("./assets/Contact-D5c4suT-.js"), "./Pages/Error.vue": () => import("./assets/Error-Qqynygev.js"), "./Pages/Home.vue": () => import("./assets/Home-Bk66elFS.js"), "./Pages/Insights/Index.vue": () => import("./assets/Index-Bs82wiXk.js"), "./Pages/Insights/Show.vue": () => import("./assets/Show-kKpJmRMN.js"), "./Pages/Legal.vue": () => import("./assets/Legal-DgiEeGwW.js"), "./Pages/Services.vue": () => import("./assets/Services-De6QVKzb.js"), "./Pages/Work/Index.vue": () => import("./assets/Index-B2rUts0S.js"), "./Pages/Work/Show.vue": () => import("./assets/Show-DXBmMv0E.js") })
       );
       return component2.then((module) => {
         var _a;

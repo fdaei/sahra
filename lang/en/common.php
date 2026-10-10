@@ -36,6 +36,7 @@ return [
     'lets_talk'           => "Let's Talk",
 
     'projects'            => 'Projects',
+    'insights'            => 'Insights',
 
     'empty_projects'      => 'No projects to show yet.',
     'empty_posts'         => 'No articles published yet.',

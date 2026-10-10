@@ -2,7 +2,7 @@ import { defineComponent, computed, unref, withCtx, createTextVNode, toDisplaySt
 import { ssrRenderComponent, ssrInterpolate } from "vue/server-renderer";
 import { a as usePage, u as useTranslations, l as link_default } from "../ssr.js";
 import { ArrowRight } from "lucide-vue-next";
-import { _ as _sfc_main$1 } from "./SeoHead-BISdxJuc.js";
+import { _ as _sfc_main$1 } from "./SeoHead-f9yQ0siM.js";
 import "@inertiajs/core";
 import "lodash-es";
 import "laravel-precognition";
