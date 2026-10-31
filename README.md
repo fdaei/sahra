@@ -106,8 +106,7 @@ php artisan queue:listen
 npm run dev
 ```
 
-Visit `http://localhost:8000` — it redirects to `/en` (or your browser's
-preferred supported language).
+Visit `http://localhost:8000` — it permanently redirects to `/en`, independent of browser language or a previously selected locale. Explicit `/fa` and `/ar` URLs remain available.
 
 Admin panel: `http://localhost:8000/admin`. The seeder creates an initial
 admin account:
@@ -133,13 +132,14 @@ npm run test:e2e               # Playwright — requires the app running;
 
 ## 6. Production build & deployment
 
+For PHP-only cPanel with no terminal, follow [the Persian upload guide](docs/DEPLOY-CPANEL-FA.md). The commands below are for environments with a terminal.
+
 ```bash
 composer install --no-dev --optimize-autoloader
 npm run build
 
-# Inertia SSR is built by the command above. Keep this process running in
-# production so initial HTML contains the rendered page and SEO head.
-php artisan inertia:start-ssr
+# Blade renders the initial HTML and SEO head directly in PHP.
+# No Node rendering process is used on the server.
 
 php artisan config:cache
 php artisan route:cache
@@ -155,7 +155,7 @@ Queue worker (contact-form email notifications run through the queue):
 php artisan queue:work --tries=3
 ```
 
-Scheduler (promotes scheduled content, regenerates the sitemap — see
+Scheduler (promotes scheduled content; sitemap is generated on each request — see
 `routes/console.php`). Add one cron entry:
 
 ```
@@ -167,7 +167,7 @@ Environment checklist for production:
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] `APP_URL` set to the real domain (used for canonical URLs, sitemaps, hreflang)
 - [ ] `SEO_CANONICAL_ORIGIN=https://sahramarketing.com` (the non-www host)
-- [ ] `INERTIA_SSR_ENABLED=true` and the SSR process is supervised (Docker starts it automatically)
+- [ ] `INERTIA_SSR_ENABLED=false`; initial content is rendered by Blade
 - [ ] `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` pointed at real
       backends (Redis recommended over `database` at scale)
 - [ ] `MAIL_*` configured; `CONTACT_NOTIFICATION_EMAIL` set to a monitored inbox

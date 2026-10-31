@@ -1,13 +1,13 @@
 import '../css/app.css'
 
-import { createApp, createSSRApp, h, type DefineComponent } from 'vue'
+import { createApp, h, type DefineComponent } from 'vue'
 import { createInertiaApp, router } from '@inertiajs/vue3'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { ZiggyVue } from 'ziggy-js'
 
 import AppLayout from './Layouts/AppLayout.vue'
 import { installTranslations } from './Composables/useTranslations'
-import { initMotion, killPageAnimations } from './lib/motion'
+import { initMotion, killPageAnimations, ScrollTrigger } from './lib/motion'
 
 createInertiaApp({
   resolve: (name) => {
@@ -25,7 +25,9 @@ createInertiaApp({
   },
 
   setup({ el, App, props, plugin }) {
-    const app = (el.hasChildNodes() ? createSSRApp : createApp)({ render: () => h(App, props) })
+    // Blade HTML is not Vue SSR markup. Mount replaces it synchronously;
+    // hydrating it would produce mismatches and duplicate page content.
+    const app = createApp({ render: () => h(App, props) })
       .use(plugin)
       .use(ZiggyVue)
 
@@ -59,6 +61,11 @@ router.on('before', () => {
 })
 
 router.on('navigate', () => {
+  // Inertia has now set the destination scroll position. Discard GSAP's
+  // cached position so its next refresh cannot restore the outgoing page.
+  ScrollTrigger.clearScrollMemory()
+  ScrollTrigger.getScrollFunc(window)(window.scrollY)
+
   // Wait for the new DOM to be laid out before measuring scroll positions.
   requestAnimationFrame(() => {
     requestAnimationFrame(() => initMotion())

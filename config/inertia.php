@@ -21,7 +21,8 @@ return [
 
     'ssr' => [
 
-        'enabled' => (bool) env('INERTIA_SSR_ENABLED', true),
+        // Blade renders the initial HTML, even if an old .env enables Node SSR.
+        'enabled' => false,
 
         'url' => env('INERTIA_SSR_URL', 'http://127.0.0.1:13714'),
 

@@ -9,5 +9,4 @@ return [
     'canonical_origin' => filled($configuredOrigin)
         ? $configuredOrigin
         : (env('APP_ENV') === 'production' ? 'https://sahramarketing.com' : null),
-    'require_ssr' => (bool) env('SEO_REQUIRE_SSR', env('APP_ENV') === 'production'),
 ];

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Traits;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -155,6 +156,17 @@ trait HasTranslations
         $locale ??= app()->getLocale();
 
         return $query->whereHas('translations', fn ($q) => $q->where('locale', $locale));
+    }
+
+    /** Require an actual, nonempty translated value without locale fallback. */
+    public function scopeHasTranslatedValue(Builder $query, string $attribute, ?string $locale = null): Builder
+    {
+        $locale ??= app()->getLocale();
+
+        return $query->whereHas('translations', fn (Builder $translation) => $translation
+            ->where('locale', $locale)
+            ->whereNotNull($attribute)
+            ->where($attribute, '!=', ''));
     }
 
     /**

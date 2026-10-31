@@ -2,9 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\CanonicalRedirect;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\PreventPrivateIndexing;
 use App\Http\Middleware\RedirectToLocalisedRoute;
 use App\Http\Middleware\SetLocale;
+use App\Services\SeoBuilder;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,14 +23,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->prepend(\App\Http\Middleware\CanonicalRedirect::class);
+        $middleware->prepend(CanonicalRedirect::class);
         $middleware->web(append: [
+            PreventPrivateIndexing::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
         $middleware->alias([
-            'locale'          => SetLocale::class,
+            'locale' => SetLocale::class,
             'locale.redirect' => RedirectToLocalisedRoute::class,
         ]);
 
@@ -48,12 +52,6 @@ return Application::configure(basePath: dirname(__DIR__))
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        $exceptions->render(function (Throwable $e, Request $request) {
-            if (! \App\Exceptions\SsrUnavailable::causedBy($e)) {
-                return null;
-            }
-            return response()->view('errors.ssr-unavailable', [], 503, ['Retry-After' => '60']);
-        });
         /*
          | Render 404/403/419/500 through Inertia so error pages keep the site
          | chrome, the active locale, and the RTL/LTR direction.
@@ -61,9 +59,6 @@ return Application::configure(basePath: dirname(__DIR__))
          | Figma: 404 desktop 1027:2061, mobile 1567:13563.
          */
         $exceptions->respond(function ($response, Throwable $e, Request $request) {
-            if (\App\Exceptions\SsrUnavailable::causedBy($e)) {
-                return $response;
-            }
             if ($request->is('admin*') || $request->expectsJson()) {
                 return $response;
             }
@@ -80,7 +75,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return back()->with('error', __('errors.session_expired'));
             }
 
-            return inertia('Error', ['status' => $status])
+            return inertia('Error', ['status' => $status, 'seo' => SeoBuilder::forError($status), 'alternates' => []])
                 ->toResponse($request)
                 ->setStatusCode($status);
         });

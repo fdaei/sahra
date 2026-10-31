@@ -19,6 +19,7 @@ export interface LocaleProp {
   direction: Direction
   font: 'sans' | 'arabic'
   htmlLang: string
+  default?: LocaleCode
   supported: LocaleOption[]
 }
 
@@ -65,7 +66,9 @@ export interface SeoMeta {
   title: string
   description: string
   image: string | null
-  canonical: string
+  canonical: string | null
+  ogLocale?: string
+  structuredData?: Record<string, unknown>[]
   type: 'website' | 'article'
   publishedAt?: string | null
   modifiedAt?: string | null

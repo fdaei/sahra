@@ -10,10 +10,6 @@ COPY resources ./resources
 COPY public ./public
 RUN npm run build
 
-# SSR runs separately and retains the Node dependencies used by the bundle.
-FROM assets AS ssr
-CMD ["node", "bootstrap/ssr/ssr.js"]
-
 # ---- Stage 2: PHP application ----------------------------------------------
 FROM php:8.3-apache AS app
 
@@ -42,7 +38,6 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 
 COPY . .
 COPY --from=assets /app/public/build ./public/build
-COPY --from=assets /app/bootstrap/ssr ./bootstrap/ssr
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache

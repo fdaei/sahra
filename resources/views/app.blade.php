@@ -21,8 +21,8 @@
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $htmlLang }}" dir="{{ $direction }}" class="{{ $fontClass }} antialiased">
-<head>
-    <meta charset="utf-8">
+<head><meta charset="utf-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -51,12 +51,7 @@
         <link rel="preload" href="/fonts/poppins/Poppins-Regular.woff2" as="font" type="font/woff2" crossorigin>
     @endif
 
-    @isset($page['props']['alternates'])
-        @foreach ($page['props']['alternates'] as $code => $alternate)
-            <link rel="alternate" hreflang="{{ config("locales.supported.{$code}.html_lang") }}" href="{{ $alternate }}">
-        @endforeach
-        <link rel="alternate" hreflang="x-default" href="{{ $page['props']['alternates'][config('locales.default')] ?? reset($page['props']['alternates']) }}">
-    @endisset
+    @include('seo.head', ['meta' => $page['props']['seo'] ?? \App\Services\SeoBuilder::forError($page['props']['status'] ?? 500), 'props' => $page['props']])
 
     @if (filled($integrations['gaId']))
         {{-- Google Analytics (GA4) --}}
@@ -69,23 +64,29 @@
         </script>
     @endif
 
-    @if (filled($integrations['hotjarId']))
-        {{-- Hotjar --}}
+    @php
+        // Hotjar: new Contentsquare-based tag (hex ID, e.g. e174bcefe0009) or legacy numeric site ID.
+        $hotjarId = trim((string) ($integrations['hotjarId'] ?? '')) ?: 'e174bcefe0009';
+    @endphp
+    @if (ctype_digit($hotjarId))
+        {{-- Hotjar (legacy) --}}
         <script>
             (function(h,o,t,j,a,r){
                 h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-                h._hjSettings={hjid:{{ (int) $integrations['hotjarId'] }},hjsv:6};
+                h._hjSettings={hjid:{{ (int) $hotjarId }},hjsv:6};
                 a=o.getElementsByTagName('head')[0];
                 r=o.createElement('script');r.async=1;
                 r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
                 a.appendChild(r);
             })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
         </script>
+    @else
+        {{-- Hotjar (Contentsquare tag) --}}
+        <script src="https://t.contentsquare.net/uxa/{{ preg_replace('/[^a-zA-Z0-9]/', '', $hotjarId) }}.js"></script>
     @endif
 
     @routes
     @vite(['resources/js/app.ts'])
-    @inertiaHead
 </head>
 <body class="bg-paper text-neutral-900">
     @if (filled($integrations['gtmId']))
@@ -101,6 +102,8 @@
         {{ __('common.skip_to_content') }}
     </a>
 
-    @inertia
+    <div id="app" data-page="{{ json_encode($page) }}">
+        @include('public.page', ['props' => $page['props'], 'component' => $page['component']])
+    </div>
 </body>
 </html>

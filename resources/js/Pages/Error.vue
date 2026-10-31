@@ -15,9 +15,9 @@ import { Link, usePage } from '@inertiajs/vue3'
 import { ArrowRight } from 'lucide-vue-next'
 import SeoHead from '@/Components/SeoHead.vue'
 import { useTranslations } from '@/Composables/useTranslations'
-import type { SharedProps } from '@/types'
+import type { SeoMeta, SharedProps } from '@/types'
 
-const props = defineProps<{ status: number }>()
+const props = defineProps<{ status: number; seo: SeoMeta }>()
 
 const page = usePage<SharedProps>()
 const { t } = useTranslations()
@@ -40,16 +40,7 @@ const homeUrl = computed(() => `/${currentLocale.value}`)
 </script>
 
 <template>
-  <SeoHead
-    :meta="{
-      title,
-      description: message,
-      image: null,
-      canonical: page.props.alternates?.[currentLocale] ?? null,
-      type: 'website',
-      noindex: true,
-    }"
-  />
+  <SeoHead :meta="seo" />
 
   <section class="section section-first h-[874px] overflow-hidden md:h-[1024px]">
     <!--

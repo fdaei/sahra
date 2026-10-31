@@ -3,7 +3,6 @@
 @foreach ($sitemaps as $sitemap)
     <sitemap>
         <loc>{{ $sitemap['url'] }}</loc>
-        <lastmod>{{ $sitemap['lastmod'] }}</lastmod>
     </sitemap>
 @endforeach
 </sitemapindex>

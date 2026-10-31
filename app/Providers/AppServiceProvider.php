@@ -20,7 +20,7 @@ final class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        $this->app->bind(\Inertia\Ssr\Gateway::class, \App\Services\RequiredSsrGateway::class);
+        // Public HTML is rendered by Blade; no external rendering process.
     }
 
     public function boot(): void

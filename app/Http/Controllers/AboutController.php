@@ -25,7 +25,7 @@ final class AboutController extends Controller
             ->key('about')
             ->published()
             ->withContent()
-            ->first();
+            ->firstOrFail();
 
         return Inertia::render('About', [
             'sections' => $page === null

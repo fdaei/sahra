@@ -119,6 +119,7 @@ final class Project extends Model implements HasLocalisedSlugs
     {
         return $this
             ->published()
+            ->hasTranslatedValue('slug')
             ->whereSlug((string) $value)
             ->withTranslations()
             ->first();
@@ -156,10 +157,12 @@ final class Project extends Model implements HasLocalisedSlugs
 
         return $query
             ->published()
+            ->hasTranslatedValue('slug')
             ->with([
                 'translations' => fn ($q) => $q->whereIn('locale', $locales),
                 'industry.translations' => fn ($q) => $q->whereIn('locale', $locales),
                 // Card hover state lists the services — Figma 553:921.
+                'services' => fn ($q) => $q->published(),
                 'services.translations' => fn ($q) => $q->whereIn('locale', $locales),
             ])
             ->orderBy('sort_order')
@@ -176,6 +179,7 @@ final class Project extends Model implements HasLocalisedSlugs
         return $query->with([
             'translations' => fn ($q) => $q->whereIn('locale', $locales),
             'industry.translations' => fn ($q) => $q->whereIn('locale', $locales),
+            'services' => fn ($q) => $q->published(),
             'services.translations' => fn ($q) => $q->whereIn('locale', $locales),
             'images.translations' => fn ($q) => $q->whereIn('locale', $locales),
             'sections' => fn ($q) => $q->where('is_visible', true)->orderBy('sort_order'),
@@ -198,6 +202,7 @@ final class Project extends Model implements HasLocalisedSlugs
     {
         $next = self::query()
             ->published()
+            ->hasTranslatedValue('slug')
             ->where('sort_order', '>', $this->sort_order)
             ->whereKeyNot($this->getKey())
             ->withTranslations()
@@ -206,6 +211,7 @@ final class Project extends Model implements HasLocalisedSlugs
 
         return $next ?? self::query()
             ->published()
+            ->hasTranslatedValue('slug')
             ->whereKeyNot($this->getKey())
             ->withTranslations()
             ->orderBy('sort_order')

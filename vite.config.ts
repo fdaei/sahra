@@ -7,7 +7,6 @@ export default defineConfig(() => ({
   plugins: [
     laravel({
       input: ['resources/js/app.ts'],
-      ssr: 'resources/js/ssr.ts',
       refresh: [
         'resources/views/**',
         'routes/**',
@@ -35,10 +34,6 @@ export default defineConfig(() => ({
 
   build: {
     // Long-cached hashed assets; the manifest tells Laravel what to emit.
-  },
-
-  ssr: {
-    noExternal: ['@inertiajs/vue3', 'ziggy-js'],
   },
 
   server: {

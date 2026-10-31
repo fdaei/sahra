@@ -13,7 +13,6 @@ use App\Services\SeoBuilder;
 use App\Support\IconUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,7 +29,7 @@ final class PostController extends Controller
             ->key('insights')
             ->published()
             ->withContent()
-            ->first();
+            ->firstOrFail();
 
         $categoryFilter = $request->string('category')->toString();
         $search = $request->string('q')->toString();
@@ -57,15 +56,20 @@ final class PostController extends Controller
         // first page — otherwise it would duplicate a grid result.
         $featured = null;
 
-        if ($categoryFilter === '' && $search === '' && $request->integer('page', 1) === 1) {
+        if ($categoryFilter === '' && $search === '') {
             $featured = Post::query()->forListing()->featured()->first();
 
             if ($featured !== null) {
                 $query->whereKeyNot($featured->getKey());
+                if ($request->integer('page', 1) !== 1) {
+                    $featured = null;
+                }
             }
         }
 
+        abort_if($request->has('page') && (! ctype_digit((string) $request->input('page')) || $request->integer('page') < 1), 404);
         $posts = $query->paginate(self::PER_PAGE)->withQueryString();
+        abort_if($posts->currentPage() > $posts->lastPage(), 404);
 
         return Inertia::render('Insights/Index', [
             'heading' => [
@@ -89,13 +93,13 @@ final class PostController extends Controller
                 'prevPageUrl' => $posts->previousPageUrl(),
             ],
 
-            'categories' => Cache::remember('insights.categories.'.app()->getLocale(), 86400, fn () => PostCategory::query()
+            'categories' => PostCategory::query()
                 ->ordered()->withTranslations()->get()
                 ->map(fn (PostCategory $c): array => [
                     'slug' => (string) $c->getTranslation('slug'),
                     'name' => (string) $c->getTranslation('name'),
                 ])
-                ->all()),
+                ->all(),
 
             'filters' => [
                 'category' => $categoryFilter ?: null,
@@ -109,7 +113,7 @@ final class PostController extends Controller
             'seo' => SeoBuilder::forPage(
                 $page,
                 $request->url(),
-                noindex: $categoryFilter !== '' || $search !== '' || $request->integer('page', 1) > 1,
+                noindex: $categoryFilter !== '' || $search !== '',
             ),
         ]);
     }

@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 final class LocaleAlternates
 {
     /**
-     * @return array<string, string>  locale code => absolute URL
+     * @return array<string, string> locale code => absolute URL
      */
     public static function for(Request $request): array
     {
@@ -32,7 +32,7 @@ final class LocaleAlternates
         $route = $request->route();
 
         if ($route === null) {
-            return array_fill_keys($supported, $request->url());
+            return [];
         }
 
         $name = $route->getName();
@@ -59,12 +59,9 @@ final class LocaleAlternates
         string $locale,
         Request $request,
     ): ?string {
-        // Unnamed route (rare — fallback pages): swap the first segment.
+        // Unnamed fallback routes have no known translated equivalent.
         if ($name === null || ! Route::has($name)) {
-            $segments = $request->segments();
-            $segments[0] = $locale;
-
-            return CanonicalUrl::for('/'.implode('/', $segments));
+            return null;
         }
 
         $translated = $params;
@@ -87,6 +84,6 @@ final class LocaleAlternates
 
         $translated['locale'] = $locale;
 
-        return route($name, $translated, absolute: true);
+        return CanonicalUrl::route($name, $translated);
     }
 }

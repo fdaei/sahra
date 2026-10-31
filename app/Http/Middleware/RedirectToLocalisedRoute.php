@@ -12,9 +12,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * Redirects non-prefixed URLs to their locale-prefixed equivalent.
  *
- *   /            -> /en           (or session / Accept-Language preference)
+ *   /            -> /en           (the configured default, always English here)
  *   /about       -> /en/about
- *   /work/x      -> /fa/work/x    (if the visitor's stored locale is fa)
+ * Browser language and a previously selected locale do not change entry URLs.
  *
  * Applied only to the bare-path catch-all group in routes/web.php so it never
  * interferes with already-prefixed traffic, the Filament panel, or storage.
@@ -42,7 +42,7 @@ final class RedirectToLocalisedRoute
             throw new NotFoundHttpException;
         }
 
-        $locale = $this->preferred($request, $supported);
+        $locale = config('locales.default');
 
         $path = trim($request->path(), '/');
 
@@ -60,28 +60,7 @@ final class RedirectToLocalisedRoute
             $target .= "?{$query}";
         }
 
-        // 302 rather than 301: a visitor's language preference can legitimately
-        // change, and we do not want that cached permanently by the browser.
-        return redirect($target, 302);
-    }
-
-    /**
-     * @param  array<int, string>  $supported
-     */
-    private function preferred(Request $request, array $supported): string
-    {
-        $session = $request->session()->get('locale');
-
-        if (is_string($session) && in_array($session, $supported, true)) {
-            return $session;
-        }
-
-        $header = $request->getPreferredLanguage($supported);
-
-        if (is_string($header) && in_array($header, $supported, true)) {
-            return $header;
-        }
-
-        return config('locales.default');
+        // One stable public URL, independent of browser language or cookies.
+        return redirect($target, 301);
     }
 }

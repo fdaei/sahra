@@ -108,6 +108,7 @@ final class Post extends Model implements HasLocalisedSlugs
     {
         return $this
             ->published()
+            ->hasTranslatedValue('slug')
             ->whereSlug((string) $value)
             ->withTranslations()
             ->first();
@@ -142,6 +143,7 @@ final class Post extends Model implements HasLocalisedSlugs
 
         return $query
             ->published()
+            ->hasTranslatedValue('slug')
             ->select(['posts.id', 'posts.post_category_id', 'posts.status', 'posts.published_at', 'posts.is_featured', 'posts.cover_path', 'posts.reading_minutes'])
             ->with([
                 'translations' => fn ($q) => $q->whereIn('locale', $locales),
@@ -187,6 +189,7 @@ final class Post extends Model implements HasLocalisedSlugs
 
         $query = self::query()
             ->published()
+            ->hasTranslatedValue('slug')
             ->whereKeyNot($this->getKey())
             ->with([
                 'translations' => fn ($q) => $q->whereIn('locale', $locales),

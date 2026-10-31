@@ -33,7 +33,7 @@ final class HomeController extends Controller
             ->key('home')
             ->published()
             ->withContent()
-            ->first();
+            ->firstOrFail();
 
         return Inertia::render('Home', [
             // Editorial blocks: hero, lead magnet, packages, final CTA, and the

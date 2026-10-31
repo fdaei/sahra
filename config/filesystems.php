@@ -22,7 +22,9 @@ return [
          */
         'public' => [
             'driver' => 'local',
-            'root' => storage_path('app/public'),
+            // cPanel can store uploads directly in public_html/storage when
+            // creating a symlink is unavailable. Existing installs keep it.
+            'root' => env('PUBLIC_STORAGE_ROOT', storage_path('app/public')),
             // Keep this relative to the current host. Using APP_URL here makes
             // Filament previews point to localhost when the panel is opened
             // through another host or port, leaving the upload preview stuck.

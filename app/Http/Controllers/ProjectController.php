@@ -24,7 +24,7 @@ final class ProjectController extends Controller
             ->key('work')
             ->published()
             ->withContent()
-            ->first();
+            ->firstOrFail();
 
         // Figma 542:871 lists the four *services* — Branding, Marketing
         // Design, Content Production, Social Media support — not industries.
@@ -78,13 +78,7 @@ final class ProjectController extends Controller
     public function show(string $locale, Project $project): Response
     {
         // Route-model binding already filtered to published + active locale.
-        $project->loadMissing([
-            'industry.translations',
-            'services.translations',
-            'images.translations',
-            'sections.translations',
-            'sections.items.translations',
-        ]);
+        $project = Project::query()->published()->withFullDetail()->findOrFail($project->id);
 
         // The case study closes on the shared final CTA card (Figma 1419:9333,
         // present in 639:1617). It has no page of its own, so it reuses the

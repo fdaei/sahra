@@ -30,7 +30,7 @@ final class ContactController extends Controller
             ->key('contact')
             ->published()
             ->withContent()
-            ->first();
+            ->firstOrFail();
 
         return Inertia::render('Contact', [
             'sections' => $page === null

@@ -26,7 +26,7 @@ final class ServiceController extends Controller
             ->key('services')
             ->published()
             ->withContent()
-            ->first();
+            ->firstOrFail();
 
         return Inertia::render('Services', [
             'heading' => [

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class MediaVariantController extends Controller
 {
-    public function __invoke(string $format, int $width, string $path): Response
+    public function __invoke(string $format, int $width, string $path): BinaryFileResponse
     {
         abort_unless(in_array($width, [400, 736, 1200], true), 404);
         $disk = Storage::disk('public');
@@ -18,26 +18,49 @@ final class MediaVariantController extends Controller
         $extension = $format === 'jpeg' ? 'jpg' : $format;
         $target = preg_replace('/\.[^.]+$/', "-{$width}w.{$extension}", $source);
 
-        if (! is_string($target)) abort(404);
-        if (! is_file($target)) $this->create($source, $target, $width, $format);
-        if (! is_file($target)) return response()->file($source);
+        if (! is_string($target)) {
+            abort(404);
+        }
+        if (! is_file($target) || filemtime($target) < filemtime($source)) {
+            $this->create($source, $target, $width, $format);
+        }
+        if (! is_file($target)) {
+            return response()->file($source);
+        }
 
-        return response()->file($target, ['Cache-Control' => 'public, max-age=31536000, immutable']);
+        return response()->file($target, ['Cache-Control' => 'public, max-age=3600']);
     }
 
     private function create(string $source, string $target, int $width, string $format): void
     {
-        if (! extension_loaded('gd')) return;
+        if (! extension_loaded('gd')) {
+            return;
+        }
+        if ($format === 'avif' && ! function_exists('imageavif')) {
+            return;
+        }
+        if ($format === 'webp' && ! function_exists('imagewebp')) {
+            return;
+        }
         $info = @getimagesize($source);
-        if (! $info || $info[0] <= 0) return;
+        if (! $info || $info[0] <= 0) {
+            return;
+        }
         $input = @imagecreatefromstring((string) file_get_contents($source));
-        if (! $input) return;
+        if (! $input) {
+            return;
+        }
         $height = (int) round($info[1] * $width / $info[0]);
         $output = imagecreatetruecolor($width, $height);
         imagecopyresampled($output, $input, 0, 0, 0, 0, $width, $height, $info[0], $info[1]);
-        if ($format === 'avif' && function_exists('imageavif')) imageavif($output, $target, 55);
-        elseif ($format === 'webp' && function_exists('imagewebp')) imagewebp($output, $target, 82);
-        else imagejpeg($output, $target, 82);
-        imagedestroy($input); imagedestroy($output);
+        if ($format === 'avif' && function_exists('imageavif')) {
+            imageavif($output, $target, 55);
+        } elseif ($format === 'webp' && function_exists('imagewebp')) {
+            imagewebp($output, $target, 82);
+        } else {
+            imagejpeg($output, $target, 82);
+        }
+        imagedestroy($input);
+        imagedestroy($output);
     }
 }

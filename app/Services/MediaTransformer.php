@@ -68,10 +68,13 @@ final class MediaTransformer
         }
 
         [$width, $height] = self::dimensions($context);
+        if (preg_match('~^https?://~i', $path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
+            return ['src' => self::url($path), 'alt' => $alt ?? '', 'width' => $width, 'height' => $height];
+        }
 
         // The fallback itself is resized too, so browsers without srcset or
         // modern formats never receive the uploaded full-size file.
-        $src = self::variantUrl($path, min(736, $width), 'jpeg');
+        $src = self::variantUrl($path, $width <= 400 ? 400 : 736, 'jpeg');
         $sizes = $context === 'post.hero' ? '(max-width: 768px) 100vw, 1248px' : '(max-width: 768px) 100vw, 612px';
         $variants = collect([400, 736, 1200])->mapWithKeys(fn (int $size): array => [$size => self::variantUrl($path, $size, 'jpeg')])->all();
         $webp = collect($variants)->map(fn (string $url, int $size): string => "{$url} {$size}w")->implode(', ');

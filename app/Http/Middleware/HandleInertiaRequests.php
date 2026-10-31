@@ -40,6 +40,7 @@ final class HandleInertiaRequests extends Middleware
 
             'locale' => [
                 'current' => $locale,
+                'default' => config('locales.default'),
                 'direction' => $config['direction'],
                 'font' => $config['font'],
                 'htmlLang' => $config['html_lang'],

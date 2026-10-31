@@ -22,6 +22,7 @@ import type { SharedProps, LocaleCode } from '@/types'
 
 const page = usePage<SharedProps>()
 const root = ref<HTMLDetailsElement | null>(null)
+const availableLocales = computed(() => page.props.locale.supported.filter(option => page.props.alternates?.[option.code]))
 
 function close(): void {
   if (root.value) root.value.open = false
@@ -71,7 +72,7 @@ const currentLabel = computed(
       class="absolute inset-inline-end-0 top-full z-menu mt-2 min-w-44 overflow-hidden
              rounded-sm border border-neutral-100 bg-paper py-1 shadow-card"
     >
-      <li v-for="option in page.props.locale.supported" :key="option.code">
+      <li v-for="option in availableLocales" :key="option.code">
         <a
           :href="page.props.alternates[option.code]"
           :lang="option.code"

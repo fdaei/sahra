@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
+use App\Support\CanonicalUrl;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use App\Support\CanonicalUrl;
 
 /**
  * XML sitemaps.
@@ -27,7 +28,6 @@ final class SitemapController extends Controller
             'sitemaps' => array_map(
                 fn (string $locale): array => [
                     'url' => CanonicalUrl::route('sitemap.locale', ['locale' => $locale]),
-                    'lastmod' => now()->toAtomString(),
                 ],
                 $locales,
             ),
@@ -45,6 +45,8 @@ final class SitemapController extends Controller
         app()->setLocale($locale);
 
         $urls = [];
+        $pages = Page::query()->published()->get()->keyBy('key');
+        $keys = ['home' => 'home', 'work.index' => 'work', 'services' => 'services', 'about' => 'about', 'insights.index' => 'insights', 'contact' => 'contact', 'legal.privacy' => 'privacy-policy', 'legal.terms' => 'terms'];
 
         // Static routes
         foreach ([
@@ -57,9 +59,12 @@ final class SitemapController extends Controller
             'legal.privacy' => 0.3,
             'legal.terms' => 0.3,
         ] as $name => $priority) {
+            $page = $pages->get($keys[$name]);
+            if ($page === null) {
+                continue;
+            }
             $urls[] = [
                 'loc' => CanonicalUrl::route($name, ['locale' => $locale]),
-                'lastmod' => now()->toAtomString(),
                 'priority' => $priority,
                 'changefreq' => 'weekly',
                 'alternates' => $this->alternatesForRoute($name),
@@ -74,8 +79,7 @@ final class SitemapController extends Controller
             ->filter(fn (Project $project): bool => $project->hasSlugForLocale($locale))
             ->each(function (Project $project) use (&$urls, $locale): void {
                 $urls[] = [
-                    'loc' => $project->url($locale),
-                    'lastmod' => $project->updated_at?->toAtomString(),
+                    'loc' => CanonicalUrl::for($project->url($locale)),
                     'priority' => 0.7,
                     'changefreq' => 'monthly',
                     'alternates' => $this->alternatesForModel($project, 'work.show', 'project'),
@@ -90,8 +94,7 @@ final class SitemapController extends Controller
             ->filter(fn (Post $post): bool => $post->hasSlugForLocale($locale))
             ->each(function (Post $post) use (&$urls, $locale): void {
                 $urls[] = [
-                    'loc' => $post->url($locale),
-                    'lastmod' => $post->updated_at?->toAtomString(),
+                    'loc' => CanonicalUrl::for($post->url($locale)),
                     'priority' => 0.6,
                     'changefreq' => 'monthly',
                     'alternates' => $this->alternatesForModel($post, 'insights.show', 'post'),
