@@ -5,6 +5,9 @@ declare(strict_types=1);
 use App\Models\LeadMagnetDelivery;
 use App\Models\NewsletterSubscription;
 use App\Models\Post;
+use App\Models\Page;
+use App\Models\PageSection;
+use App\Enums\SectionType;
 use App\Notifications\LeadMagnetFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -93,4 +96,32 @@ it('logs a download-only request without claiming an email was sent', function (
         ->email_status->toBe('not_requested')
         ->response_code->toBeNull()
         ->download_enabled->toBeTrue();
+});
+
+it('unlocks the file configured on the home-page lead magnet after form submission', function (): void {
+    Storage::fake('local');
+    Storage::disk('local')->put('lead-magnets/home-checklist.pdf', 'pdf contents');
+    $home = Page::factory()->create(['key' => 'home']);
+    $section = PageSection::query()->create([
+        'sectionable_type' => Page::class,
+        'sectionable_id' => $home->getKey(),
+        'type' => SectionType::LeadMagnet,
+        'sort_order' => 4,
+        'is_visible' => true,
+        'lead_magnet_file_path' => 'lead-magnets/home-checklist.pdf',
+    ]);
+
+    $this->post("/en/home/lead-magnet/{$section->getKey()}", [
+        'name' => 'Jane Doe',
+        'email' => 'jane@example.com',
+        'source' => 'home',
+    ])->assertRedirect();
+
+    $this->get("/en/home/lead-magnet/{$section->getKey()}/download")
+        ->assertOk()
+        ->assertDownload('home-checklist.pdf');
+
+    expect(LeadMagnetDelivery::query()->latest('id')->first())
+        ->post_id->toBeNull()
+        ->page_section_id->toBe($section->getKey());
 });

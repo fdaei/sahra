@@ -54,7 +54,11 @@ final class LeadMagnetDownloadController extends Controller
                 MailSettings::apply();
 
                 Notification::route('mail', $email)
-                    ->notify(new LeadMagnetFile($post, app()->getLocale()));
+                    ->notify(new LeadMagnetFile(
+                        (string) ($post->getTranslation('lead_magnet_title', app()->getLocale()) ?: $post->getTranslation('title', app()->getLocale())),
+                        (string) $path,
+                        app()->getLocale(),
+                    ));
 
                 $delivery->update([
                     'email_status' => 'sent',

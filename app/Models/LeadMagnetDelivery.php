@@ -11,6 +11,7 @@ final class LeadMagnetDelivery extends Model
 {
     protected $fillable = [
         'post_id',
+        'page_section_id',
         'newsletter_subscription_id',
         'name',
         'email',
@@ -39,6 +40,11 @@ final class LeadMagnetDelivery extends Model
     public function post(): BelongsTo
     {
         return $this->belongsTo(Post::class);
+    }
+
+    public function pageSection(): BelongsTo
+    {
+        return $this->belongsTo(PageSection::class);
     }
 
     public function subscription(): BelongsTo

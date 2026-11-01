@@ -30,6 +30,10 @@ useAutoReveal(computed(() => page.component))
 
 // Announce flash messages to screen readers when they appear.
 const announcement = computed(() => flash.value.success ?? flash.value.error ?? '')
+
+function notifyPageEntered(): void {
+  window.dispatchEvent(new Event('sahra:page-entered'))
+}
 </script>
 
 <template>
@@ -48,6 +52,7 @@ const announcement = computed(() => flash.value.success ?? flash.value.error ?? 
       enter-from-class="opacity-0 translate-y-2"
       leave-active-class="transition-opacity duration-150"
       leave-to-class="opacity-0"
+      @after-enter="notifyPageEntered"
     >
       <div :key="page.component">
         <slot />

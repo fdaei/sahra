@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Translations\MenuItemTranslation;
+use App\Support\LocalisedUrl;
 use App\Support\NavigationBuilder;
 use App\Traits\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -94,6 +95,6 @@ final class MenuItem extends Model
             );
         }
 
-        return (string) $this->url;
+        return LocalisedUrl::for((string) $this->url, $locale);
     }
 }

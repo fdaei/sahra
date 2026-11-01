@@ -32,6 +32,11 @@ final class SiteSettings
     {
         return [
             'siteName' => self::get('site_name', $locale, 'Sahra'),
+            'copyrightName' => self::get(
+                'copyright_name',
+                $locale,
+                self::get('site_name', $locale, 'Sahra'),
+            ),
             'tagline' => self::get('tagline', $locale, ''),
             'description' => self::get('footer_description', $locale, ''),
 

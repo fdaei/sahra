@@ -152,7 +152,7 @@ function columnHeading(index: number, fallback: string): string {
                  border-t border-neutral-300 py-6 text-[12px] font-medium leading-normal
                  text-neutral-600 sm:flex-row sm:items-center sm:gap-3 sm:text-[14px]"
         >
-          <p>{{ t('footer.copyright', { year, name: settings.siteName }) }}</p>
+          <p>{{ t('footer.copyright', { year, name: settings.copyrightName }) }}</p>
 
           <div class="flex items-center gap-4">
             <Link :href="privacyUrl" class="underline transition-colors hover:text-gold">

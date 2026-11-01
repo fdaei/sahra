@@ -44,6 +44,7 @@ export interface SocialLink {
 
 export interface SiteSettings {
   siteName: string
+  copyrightName: string
   tagline: string
   description: string
   contact: {

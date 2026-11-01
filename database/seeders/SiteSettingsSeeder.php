@@ -54,6 +54,10 @@ final class SiteSettingsSeeder extends Seeder
                 'translatable' => true,
                 'value' => ['en' => 'Sahra', 'fa' => 'صحرا', 'ar' => 'صحرا'],
             ],
+            'copyright_name' => [
+                'translatable' => true,
+                'value' => ['en' => 'Sahra', 'fa' => 'صحرا', 'ar' => 'صحرا'],
+            ],
             'tagline' => [
                 'translatable' => true,
                 'value' => [

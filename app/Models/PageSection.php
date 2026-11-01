@@ -32,6 +32,9 @@ final class PageSection extends Model
         'sort_order',
         'is_visible',
         'image_path',
+        'lead_magnet_file_path',
+        'lead_magnet_allow_download',
+        'lead_magnet_send_email',
         'primary_cta_icon',
         'primary_cta_hover_icon',
         'secondary_cta_icon',
@@ -65,6 +68,8 @@ final class PageSection extends Model
         return [
             'type' => SectionType::class,
             'is_visible' => 'boolean',
+            'lead_magnet_allow_download' => 'boolean',
+            'lead_magnet_send_email' => 'boolean',
             'sort_order' => 'integer',
         ];
     }

@@ -110,4 +110,21 @@ test.describe('Page navigation scroll', () => {
     }))
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
   })
+
+  test('browser back returns to the exact section of the previous page', async ({ page }) => {
+    await page.goto('/en/insights')
+    await expect(page.locator('#app')).toHaveAttribute('data-v-app', '')
+
+    const link = page.locator('footer a[href="/en/services"]').first()
+    await link.scrollIntoViewIfNeeded()
+    const scrollBeforeVisit = await page.evaluate(() => window.scrollY)
+    expect(scrollBeforeVisit).toBeGreaterThan(0)
+
+    await link.click()
+    await expect(page).toHaveURL(/\/en\/services$/)
+    await page.goBack()
+    await expect(page).toHaveURL(/\/en\/insights$/)
+
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollBeforeVisit)
+  })
 })

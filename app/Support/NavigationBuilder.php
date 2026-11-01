@@ -49,7 +49,7 @@ final class NavigationBuilder
     private static function build(string $location, string $locale): array
     {
         return Cache::remember(
-            "nav.{$location}.{$locale}",
+            self::cacheKey($location, $locale),
             self::TTL,
             function () use ($location, $locale): array {
                 $menu = Menu::query()
@@ -100,8 +100,14 @@ final class NavigationBuilder
     public static function flush(): void
     {
         foreach (array_keys(config('locales.supported')) as $locale) {
-            Cache::forget("nav.header.{$locale}");
-            Cache::forget("nav.footer.{$locale}");
+            Cache::forget(self::cacheKey('header', $locale));
+            Cache::forget(self::cacheKey('footer', $locale));
         }
+    }
+
+    private static function cacheKey(string $location, string $locale): string
+    {
+        // v2 applies the active locale to legacy raw menu URLs as well.
+        return "nav.v2.{$location}.{$locale}";
     }
 }

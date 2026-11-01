@@ -15,6 +15,7 @@ use App\Models\Service;
 use App\Models\TeamMember;
 use App\Models\Testimonial;
 use App\Support\IconUrl;
+use App\Support\LocalisedUrl;
 use App\Support\Numerals;
 use Illuminate\Support\Collection;
 
@@ -59,6 +60,7 @@ final class ContentTransformer
                 $project->getTranslation('cover_alt'),
                 'project.cover',
             ),
+            'hasLeadMagnetFile' => filled($section->lead_magnet_file_path),
         ];
     }
 
@@ -442,7 +444,7 @@ final class ContentTransformer
 
         return [
             'label' => $label,
-            'url' => $url ?? '#',
+            'url' => LocalisedUrl::for($url ?? '#'),
             'icon' => IconUrl::resolve($icon),
             'hoverIcon' => IconUrl::resolve($hoverIcon),
         ];

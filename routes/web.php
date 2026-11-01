@@ -6,6 +6,7 @@ use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AdminLocaleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HomeLeadMagnetController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LeadMagnetDownloadController;
 use App\Http\Controllers\NewsletterController;
@@ -134,6 +135,11 @@ Route::prefix('{locale}')
         Route::post('newsletter', NewsletterController::class)
             ->middleware('throttle:6,1')
             ->name('newsletter.store');
+        Route::post('home/lead-magnet/{section}', [HomeLeadMagnetController::class, 'store'])
+            ->middleware('throttle:6,1')
+            ->name('home.lead-magnet.store');
+        Route::get('home/lead-magnet/{section}/download', [HomeLeadMagnetController::class, 'download'])
+            ->name('home.lead-magnet.download');
 
         // 9/10 — Legal                   Figma 1031:2101, 1309:4891
         Route::get('privacy-policy', [LegalController::class, 'privacy'])->name('legal.privacy');

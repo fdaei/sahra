@@ -35,12 +35,21 @@ final class HomeController extends Controller
             ->withContent()
             ->firstOrFail();
 
+        $sections = ContentTransformer::sectionMap($page->sections);
+        $leadMagnet = $page->sections->firstWhere('type', \App\Enums\SectionType::LeadMagnet);
+        if ($leadMagnet?->lead_magnet_file_path) {
+            $sections['lead_magnet']['submitUrl'] = route('home.lead-magnet.store', ['section' => $leadMagnet], absolute: false);
+            $sections['lead_magnet']['downloadUrl'] = route('home.lead-magnet.download', ['section' => $leadMagnet], absolute: false);
+            $sections['lead_magnet']['delivery'] = [
+                'download' => (bool) $leadMagnet->lead_magnet_allow_download,
+                'email' => (bool) $leadMagnet->lead_magnet_send_email,
+            ];
+        }
+
         return Inertia::render('Home', [
             // Editorial blocks: hero, lead magnet, packages, final CTA, and the
             // eyebrow/title/subtitle of every other section.
-            'sections' => $page === null
-                ? []
-                : ContentTransformer::sectionMap($page->sections),
+            'sections' => $sections,
 
             // Services cloud — Figma 1419:9279
             'services' => Service::query()

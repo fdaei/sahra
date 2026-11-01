@@ -56,6 +56,7 @@ final class ManageSettings extends Page implements HasForms
      */
     private const KEYS = [
         'site_name' => true,
+        'copyright_name' => true,
         'tagline' => true,
         'footer_description' => true,
         'contact_whatsapp' => false,
@@ -137,6 +138,8 @@ final class ManageSettings extends Page implements HasForms
                 Section::make('Brand')
                     ->schema([
                         $this->translatableInput('site_name', 'Site name'),
+                        $this->translatableInput('copyright_name', 'Copyright name')
+                            ->helperText('Shown in the copyright line at the bottom of the footer.'),
                         $this->translatableInput('tagline', 'Tagline'),
                         $this->translatableTextarea('footer_description', 'Footer description'),
                     ]),

@@ -10,6 +10,7 @@ use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\PageSection;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
@@ -182,6 +183,28 @@ final class SectionsRelationManager extends RelationManager
 
             ImageUpload::make('image_path', 'Section image', 'section', 'sections')
                 ->columnSpanFull(),
+
+            Section::make('Lead magnet file')
+                ->description('For the home-page Lead Magnet only. This private file is delivered after the visitor submits the form.')
+                ->visible(fn (Get $get): bool => $get('type') === SectionType::LeadMagnet->value)
+                ->schema([
+                    FileUpload::make('lead_magnet_file_path')
+                        ->label('Downloadable file')
+                        ->directory('lead-magnets')
+                        ->disk('local')
+                        ->visibility('private')
+                        ->acceptedFileTypes([
+                            'application/pdf',
+                            'application/zip',
+                            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        ]),
+                    Toggle::make('lead_magnet_allow_download')
+                        ->label('Download file after submission')
+                        ->default(true),
+                    Toggle::make('lead_magnet_send_email')
+                        ->label('Email file to visitor')
+                        ->default(false),
+                ]),
 
             /*
              | Repeatable cards. Stored as SectionItem rows, but edited inline
