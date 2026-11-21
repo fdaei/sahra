@@ -51,10 +51,7 @@ final class RedirectResource extends Resource
                         ->prefix(config('app.url').'/'),
 
                     Select::make('status_code')
-                        ->options([
-                            301 => '301 — Permanent',
-                            302 => '302 — Temporary',
-                        ])
+                        ->options(\App\Models\Redirect::STATUSES)
                         ->default(301)
                         ->required()
                         ->native(false),

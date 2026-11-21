@@ -90,10 +90,23 @@ final class ProjectResource extends Resource
                     ->label('Results summary')
                     ->rows(3),
 
-                TextInput::make("translations.{$locale}.cover_alt")
-                    ->label('Cover image alt text')
-                    ->maxLength(300)
-                    ->helperText('Describes the image for screen readers and SEO.'),
+                Section::make('Image alt text')
+                    ->description('Describes each image for screen readers and search engines. Left empty, the alt from the Media library is used.')
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make("translations.{$locale}.cover_alt")
+                            ->label('Cover image')
+                            ->maxLength(300),
+                        TextInput::make("translations.{$locale}.banner_alt")
+                            ->label('Case-study banner')
+                            ->maxLength(300),
+                        TextInput::make("translations.{$locale}.before_alt")
+                            ->label('Before image')
+                            ->maxLength(300),
+                        TextInput::make("translations.{$locale}.after_alt")
+                            ->label('After image')
+                            ->maxLength(300),
+                    ]),
 
                 Section::make('SEO')
                     ->collapsed()

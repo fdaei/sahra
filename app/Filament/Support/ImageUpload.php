@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Filament\Support;
 
+use App\Models\Media;
 use App\Services\MediaTransformer;
+use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\Select;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Filament\Forms\Components\FileUpload;
 
 /**
@@ -85,7 +90,80 @@ final class ImageUpload
             ->imageResizeUpscale(false)
             ->openable()
             ->downloadable()
+            ->hintAction(self::libraryPicker($width, $height, $directory))
             ->helperText(self::helperText($targetWidth, $targetHeight));
+    }
+
+    /**
+     * "Choose from library": reuse an image already in the Media library.
+     *
+     * Only images close to this field's aspect ratio are offered, so the crop
+     * invariant above holds without server-side processing (no gd/imagick
+     * locally). The file is *copied* into the field's directory: the record
+     * owns its own file, and deleting it from the library can never break
+     * this one. Its library alt text still applies as the fallback.
+     */
+    private static function libraryPicker(int $width, int $height, string $directory): Action
+    {
+        return Action::make('fromLibrary')
+            ->label('Choose from library')
+            ->icon('heroicon-o-photo')
+            ->modalHeading('Media library')
+            ->modalDescription("Images with this field's shape ({$width}:{$height}) are listed. For any other image, upload and crop it here.")
+            ->modalSubmitActionLabel('Use image')
+            ->form([
+                Select::make('media')
+                    ->hiddenLabel()
+                    ->required()
+                    ->searchable()
+                    ->allowHtml()
+                    ->getSearchResultsUsing(fn (string $search): array => self::pickerOptions($width, $height, $search))
+                    ->options(function () use ($width, $height): array {
+                        Media::sync();
+
+                        return self::pickerOptions($width, $height);
+                    }),
+            ])
+            ->action(function (array $data, FileUpload $component) use ($directory): void {
+                $media = Media::query()->findOrFail($data['media']);
+                $disk = Storage::disk(Media::DISK);
+                $copy = trim($directory, '/').'/'.Str::ulid().'.'.pathinfo($media->path, PATHINFO_EXTENSION);
+
+                $disk->copy($media->path, $copy);
+
+                // The copy inherits the original's SEO metadata.
+                $clone = Media::register($copy, auth()->id());
+                foreach ($media->translations as $t) {
+                    $clone->translations()->updateOrCreate(['locale' => $t->locale], $t->only(['title', 'alt', 'caption', 'description']));
+                }
+
+                $component->state([(string) Str::uuid() => $copy]);
+            });
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function pickerOptions(int $width, int $height, string $search = ''): array
+    {
+        $ratio = $width / $height;
+
+        return Media::query()
+            ->where('type', 'image')
+            ->whereNotNull('width')->where('height', '>', 0)
+            ->whereRaw('ABS((width * 1.0 / height) - ?) <= ?', [$ratio, $ratio * 0.03])
+            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+            ->latest()
+            ->limit(60)
+            ->get()
+            ->mapWithKeys(fn (Media $m): array => [$m->getKey() => sprintf(
+                '<span style="display:flex;gap:.75rem;align-items:center"><img src="%s" alt="" loading="lazy" style="width:56px;height:56px;object-fit:cover;border-radius:6px"><span>%s<br><small style="opacity:.6">%d×%d</small></span></span>',
+                e($m->url()),
+                e($m->name),
+                $m->width,
+                $m->height,
+            )])
+            ->all();
     }
 
     /**

@@ -61,7 +61,7 @@ const props = defineProps<{
     nextPageUrl: string | null;
     prevPageUrl: string | null;
   };
-  categories: { slug: string; name: string }[];
+  categories: { slug: string; name: string; parent: string | null }[];
   filters: { category: string | null; q: string | null };
   sections: Record<string, SectionContent>;
   seo: SeoMeta;
@@ -71,6 +71,33 @@ const page = usePage<SharedProps>();
 const { t } = useTranslations();
 
 const basePath = computed(() => `/${page.props.locale.current}/insights`);
+
+/**
+ * Category tree flattened for the filter list: top-level categories always,
+ * plus the subcategories of the selected branch, indented under their parent.
+ */
+const filterItems = computed(() => {
+  const bySlug = new Map(props.categories.map((c) => [c.slug, c]));
+  const open = new Set<string>();
+  for (let slug = props.filters.category, i = 0; slug && i < 10; i++) {
+    open.add(slug);
+    slug = bySlug.get(slug)?.parent ?? null;
+  }
+
+  const out: { slug: string; name: string; depth: number }[] = [];
+  const walk = (parent: string | null, depth: number): void => {
+    for (const c of props.categories) {
+      // A parent missing in this locale makes the child top-level.
+      const effectiveParent = c.parent && bySlug.has(c.parent) ? c.parent : null;
+      if (effectiveParent !== parent) continue;
+      out.push({ slug: c.slug, name: c.name, depth });
+      if (open.has(c.slug) && depth < 10) walk(c.slug, depth + 1);
+    }
+  };
+  walk(null, 0);
+
+  return out;
+});
 
 /**
  * The frame lays the first two cards out 2-up (612 wide) and everything
@@ -112,7 +139,7 @@ function showMoreInsights(): void {
 
       <FilterChips
         v-if="categories.length > 0"
-        :items="categories"
+        :items="filterItems"
         :active="filters.category"
         param-name="category"
         :base-path="basePath"

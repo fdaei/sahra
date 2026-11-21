@@ -25,8 +25,9 @@ import { Menu as MenuIcon } from 'lucide-vue-next'
 import BrandLogo from '@/Components/BrandLogo.vue'
 import LanguageSwitcher from '@/Components/LanguageSwitcher.vue'
 import MobileMenu from '@/Layouts/MobileMenu.vue'
+import NavDropdown from '@/Layouts/NavDropdown.vue'
 import { useTranslations } from '@/Composables/useTranslations'
-import type { SharedProps } from '@/types'
+import type { NavItem, SharedProps } from '@/types'
 
 const page = usePage<SharedProps>()
 const { t } = useTranslations()
@@ -46,6 +47,7 @@ const currentLocale = computed(() => page.props.locale?.current ?? 'en')
 const siteName = computed(() => page.props.settings?.siteName ?? 'Sahra')
 
 function isActive(url: string): boolean {
+  if (!url) return false
   // Use a fixed base so this computed helper is also safe during Inertia SSR.
   const current = new URL(page.url, 'http://sahra.local').pathname
   const target = new URL(url, 'http://sahra.local').pathname
@@ -54,6 +56,11 @@ function isActive(url: string): boolean {
   if (target === homePath) return current === homePath
 
   return current === target || current.startsWith(`${target}/`)
+}
+
+// A parent reads as active when it or anything beneath it is the current page.
+function isTreeActive(item: NavItem): boolean {
+  return isActive(item.url) || item.children.some(isTreeActive)
 }
 </script>
 
@@ -104,17 +111,25 @@ function isActive(url: string): boolean {
         <!-- menu: gap-24 (space24) — Figma "I1419:9339;159:453" -->
         <nav v-if="!minimal" :aria-label="t('common.primary_navigation')">
           <ul class="flex items-center gap-6">
-            <li v-for="item in items" :key="item.id">
-              <Link
-                :href="item.url"
-                :target="item.target"
-                class="flex items-center justify-center px-1 py-1 text-title-sm transition-colors"
-                :class="isActive(item.url) ? 'font-medium text-ink' : 'font-medium text-neutral-800 hover:text-ink'"
-                :aria-current="isActive(item.url) ? 'page' : undefined"
-              >
-                {{ item.label }}
-              </Link>
-            </li>
+            <template v-for="item in items" :key="item.id">
+              <NavDropdown
+                v-if="item.children.length"
+                :item="item"
+                :active="isTreeActive(item)"
+                :is-active="isActive"
+              />
+              <li v-else>
+                <Link
+                  :href="item.url"
+                  :target="item.target"
+                  class="flex items-center justify-center px-1 py-1 text-title-sm transition-colors"
+                  :class="isActive(item.url) ? 'font-medium text-ink' : 'font-medium text-neutral-800 hover:text-ink'"
+                  :aria-current="isActive(item.url) ? 'page' : undefined"
+                >
+                  {{ item.label }}
+                </Link>
+              </li>
+            </template>
           </ul>
         </nav>
 

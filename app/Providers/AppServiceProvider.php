@@ -25,6 +25,8 @@ final class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        \App\Services\Redirects\SlugChangeRedirector::register();
+
         Field::configureUsing(
             fn (Field $field): Field => $field->translateLabel(),
         );

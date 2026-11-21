@@ -36,4 +36,9 @@ return [
     'empty_posts'         => 'هنوز مقاله‌ای منتشر نشده است.',
     'empty_results'       => 'موردی با فیلترهای شما مطابقت نداشت.',
 
+    // Breadcrumbs (visible trail + BreadcrumbList schema)
+    'breadcrumbs'         => 'مسیر صفحه',
+    'breadcrumb_home'     => 'خانه',
+    'breadcrumb_work'     => 'نمونه‌کارها',
+    'breadcrumb_insights' => 'مقالات',
 ];

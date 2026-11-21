@@ -31,6 +31,7 @@ return [
             'menu' => 'Website menus',
             'social_link' => 'Social media links',
             'redirect' => 'Old URL redirects',
+            'media' => 'Media library',
             'user' => 'Admin users',
         ],
     ],
@@ -51,6 +52,7 @@ return [
         'menu' => 'website menu',
         'social_link' => 'social media link',
         'redirect' => 'URL redirect',
+        'media' => 'Media file',
         'user' => 'admin user',
     ],
     'models_plural' => [
@@ -70,6 +72,7 @@ return [
         'menu' => 'website menus',
         'social_link' => 'social media links',
         'redirect' => 'URL redirects',
+        'media' => 'Media files',
         'user' => 'admin users',
     ],
 ];

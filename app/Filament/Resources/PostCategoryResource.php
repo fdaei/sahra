@@ -8,6 +8,7 @@ use App\Filament\Resources\PostCategoryResource\Pages;
 use App\Filament\Support\TranslatableForm;
 use App\Models\PostCategory;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Set;
@@ -57,6 +58,14 @@ final class PostCategoryResource extends Resource
             Section::make()
                 ->columns(2)
                 ->schema([
+                    Select::make('parent_id')
+                        ->label('Parent category')
+                        ->placeholder('None — top-level category')
+                        ->options(fn (?PostCategory $record): array => self::pathOptions($record))
+                        ->searchable()
+                        ->native(false)
+                        ->helperText('Subcategories appear under their parent in the site menu and filters.'),
+
                     TextInput::make('sort_order')->numeric()->default(0),
                 ]),
         ]);
@@ -70,6 +79,9 @@ final class PostCategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->getStateUsing(fn (PostCategory $record): string => (string) $record->getTranslation('name'))
+                    ->description(fn (PostCategory $record): ?string => $record->parent_id === null
+                        ? null
+                        : '↳ '.collect($record->ancestors())->map(fn (PostCategory $c): string => (string) $c->getTranslation('name'))->implode(' › '))
                     ->weight('medium'),
 
                 Tables\Columns\TextColumn::make('slug')
@@ -83,6 +95,11 @@ final class PostCategoryResource extends Resource
                     ->color(fn (int $state): string => $state >= 3 ? 'success' : 'warning')
                     ->formatStateUsing(fn (int $state): string => "{$state}/3"),
             ])
+            ->filters([
+                Tables\Filters\SelectFilter::make('parent_id')
+                    ->label('Parent')
+                    ->options(fn (): array => self::pathOptions(null)),
+            ])
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
@@ -90,6 +107,32 @@ final class PostCategoryResource extends Resource
             ->bulkActions([
                 Tables\Actions\DeleteBulkAction::make(),
             ]);
+    }
+
+    /**
+     * Every category labelled with its full path ("Marketing › SEO"),
+     * minus the record and its descendants so no cycle can be chosen.
+     *
+     * @return array<int, string>
+     */
+    public static function pathOptions(?PostCategory $record): array
+    {
+        $excluded = $record === null ? [] : [$record->id, ...$record->descendantIds()];
+        $all = PostCategory::query()->with('translations')->ordered()->get()->keyBy('id');
+
+        return $all
+            ->reject(fn (PostCategory $c): bool => in_array($c->id, $excluded, true))
+            ->map(function (PostCategory $c) use ($all): string {
+                $names = [(string) $c->getTranslation('name')];
+                for ($i = 0, $p = $c->parent_id; $p !== null && $i < PostCategory::MAX_DEPTH && $all->has($p); $i++) {
+                    array_unshift($names, (string) $all[$p]->getTranslation('name'));
+                    $p = $all[$p]->parent_id;
+                }
+
+                return implode(' › ', $names);
+            })
+            ->sort()
+            ->all();
     }
 
     public static function getPages(): array
@@ -103,6 +146,6 @@ final class PostCategoryResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('translations');
+        return parent::getEloquentQuery()->with(['translations', 'parent.translations']);
     }
 }

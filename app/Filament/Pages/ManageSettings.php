@@ -68,6 +68,8 @@ final class ManageSettings extends Page implements HasForms
         'seo_default_description' => true,
         'seo_default_image' => false,
         'seo_organization_name' => true,
+        'slug_auto_redirect' => false,
+        'slug_auto_redirect_status' => false,
         'google_analytics_id' => false,
         'google_tag_manager_id' => false,
         'google_search_console_verification' => false,
@@ -122,6 +124,9 @@ final class ManageSettings extends Page implements HasForms
         }
 
         $data['mail_enabled'] ??= false;
+        // Same defaults as SlugChangeRedirector: on, permanent.
+        $data['slug_auto_redirect'] ??= true;
+        $data['slug_auto_redirect_status'] ??= '301';
         $data['mail_port'] ??= 587;
         $data['mail_encryption'] ??= 'tls';
         // Never hydrate the SMTP password into Livewire/browser state.
@@ -177,6 +182,24 @@ final class ManageSettings extends Page implements HasForms
 
                         ImageUpload::make('seo_default_image', 'Default share image', 'seo.share', 'seo')
                             ->helperText('Shown when a page has no image. Cropped to the 1200×630 Open Graph card.'),
+                    ]),
+
+                Section::make('Redirects')
+                    ->description('What happens to the old address when an article or project slug is changed.')
+                    ->columns(2)
+                    ->schema([
+                        Toggle::make('slug_auto_redirect')
+                            ->label('Automatic redirect on slug change')
+                            ->helperText('On: the old URL redirects to the new one (Redirects list shows them). Off: the old URL returns 404.')
+                            ->live(),
+
+                        Select::make('slug_auto_redirect_status')
+                            ->label('Status code')
+                            ->options(collect(\App\Models\Redirect::STATUSES)->mapWithKeys(fn (string $l, int $c): array => [(string) $c => $l])->all())
+                            ->helperText('301 is recommended for SEO — search engines move the ranking to the new URL.')
+                            ->native(false)
+                            ->selectablePlaceholder(false)
+                            ->visible(fn (Get $get): bool => (bool) $get('slug_auto_redirect')),
                     ]),
 
                 Section::make('Integrations & analytics')
@@ -288,7 +311,7 @@ final class ManageSettings extends Page implements HasForms
                     ['key' => $key],
                     [
                         'group' => match (true) {
-                            str_contains($key, 'seo_') => 'seo',
+                            str_contains($key, 'seo_') || str_starts_with($key, 'slug_') => 'seo',
                             str_contains($key, 'google_') || str_contains($key, 'hotjar_') => 'integrations',
                             str_starts_with($key, 'mail_') => 'email',
                             default => 'general',

@@ -30,11 +30,13 @@ const footerFont = computed(() =>
   page.props.locale.font === 'arabic' ? 'font-arabic' : 'font-sans',
 )
 
-function columnHeading(index: number, fallback: string): string {
+// The editor's label wins; the translated defaults only fill an empty one.
+function columnHeading(index: number, label: string): string {
+  if (label) return label
   if (index === 0) return t('footer.quick_links')
   if (index === 1) return t('footer.social_links')
 
-  return fallback
+  return ''
 }
 </script>
 
@@ -77,7 +79,10 @@ function columnHeading(index: number, fallback: string): string {
               :aria-label="columnHeading(columnIndex, column.label)"
             >
               <h2 class="text-[14px] font-medium leading-normal text-neutral-900 md:text-[16px]">
-                {{ columnHeading(columnIndex, column.label) }}
+                <Link v-if="column.url" :href="column.url" class="transition-colors hover:text-gold">
+                  {{ columnHeading(columnIndex, column.label) }}
+                </Link>
+                <template v-else>{{ columnHeading(columnIndex, column.label) }}</template>
               </h2>
 
               <ul class="mt-3 flex flex-col items-start gap-2 md:mt-4 md:gap-3">
@@ -104,6 +109,23 @@ function columnHeading(index: number, fallback: string): string {
                   >
                     {{ child.label }}
                   </Link>
+
+                  <!-- Third level (e.g. subcategories), indented under its parent. -->
+                  <ul
+                    v-if="child.children.length"
+                    class="mt-2 flex flex-col gap-1.5 border-s border-neutral-200 ps-3 md:gap-2"
+                  >
+                    <li v-for="grandchild in child.children" :key="grandchild.id">
+                      <Link
+                        :href="grandchild.url"
+                        :target="grandchild.target"
+                        :rel="grandchild.target === '_blank' ? 'noopener noreferrer' : undefined"
+                        class="text-[13px] font-normal leading-normal text-neutral-500 transition-colors hover:text-gold"
+                      >
+                        {{ grandchild.label }}
+                      </Link>
+                    </li>
+                  </ul>
                 </li>
               </ul>
             </nav>

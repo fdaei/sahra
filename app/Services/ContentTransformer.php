@@ -60,7 +60,6 @@ final class ContentTransformer
                 $project->getTranslation('cover_alt'),
                 'project.cover',
             ),
-            'hasLeadMagnetFile' => filled($section->lead_magnet_file_path),
         ];
     }
 
@@ -103,19 +102,19 @@ final class ContentTransformer
             'beforeAfter' => [
                 'before' => MediaTransformer::make(
                     $project->before_image_path,
-                    null,
+                    $project->getTranslation('before_alt'),
                     'project.beforeafter',
                 ),
                 'after' => MediaTransformer::make(
                     $project->after_image_path,
-                    null,
+                    $project->getTranslation('after_alt'),
                     'project.beforeafter',
                 ),
             ],
 
             'banner' => MediaTransformer::make(
                 $project->banner_path,
-                $project->getTranslation('cover_alt'),
+                $project->getTranslation('banner_alt') ?: $project->getTranslation('cover_alt'),
                 'project.banner',
             ),
 

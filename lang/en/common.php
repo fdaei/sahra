@@ -41,4 +41,9 @@ return [
     'empty_posts'         => 'No articles published yet.',
     'empty_results'       => 'Nothing matched your filters.',
 
+    // Breadcrumbs (visible trail + BreadcrumbList schema)
+    'breadcrumbs'         => 'Breadcrumb',
+    'breadcrumb_home'     => 'Home',
+    'breadcrumb_work'     => 'Work',
+    'breadcrumb_insights' => 'Insights',
 ];

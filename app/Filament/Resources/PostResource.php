@@ -101,8 +101,9 @@ final class PostResource extends Resource
                     ]),
 
                 TextInput::make("translations.{$locale}.cover_alt")
-                    ->label('Cover alt text')
-                    ->maxLength(300),
+                    ->label('Cover image alt text')
+                    ->maxLength(300)
+                    ->helperText('Describes the cover for screen readers and Google Images. Left empty, the alt from the Media library is used.'),
 
                 Section::make('SEO')
                     ->collapsed()
@@ -124,12 +125,9 @@ final class PostResource extends Resource
                     ->schema([
                         Select::make('post_category_id')
                             ->label('Category')
-                            ->relationship('category')
-                            ->getOptionLabelFromRecordUsing(
-                                fn (PostCategory $record): string => (string) $record->getTranslation('name'),
-                            )
+                            // Full path, so subcategories are distinguishable.
+                            ->options(fn (): array => PostCategoryResource::pathOptions(null))
                             ->searchable()
-                            ->preload()
                             ->native(false),
 
                         Select::make('tags')

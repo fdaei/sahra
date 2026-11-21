@@ -173,10 +173,16 @@ final class Post extends Model implements HasLocalisedSlugs
     {
         $locale = app()->getLocale();
 
-        return $query->whereHas(
-            'category.translations',
-            fn ($q) => $q->where('locale', $locale)->where('slug', $categorySlug),
-        );
+        $category = PostCategory::query()
+            ->whereHas('translations', fn ($q) => $q->where('locale', $locale)->where('slug', $categorySlug))
+            ->first();
+
+        if ($category === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // A parent category also lists the articles of its subcategories.
+        return $query->whereIn('posts.post_category_id', [$category->id, ...$category->descendantIds()]);
     }
 
     /**

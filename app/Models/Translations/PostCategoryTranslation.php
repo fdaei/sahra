@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models\Translations;
 
+use App\Support\NavigationBuilder;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -18,4 +19,10 @@ final class PostCategoryTranslation extends Model
         'slug',
     ];
 
+    protected static function booted(): void
+    {
+        // Category names/slugs feed generated header dropdowns.
+        self::saved(fn () => NavigationBuilder::flush());
+        self::deleted(fn () => NavigationBuilder::flush());
+    }
 }

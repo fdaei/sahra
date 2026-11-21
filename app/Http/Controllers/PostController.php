@@ -10,6 +10,7 @@ use App\Models\PostCategory;
 use App\Services\ContentTransformer;
 use App\Services\MediaTransformer;
 use App\Services\SeoBuilder;
+use App\Support\Breadcrumbs;
 use App\Support\IconUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -93,12 +94,17 @@ final class PostController extends Controller
                 'prevPageUrl' => $posts->previousPageUrl(),
             ],
 
+            // Flat list; `parent` (a slug) lets the page show the
+            // subcategories of the selected branch.
             'categories' => PostCategory::query()
-                ->ordered()->withTranslations()->get()
+                ->ordered()->withTranslations()->with('parent.translations')->get()
                 ->map(fn (PostCategory $c): array => [
                     'slug' => (string) $c->getTranslation('slug'),
                     'name' => (string) $c->getTranslation('name'),
+                    'parent' => $c->parent === null ? null : (string) $c->parent->getTranslation('slug'),
                 ])
+                ->filter(fn (array $c): bool => $c['slug'] !== '')
+                ->values()
                 ->all(),
 
             'filters' => [
@@ -110,11 +116,38 @@ final class PostController extends Controller
                 ? []
                 : ContentTransformer::sectionMap($page->sections),
 
-            'seo' => SeoBuilder::forPage(
-                $page,
-                $request->url(),
-                noindex: $categoryFilter !== '' || $search !== '',
-            ),
+            'seo' => $this->listingSeo($page, $request, $categoryFilter, $search),
+        ]);
+    }
+
+    /**
+     * Listing SEO; a category filter deepens the breadcrumb to
+     * Home › Insights › [parent ›] category.
+     *
+     * @return array<string, mixed>
+     */
+    private function listingSeo(?Page $page, Request $request, string $categoryFilter, string $search): array
+    {
+        $seo = SeoBuilder::forPage($page, $request->url(), noindex: $categoryFilter !== '' || $search !== '');
+
+        if ($categoryFilter === '') {
+            return $seo;
+        }
+
+        $locale = app()->getLocale();
+        $category = PostCategory::query()
+            ->whereHas('translations', fn ($q) => $q->where('locale', $locale)->where('slug', $categoryFilter))
+            ->withTranslations()
+            ->first();
+
+        if ($category === null) {
+            return $seo;
+        }
+
+        return Breadcrumbs::attach($seo, [
+            Breadcrumbs::home(),
+            Breadcrumbs::route($page ? (string) $page->getTranslation('title') : __('common.breadcrumb_insights'), 'insights.index'),
+            ...Breadcrumbs::category($category),
         ]);
     }
 
@@ -139,7 +172,13 @@ final class PostController extends Controller
             'leadMagnet' => $this->leadMagnetFor($post, $homeSections['lead_magnet'] ?? null),
             'finalCta' => $homeSections['final_cta'] ?? null,
 
-            'seo' => SeoBuilder::forPost($post),
+            // Home › Insights › [parent ›] category › article
+            'seo' => Breadcrumbs::attach(SeoBuilder::forPost($post), [
+                Breadcrumbs::home(),
+                Breadcrumbs::route(__('common.breadcrumb_insights'), 'insights.index'),
+                ...($post->category === null ? [] : Breadcrumbs::category($post->category)),
+                Breadcrumbs::crumb((string) $post->getTranslation('title'), $post->url(absolute: false)),
+            ]),
         ]);
     }
 

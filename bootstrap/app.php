@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Middleware\ApplyRedirects;
 use App\Http\Middleware\CanonicalRedirect;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventPrivateIndexing;
@@ -24,6 +25,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(CanonicalRedirect::class);
+        // After the canonical-host redirect, before routing (see the class).
+        $middleware->append(ApplyRedirects::class);
         $middleware->web(append: [
             PreventPrivateIndexing::class,
             HandleInertiaRequests::class,

@@ -9,6 +9,7 @@ use App\Models\Project;
 use App\Models\Service;
 use App\Services\ContentTransformer;
 use App\Services\SeoBuilder;
+use App\Support\Breadcrumbs;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -92,7 +93,11 @@ final class ProjectController extends Controller
                 ? null
                 : (ContentTransformer::sectionMap($workPage->sections)['final_cta'] ?? null),
 
-            'seo' => SeoBuilder::forProject($project),
+            'seo' => Breadcrumbs::attach(SeoBuilder::forProject($project), [
+                Breadcrumbs::home(),
+                Breadcrumbs::route(__('common.breadcrumb_work'), 'work.index'),
+                Breadcrumbs::crumb((string) $project->getTranslation('title'), $project->url(absolute: false)),
+            ]),
         ]);
     }
 }

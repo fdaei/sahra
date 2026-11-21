@@ -19,7 +19,8 @@ import { useTranslations } from '@/Composables/useTranslations'
 
 const props = withDefaults(
   defineProps<{
-    items: { slug: string; name: string }[]
+    /** `depth` > 0 marks a subcategory, indented under its parent. */
+    items: { slug: string; name: string; depth?: number }[]
     active: string | null
     paramName: string
     basePath: string
@@ -72,7 +73,8 @@ function classesFor(slug: string | null): string {
       v-for="item in items"
       :key="item.slug"
       :href="hrefFor(item.slug)"
-      :class="classesFor(item.slug)"
+      :class="[classesFor(item.slug), item.depth ? 'lg:border-s lg:border-neutral-200' : '']"
+      :style="item.depth ? { paddingInlineStart: `${item.depth * 0.875}rem` } : undefined"
       class="w-fit shrink-0 whitespace-nowrap rounded-xs transition-colors"
       :aria-current="active === item.slug ? 'true' : undefined"
     >

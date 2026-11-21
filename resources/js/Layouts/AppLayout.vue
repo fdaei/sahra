@@ -11,14 +11,22 @@ import { computed } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import AppHeader from '@/Layouts/AppHeader.vue'
 import AppFooter from '@/Layouts/AppFooter.vue'
+import Breadcrumbs from '@/Components/Breadcrumbs.vue'
 import { useAutoReveal } from '@/Composables/useMotion'
-import type { SharedProps } from '@/types'
+import type { Breadcrumb, SharedProps } from '@/types'
 
 const page = usePage<SharedProps>()
 
 // Falls back when `flash` wasn't shared — see the comment in Pages/Error.vue.
 const flash = computed(() => page.props.flash ?? { success: null, error: null })
 const isErrorPage = computed(() => page.component === 'Error')
+
+// Every page passes `seo`; only inner pages carry a trail (Breadcrumbs.vue).
+const breadcrumbs = computed<Breadcrumb[]>(() =>
+  isErrorPage.value
+    ? []
+    : ((page.props as { seo?: { breadcrumbs?: Breadcrumb[] } }).seo?.breadcrumbs ?? []),
+)
 
 /*
  | A7b — the shared scroll reveal, applied here so EVERY page gets it rather
@@ -45,7 +53,9 @@ function notifyPageEntered(): void {
     `main` carries no header offset; each page's first section reproduces the
     top inset its frame specifies (Home 176, listing pages 192).
   -->
-  <main id="main" class="min-h-screen-safe">
+  <main id="main" class="relative min-h-screen-safe">
+    <Breadcrumbs v-if="breadcrumbs.length > 1" :key="page.url" :items="breadcrumbs" />
+
     <Transition
       mode="out-in"
       enter-active-class="transition-[opacity,transform] duration-300 ease-brand"

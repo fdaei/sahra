@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\Menu;
 use App\Models\MenuItem;
+use App\Models\PostCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -85,6 +86,10 @@ final class NavigationBuilder
             ->values()
             ->all();
 
+        if ($item->children_source === 'post_categories') {
+            $children = [...$children, ...self::categoryItems(PostCategory::tree(), $locale)];
+        }
+
         return [
             'id' => $item->id,
             'label' => $item->getTranslation('label', $locale),
@@ -95,6 +100,37 @@ final class NavigationBuilder
             'hoverIcon' => IconUrl::resolve($item->hover_icon),
             'children' => $children,
         ];
+    }
+
+    /**
+     * Category tree as nav items. IDs are prefixed so they never collide with
+     * real menu item IDs (both are used as Vue keys).
+     *
+     * @param  iterable<PostCategory>  $categories
+     * @return list<array<string, mixed>>
+     */
+    private static function categoryItems(iterable $categories, string $locale): array
+    {
+        $items = [];
+
+        foreach ($categories as $category) {
+            if (blank($category->getTranslation('slug', $locale, false))) {
+                continue; // not translated into this locale
+            }
+
+            $items[] = [
+                'id' => 'category-'.$category->id,
+                'label' => (string) $category->getTranslation('name', $locale),
+                'url' => $category->listingUrl($locale),
+                'target' => '_self',
+                'isCta' => false,
+                'icon' => null,
+                'hoverIcon' => null,
+                'children' => self::categoryItems($category->children, $locale),
+            ];
+        }
+
+        return $items;
     }
 
     public static function flush(): void
@@ -108,6 +144,6 @@ final class NavigationBuilder
     private static function cacheKey(string $location, string $locale): string
     {
         // v2 applies the active locale to legacy raw menu URLs as well.
-        return "nav.v2.{$location}.{$locale}";
+        return "nav.v3.{$location}.{$locale}";
     }
 }

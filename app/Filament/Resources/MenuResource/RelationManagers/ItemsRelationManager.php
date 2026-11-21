@@ -73,17 +73,16 @@ final class ItemsRelationManager extends RelationManager
 
                     Select::make('parent_id')
                         ->label('Parent item')
-                        ->options(fn (): array => $this->getOwnerRecord()
-                            ->items()
-                            ->whereNull('parent_id')
-                            ->with('translations')
-                            ->get()
-                            ->mapWithKeys(fn (MenuItem $item): array => [
-                                $item->id => (string) $item->getTranslation('label'),
-                            ])
-                            ->all())
+                        ->options(fn (?MenuItem $record): array => $this->parentOptions($record))
                         ->native(false)
-                        ->helperText('Footer columns: set a parent to nest links.'),
+                        ->helperText('Header: nested items open as a dropdown (up to two levels). Footer: items under a heading form a column.'),
+
+                    Select::make('children_source')
+                        ->label('Generate submenu from')
+                        ->options(MenuItem::CHILDREN_SOURCES)
+                        ->placeholder('Nothing — nested items only')
+                        ->native(false)
+                        ->helperText('E.g. on "Insights": the dropdown lists every category and subcategory automatically.'),
                 ]),
 
             Section::make()
@@ -108,7 +107,11 @@ final class ItemsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('label')
                     ->getStateUsing(fn (MenuItem $record): string => (string) $record->getTranslation('label'))
-                    ->description(fn (MenuItem $record): ?string => $record->parent_id !== null ? '↳ nested' : null)
+                    ->description(fn (MenuItem $record): ?string => match (true) {
+                        $record->children_source !== null => '▾ '.(MenuItem::CHILDREN_SOURCES[$record->children_source] ?? $record->children_source),
+                        $record->parent_id !== null => '↳ nested',
+                        default => null,
+                    })
                     ->weight('medium'),
 
                 Tables\Columns\TextColumn::make('route_name')
@@ -157,6 +160,32 @@ final class ItemsRelationManager extends RelationManager
 
             return $record;
         });
+    }
+
+    /**
+     * Possible parents: top-level items and their direct children (menus
+     * are at most three levels), never the item itself or its children.
+     *
+     * @return array<int, string>
+     */
+    private function parentOptions(?MenuItem $record): array
+    {
+        $items = $this->getOwnerRecord()->items()->with('translations')->get();
+        $byId = $items->keyBy('id');
+
+        return $items
+            ->filter(function (MenuItem $item) use ($record, $byId): bool {
+                if ($record !== null && ($item->id === $record->id || $item->parent_id === $record->id)) {
+                    return false;
+                }
+                $parent = $item->parent_id === null ? null : $byId->get($item->parent_id);
+
+                return $item->parent_id === null || ($parent !== null && $parent->parent_id === null);
+            })
+            ->mapWithKeys(fn (MenuItem $item): array => [
+                $item->id => ($item->parent_id !== null ? '↳ ' : '').(string) $item->getTranslation('label'),
+            ])
+            ->all();
     }
 
     /**

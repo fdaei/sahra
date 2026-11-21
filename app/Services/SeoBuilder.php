@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
+use App\Support\Breadcrumbs;
 use App\Support\CanonicalUrl;
 use App\Support\SiteSettings;
 
@@ -28,7 +29,7 @@ final class SeoBuilder
         $query = array_filter($query, fn ($value, $key) => is_scalar($value) && (string) $value !== '' && ($key !== 'page' || (int) $value > 1), ARRAY_FILTER_USE_BOTH);
         $canonical = CanonicalUrl::for($canonical).($query ? '?'.http_build_query($query) : '');
 
-        return self::assemble(
+        $seo = self::assemble(
             title: $page?->getTranslation('seo_title') ?: $page?->getTranslation('title'),
             description: $page?->getTranslation('seo_description') ?: $page?->getTranslation('description'),
             image: $image,
@@ -36,6 +37,16 @@ final class SeoBuilder
             type: 'website',
             noindex: $noindex,
         );
+
+        // Home › Page. Pages needing a deeper trail re-attach their own.
+        if ($page !== null && $page->key !== 'home') {
+            $seo = Breadcrumbs::attach($seo, [
+                Breadcrumbs::home(),
+                Breadcrumbs::crumb((string) $page->getTranslation('title'), '/'.ltrim(request()->path(), '/')),
+            ]);
+        }
+
+        return $seo;
     }
 
     /**
@@ -52,6 +63,7 @@ final class SeoBuilder
             canonical: CanonicalUrl::for($project->url()),
             type: 'website',
         );
+        $seo = self::withCoverSchema($seo, $project->cover_path);
         $seo['structuredData'][] = array_filter([
             '@context' => 'https://schema.org', '@type' => 'CreativeWork',
             'name' => (string) $project->getTranslation('title'),
@@ -69,7 +81,7 @@ final class SeoBuilder
      */
     public static function forPost(Post $post): array
     {
-        return self::assemble(
+        return self::withCoverSchema(self::assemble(
             title: $post->getTranslation('seo_title') ?: $post->getTranslation('title'),
             description: $post->getTranslation('seo_description') ?: $post->getTranslation('excerpt'),
             image: $post->cover_path === null
@@ -81,7 +93,28 @@ final class SeoBuilder
             modifiedAt: collect([$post->updated_at, $post->translate()?->updated_at])->filter()->max()?->toIso8601String(),
             author: $post->author?->name,
             headline: (string) $post->getTranslation('title'),
-        );
+        ), $post->cover_path);
+    }
+
+    /**
+     * Add the cover's Media-library ImageObject (title, caption, alt as
+     * description, credit, dimensions) when the file is in the library.
+     *
+     * @param  array<string, mixed>  $seo
+     * @return array<string, mixed>
+     */
+    private static function withCoverSchema(array $seo, ?string $path): array
+    {
+        if ($path === null || $path === '') {
+            return $seo;
+        }
+
+        $node = \App\Models\Media::query()->where('path', ltrim($path, '/'))->with('translations')->first()?->schema();
+        if ($node !== null) {
+            $seo['structuredData'][] = $node;
+        }
+
+        return $seo;
     }
 
     public static function forError(int $status): array

@@ -36,4 +36,9 @@ return [
     'empty_posts'         => 'لم يتم نشر أي مقالات بعد.',
     'empty_results'       => 'لا توجد نتائج مطابقة للفلاتر.',
 
+    // Breadcrumbs (visible trail + BreadcrumbList schema)
+    'breadcrumbs'         => 'مسار التنقل',
+    'breadcrumb_home'     => 'الرئيسية',
+    'breadcrumb_work'     => 'أعمالنا',
+    'breadcrumb_insights' => 'المقالات',
 ];

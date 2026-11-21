@@ -23,6 +23,9 @@ final class ProjectTranslation extends Model
         'seo_title',
         'seo_description',
         'cover_alt',
+        'banner_alt',
+        'before_alt',
+        'after_alt',
     ];
 
     protected function casts(): array

@@ -43,6 +43,7 @@ final class RolePermissionSeeder extends Seeder
         'faq',
         'client',
         'contact_submission',
+        'media',
     ];
 
     /**

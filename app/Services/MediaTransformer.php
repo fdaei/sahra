@@ -67,6 +67,11 @@ final class MediaTransformer
             return null;
         }
 
+        // No alt on the field → the alt written for this file in the Media library.
+        if ($alt === null || trim($alt) === '') {
+            $alt = \App\Models\Media::altFor($path);
+        }
+
         [$width, $height] = self::dimensions($context);
         if (preg_match('~^https?://~i', $path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
             return ['src' => self::url($path), 'alt' => $alt ?? '', 'width' => $width, 'height' => $height];
