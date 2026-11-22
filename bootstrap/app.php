@@ -8,6 +8,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventPrivateIndexing;
 use App\Http\Middleware\RedirectToLocalisedRoute;
 use App\Http\Middleware\SetLocale;
+use App\Http\Middleware\SecurityHeaders;
 use App\Services\SeoBuilder;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(CanonicalRedirect::class);
+        $middleware->append(SecurityHeaders::class);
         // After the canonical-host redirect, before routing (see the class).
         $middleware->append(ApplyRedirects::class);
         $middleware->web(append: [
@@ -72,6 +74,10 @@ return Application::configure(basePath: dirname(__DIR__))
 
             if (! in_array($status, [403, 404, 419, 429, 500, 503], true)) {
                 return $response;
+            }
+
+            if ($status === 404) {
+                app(\App\Services\Redirects\NotFoundMonitor::class)->record($request);
             }
 
             if ($status === 419) {

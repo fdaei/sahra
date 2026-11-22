@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 
 use App\Models\Redirect;
 use App\Services\Redirects\RedirectMap;
+use App\Services\Redirects\RedirectSafety;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,8 +36,10 @@ final class ApplyRedirects
 
         [$destination, $status, $id] = $match;
 
-        if (Redirect::normalize($destination) === Redirect::normalize($path)) {
-            return $next($request); // never loop
+        if (! array_key_exists($status, Redirect::STATUSES)
+            || ! RedirectSafety::validDestination($destination, allowStoredRoot: true)
+            || RedirectSafety::createsLoop($path, $destination, RedirectMap::all())) {
+            return $next($request); // Ignore invalid destinations and redirect loops.
         }
 
         Redirect::query()->find($id)?->recordHit();

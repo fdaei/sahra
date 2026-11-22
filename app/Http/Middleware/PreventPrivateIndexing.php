@@ -13,7 +13,7 @@ final class PreventPrivateIndexing
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        if ($request->is('admin', 'admin/*', 'test-mail') || $request->routeIs('insights.lead-magnet.download')) {
+        if ($request->is('admin', 'admin/*', 'test-mail') || $request->routeIs('insights.lead-magnet.download', 'home.lead-magnet.download')) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
         }
 

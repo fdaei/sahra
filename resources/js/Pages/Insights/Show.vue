@@ -18,7 +18,7 @@
  * the original midpoint placement until an editor chooses an exact position.
  */
 import { computed, ref } from "vue";
-import { Link } from "@inertiajs/vue3";
+import { Link, useForm } from "@inertiajs/vue3";
 import {
   CalendarDays,
   Check,
@@ -38,9 +38,16 @@ const props = defineProps<{
   leadMagnet: InstanceType<typeof LeadMagnet>["$props"]["section"] | null;
   finalCta: InstanceType<typeof CtaBanner>["$props"]["section"] | null;
   seo: SeoMeta;
+  comments: { id: number; name: string; body: string; date: string }[];
+  commentUrl: string;
+  commentSuccess: boolean;
 }>();
 
 const { t } = useTranslations();
+const commentForm = useForm({ name: "", email: "", body: "" });
+function submitComment(): void {
+  commentForm.post(props.commentUrl, { preserveScroll: true, onSuccess: () => commentForm.reset() });
+}
 
 /** Meta list — Figma "infos" 1016:1839. Rows drop when the field is empty. */
 const meta = computed(() =>
@@ -311,6 +318,25 @@ const linkedInShare = computed(
         </div>
       </div>
     </div>
+
+    <section class="mx-auto mt-16 w-full max-w-[826px] border-t border-neutral-200 pt-10" aria-labelledby="comments-heading">
+      <h2 id="comments-heading" class="text-[26px] font-semibold text-neutral-900">{{ t("blog.comments") }}</h2>
+      <p v-if="comments.length === 0" class="mt-5 text-neutral-700">{{ t("blog.comment_empty") }}</p>
+      <ul v-else class="mt-6 divide-y divide-neutral-200">
+        <li v-for="comment in comments" :key="comment.id" class="py-5">
+          <div class="flex flex-wrap items-baseline gap-3"><strong>{{ comment.name }}</strong><time class="text-sm text-neutral-600" :datetime="comment.date">{{ comment.date }}</time></div>
+          <p class="mt-2 whitespace-pre-wrap text-neutral-800">{{ comment.body }}</p>
+        </li>
+      </ul>
+      <form class="mt-10 flex flex-col gap-4" @submit.prevent="submitComment">
+        <h3 class="text-xl font-semibold">{{ t("blog.leave_comment") }}</h3>
+        <p v-if="commentSuccess" role="status" class="text-neutral-800">{{ t("blog.comment_pending") }}</p>
+        <label class="flex flex-col gap-2">{{ t("blog.comment_name") }}<input v-model="commentForm.name" required maxlength="100" class="rounded-lg border-neutral-300" /><span v-if="commentForm.errors.name" role="alert" class="text-red-700">{{ commentForm.errors.name }}</span></label>
+        <label class="flex flex-col gap-2">{{ t("blog.comment_email") }}<input v-model="commentForm.email" type="email" required maxlength="255" class="rounded-lg border-neutral-300" /><span v-if="commentForm.errors.email" role="alert" class="text-red-700">{{ commentForm.errors.email }}</span></label>
+        <label class="flex flex-col gap-2">{{ t("blog.comment_body") }}<textarea v-model="commentForm.body" required maxlength="5000" rows="5" class="rounded-lg border-neutral-300" /><span v-if="commentForm.errors.body" role="alert" class="text-red-700">{{ commentForm.errors.body }}</span></label>
+        <button type="submit" :disabled="commentForm.processing" class="self-start rounded-lg bg-neutral-900 px-6 py-3 text-white disabled:opacity-50">{{ t("blog.comment_submit") }}</button>
+      </form>
+    </section>
 
     <!-- Related — Figma 1220:4342, "blog card" 1228:4645 -->
     <section v-if="post.related.length > 0" class="mt-16 flex flex-col gap-10 md:mt-0 md:gap-12">

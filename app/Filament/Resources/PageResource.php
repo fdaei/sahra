@@ -9,12 +9,18 @@ use App\Filament\Resources\PageResource\Pages;
 use App\Filament\Resources\ProjectResource\RelationManagers\SectionsRelationManager;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\TranslatableForm;
+use App\Filament\Support\SeoStatusColumn;
+use App\Filament\Support\SocialSeoFields;
+use App\Filament\Support\AdvancedRobotsFields;
+use App\Filament\Support\ContentSeoFields;
 use App\Models\Page;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Pages\PageRegistration;
 use App\Filament\Resource;
 use Filament\Tables;
@@ -58,7 +64,8 @@ final class PageResource extends Resource
             TranslatableForm::tabs(fn (string $locale): array => [
                 TextInput::make("translations.{$locale}.title")
                     ->label('Title')
-                    ->required($locale === config('locales.fallback'))
+                    ->live(onBlur: true)
+                    ->required(fn (Get $get): bool => $locale === config('locales.fallback') || TranslatableForm::hasContent($get, $locale))
                     ->maxLength(200),
 
                 TextInput::make("translations.{$locale}.subtitle")
@@ -67,6 +74,7 @@ final class PageResource extends Resource
 
                 Textarea::make("translations.{$locale}.description")
                     ->label('Intro description')
+                    ->live(onBlur: true)
                     ->rows(3),
 
                 RichEditor::make("translations.{$locale}.content")
@@ -82,11 +90,31 @@ final class PageResource extends Resource
                     ->schema([
                         TextInput::make("translations.{$locale}.seo_title")
                             ->label('SEO title')
+                            ->live(onBlur: true)
                             ->maxLength(200),
                         Textarea::make("translations.{$locale}.seo_description")
                             ->label('SEO description')
+                            ->live(onBlur: true)
                             ->rows(2)
                             ->maxLength(300),
+                        TextInput::make("translations.{$locale}.seo_canonical_url")
+                            ->label('Canonical URL')
+                            ->live(onBlur: true)
+                            ->helperText('Optional absolute HTTP or HTTPS URL of the preferred version. Leave empty to use this page’s own URL.')
+                            ->maxLength(2048)
+                            ->rules(['nullable', new \App\Rules\CanonicalUrlRule]),
+                        Toggle::make("translations.{$locale}.seo_noindex")
+                            ->label('Hide this language from search engines')
+                            ->live()
+                            ->helperText('Adds noindex and removes this language from the sitemap and hreflang links.')
+                            ->default(false),
+                        Toggle::make("translations.{$locale}.seo_nofollow")
+                            ->label('Ask search engines not to follow links')
+                            ->helperText('Adds nofollow for this language.')
+                            ->default(false),
+                        ...ContentSeoFields::make($locale, 'page'),
+                        AdvancedRobotsFields::section($locale),
+                        SocialSeoFields::section($locale),
                     ]),
             ]),
         ]);
@@ -116,6 +144,8 @@ final class PageResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->badge(),
 
+                SeoStatusColumn::make(),
+
                 Tables\Columns\TextColumn::make('translations_count')
                     ->label('Locales')
                     ->counts('translations')
@@ -129,6 +159,8 @@ final class PageResource extends Resource
                     ->toggleable(),
             ])
             ->filters([
+                SeoStatusColumn::noindexFilter(),
+
                 Tables\Filters\SelectFilter::make('status')
                     ->options(PublicationStatus::options()),
             ])

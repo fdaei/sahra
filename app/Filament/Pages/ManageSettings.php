@@ -67,7 +67,9 @@ final class ManageSettings extends Page implements HasForms
         'seo_default_title' => true,
         'seo_default_description' => true,
         'seo_default_image' => false,
+        'seo_default_image_alt' => true,
         'seo_organization_name' => true,
+        'seo_404_monitor_enabled' => false,
         'slug_auto_redirect' => false,
         'slug_auto_redirect_status' => false,
         'google_analytics_id' => false,
@@ -123,6 +125,7 @@ final class ManageSettings extends Page implements HasForms
             }
         }
 
+        $data['seo_404_monitor_enabled'] ??= false;
         $data['mail_enabled'] ??= false;
         // Same defaults as SlugChangeRedirector: on, permanent.
         $data['slug_auto_redirect'] ??= true;
@@ -182,12 +185,18 @@ final class ManageSettings extends Page implements HasForms
 
                         ImageUpload::make('seo_default_image', 'Default share image', 'seo.share', 'seo')
                             ->helperText('Shown when a page has no image. Cropped to the 1200×630 Open Graph card.'),
+                        $this->translatableInput('seo_default_image_alt', 'Default share image alternative text'),
                     ]),
 
                 Section::make('Redirects')
                     ->description('What happens to the old address when an article or project slug is changed.')
                     ->columns(2)
                     ->schema([
+                        Toggle::make('seo_404_monitor_enabled')
+                            ->label('Record public 404 paths')
+                            ->helperText('Stores paths only, without query strings or IP addresses. Paths may contain private information. Entries expire after 30 days when the scheduler runs.')
+                            ->default(false),
+
                         Toggle::make('slug_auto_redirect')
                             ->label('Automatic redirect on slug change')
                             ->helperText('On: the old URL redirects to the new one (Redirects list shows them). Off: the old URL returns 404.')

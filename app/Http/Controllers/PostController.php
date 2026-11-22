@@ -168,6 +168,10 @@ final class PostController extends Controller
 
         return Inertia::render('Insights/Show', [
             'post' => ContentTransformer::postDetail($post),
+            'comments' => $post->comments()->where('status', 'approved')->orderBy('created_at')->get(['id', 'name', 'body', 'created_at'])
+                ->map(fn ($comment): array => ['id' => $comment->id, 'name' => $comment->name, 'body' => $comment->body, 'date' => $comment->created_at->toDateString()]),
+            'commentUrl' => route('insights.comments.store', ['locale' => $locale, 'post' => $post->slugForLocale($locale)], absolute: false),
+            'commentSuccess' => (bool) session('comment_success'),
 
             'leadMagnet' => $this->leadMagnetFor($post, $homeSections['lead_magnet'] ?? null),
             'finalCta' => $homeSections['final_cta'] ?? null,

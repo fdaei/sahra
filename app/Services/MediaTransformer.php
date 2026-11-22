@@ -79,7 +79,7 @@ final class MediaTransformer
 
         // The fallback itself is resized too, so browsers without srcset or
         // modern formats never receive the uploaded full-size file.
-        $src = self::variantUrl($path, $width <= 400 ? 400 : 736, 'jpeg');
+        $src = self::primaryUrl($path, $context);
         $sizes = $context === 'post.hero' ? '(max-width: 768px) 100vw, 1248px' : '(max-width: 768px) 100vw, 612px';
         $variants = collect([400, 736, 1200])->mapWithKeys(fn (int $size): array => [$size => self::variantUrl($path, $size, 'jpeg')])->all();
         $webp = collect($variants)->map(fn (string $url, int $size): string => "{$url} {$size}w")->implode(', ');
@@ -99,6 +99,16 @@ final class MediaTransformer
         ];
     }
 
+    /** The same primary image URL used by the public page, without building srcsets. */
+    public static function primaryUrl(string $path, string $context = 'section'): string
+    {
+        if (preg_match('~^https?://~i', $path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
+            return self::url($path);
+        }
+        [$width] = self::dimensions($context);
+        return self::variantUrl($path, $width <= 400 ? 400 : 736, 'jpeg');
+    }
+
     public static function variantUrl(string $path, int $width, string $format): string
     {
         return route('media.variant', ['format' => $format, 'width' => $width, 'path' => ltrim($path, '/')], absolute: false);
@@ -110,7 +120,7 @@ final class MediaTransformer
      */
     public static function url(string $path): string
     {
-        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+        if (preg_match('~^https?://~i', $path)) {
             return $path;
         }
 

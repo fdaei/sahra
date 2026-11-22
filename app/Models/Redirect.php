@@ -50,6 +50,7 @@ final class Redirect extends Model
     {
         self::saving(function (self $r): void {
             $r->source_path = self::normalize((string) $r->source_path);
+            $r->destination_path = trim((string) $r->destination_path);
             if (! preg_match('#^https?://#i', (string) $r->destination_path)) {
                 $r->destination_path = self::normalize((string) $r->destination_path);
             }

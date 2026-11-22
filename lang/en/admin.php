@@ -30,12 +30,14 @@ return [
             'newsletter_subscription' => 'Newsletter subscribers',
             'menu' => 'Website menus',
             'social_link' => 'Social media links',
+            'not_found_visit' => '404 reports',
             'redirect' => 'Old URL redirects',
             'media' => 'Media library',
             'user' => 'Admin users',
         ],
     ],
     'models' => [
+        'not_found_visit' => '404 report',
         'page' => 'page',
         'service' => 'service',
         'testimonial' => 'customer review',
@@ -56,6 +58,7 @@ return [
         'user' => 'admin user',
     ],
     'models_plural' => [
+        'not_found_visit' => '404 reports',
         'page' => 'pages',
         'service' => 'services',
         'testimonial' => 'customer reviews',

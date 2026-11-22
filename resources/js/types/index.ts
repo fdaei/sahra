@@ -68,6 +68,18 @@ export interface SeoMeta {
   title: string
   description: string
   image: string | null
+  socialTitle?: string | null
+  socialDescription?: string | null
+  socialImage?: string | null
+  socialImageAlt?: string | null
+  socialImageWidth?: number | null
+  socialImageHeight?: number | null
+  socialImageMime?: string | null
+  twitterTitle?: string | null
+  twitterDescription?: string | null
+  twitterImage?: string | null
+  twitterImageAlt?: string | null
+  twitterCard?: 'summary' | 'summary_large_image' | null
   canonical: string | null
   ogLocale?: string
   structuredData?: Record<string, unknown>[]
@@ -75,7 +87,10 @@ export interface SeoMeta {
   publishedAt?: string | null
   modifiedAt?: string | null
   author?: string | null
+  robots?: string | null
   noindex?: boolean
+  nofollow?: boolean
+  indexableLocales?: string[] | null
   /** Home › … › current page. Absent on Home and error pages. */
   breadcrumbs?: Breadcrumb[]
 }
@@ -99,6 +114,7 @@ export interface MediaImage {
 }
 
 export interface SharedProps {
+  rssFeedUrl?: string
   locale: LocaleProp
   alternates: Record<LocaleCode, string>
   navigation: {

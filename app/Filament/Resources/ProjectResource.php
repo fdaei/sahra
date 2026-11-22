@@ -10,6 +10,10 @@ use App\Filament\Resources\ProjectResource\RelationManagers;
 use App\Filament\Support\ImageUpload;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\TranslatableForm;
+use App\Filament\Support\SeoStatusColumn;
+use App\Filament\Support\SocialSeoFields;
+use App\Filament\Support\AdvancedRobotsFields;
+use App\Filament\Support\ContentSeoFields;
 use App\Models\Industry;
 use App\Models\Project;
 use App\Models\Service;
@@ -21,6 +25,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\PageRegistration;
 use App\Filament\Resource;
@@ -53,7 +58,7 @@ final class ProjectResource extends Resource
             TranslatableForm::tabs(fn (string $locale): array => [
                 TextInput::make("translations.{$locale}.title")
                     ->label('Title')
-                    ->required($locale === config('locales.fallback'))
+                    ->required(fn (Get $get): bool => $locale === config('locales.fallback') || TranslatableForm::hasContent($get, $locale))
                     ->maxLength(200)
                     ->live(onBlur: true)
                     ->afterStateUpdated(function (?string $state, Set $set) use ($locale): void {
@@ -65,7 +70,8 @@ final class ProjectResource extends Resource
 
                 TextInput::make("translations.{$locale}.slug")
                     ->label('Slug')
-                    ->required($locale === config('locales.fallback'))
+                    ->live(onBlur: true)
+                    ->required(fn (Get $get): bool => $locale === config('locales.fallback') || TranslatableForm::hasContent($get, $locale))
                     ->maxLength(200)
                     ->helperText("URL segment for /{$locale}/work/…"),
 
@@ -75,6 +81,7 @@ final class ProjectResource extends Resource
 
                 Textarea::make("translations.{$locale}.excerpt")
                     ->label('Card description')
+                    ->live(onBlur: true)
                     ->rows(2)
                     ->helperText('Shown on the projects listing card.'),
 
@@ -113,11 +120,31 @@ final class ProjectResource extends Resource
                     ->schema([
                         TextInput::make("translations.{$locale}.seo_title")
                             ->label('SEO title')
+                            ->live(onBlur: true)
                             ->maxLength(200),
                         Textarea::make("translations.{$locale}.seo_description")
                             ->label('SEO description')
+                            ->live(onBlur: true)
                             ->rows(2)
                             ->maxLength(300),
+                        TextInput::make("translations.{$locale}.seo_canonical_url")
+                            ->label('Canonical URL')
+                            ->live(onBlur: true)
+                            ->helperText('Optional absolute HTTP or HTTPS URL of the preferred version. Leave empty to use this page’s own URL.')
+                            ->maxLength(2048)
+                            ->rules(['nullable', new \App\Rules\CanonicalUrlRule]),
+                        Toggle::make("translations.{$locale}.seo_noindex")
+                            ->label('Hide this language from search engines')
+                            ->live()
+                            ->helperText('Adds noindex and removes this language from the sitemap and hreflang links.')
+                            ->default(false),
+                        Toggle::make("translations.{$locale}.seo_nofollow")
+                            ->label('Ask search engines not to follow links')
+                            ->helperText('Adds nofollow for this language.')
+                            ->default(false),
+                        ...ContentSeoFields::make($locale, 'project'),
+                        AdvancedRobotsFields::section($locale),
+                        SocialSeoFields::section($locale),
                     ]),
             ]),
 
@@ -224,6 +251,8 @@ final class ProjectResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
+                SeoStatusColumn::make(),
+
                 Tables\Columns\TextColumn::make('translations_count')
                     ->label('Locales')
                     ->counts('translations')
@@ -232,6 +261,8 @@ final class ProjectResource extends Resource
                     ->formatStateUsing(fn (int $state): string => "{$state}/3"),
             ])
             ->filters([
+                SeoStatusColumn::noindexFilter(),
+
                 Tables\Filters\SelectFilter::make('status')
                     ->options(PublicationStatus::options()),
 

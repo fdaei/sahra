@@ -6,6 +6,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\RedirectResource\Pages;
 use App\Models\Redirect;
+use App\Rules\RedirectDestination;
+use Filament\Forms\Get;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -40,6 +42,8 @@ final class RedirectResource extends Resource
                         ->label('From')
                         ->required()
                         ->maxLength(500)
+                        ->mutateStateForValidationUsing(fn (?string $state): string => Redirect::normalize($state ?? ''))
+                        ->dehydrateStateUsing(fn (?string $state): string => Redirect::normalize($state ?? ''))
                         ->unique(ignoreRecord: true)
                         ->prefix(config('app.url').'/')
                         ->helperText('Path without a leading slash, e.g. "en/old-page".'),
@@ -48,10 +52,13 @@ final class RedirectResource extends Resource
                         ->label('To')
                         ->required()
                         ->maxLength(500)
+                        ->dehydrateStateUsing(fn (?string $state): string => trim($state ?? ''))
+                        ->rules([fn (Get $get): RedirectDestination => new RedirectDestination((string) $get('source_path'))])
                         ->prefix(config('app.url').'/'),
 
                     Select::make('status_code')
                         ->options(\App\Models\Redirect::STATUSES)
+                        ->in(array_keys(Redirect::STATUSES))
                         ->default(301)
                         ->required()
                         ->native(false),

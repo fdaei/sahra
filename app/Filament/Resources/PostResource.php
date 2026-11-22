@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Enums\PublicationStatus;
+use App\Enums\ArticleSchemaType;
 use App\Filament\Resource;
 use App\Filament\Resources\PostResource\Pages;
 use App\Filament\Resources\PostResource\RelationManagers\LeadMagnetDeliveriesRelationManager;
@@ -12,6 +13,10 @@ use App\Filament\Support\ImageUpload;
 use App\Filament\Support\PublicationFields;
 use App\Filament\Support\SvgIconUpload;
 use App\Filament\Support\TranslatableForm;
+use App\Filament\Support\SeoStatusColumn;
+use App\Filament\Support\SocialSeoFields;
+use App\Filament\Support\AdvancedRobotsFields;
+use App\Filament\Support\PostSeoFields;
 use App\Models\Post;
 use App\Models\PostCategory;
 use App\Models\PostTag;
@@ -24,6 +29,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Resources\Pages\PageRegistration;
 use Filament\Tables;
@@ -50,7 +56,7 @@ final class PostResource extends Resource
             TranslatableForm::tabs(fn (string $locale): array => [
                 TextInput::make("translations.{$locale}.title")
                     ->label('Title')
-                    ->required($locale === config('locales.fallback'))
+                    ->required(fn (Get $get): bool => $locale === config('locales.fallback') || TranslatableForm::hasContent($get, $locale))
                     ->maxLength(250)
                     ->live(onBlur: true)
                     ->afterStateUpdated(function (?string $state, Set $set) use ($locale): void {
@@ -62,7 +68,8 @@ final class PostResource extends Resource
 
                 TextInput::make("translations.{$locale}.slug")
                     ->label('Slug')
-                    ->required($locale === config('locales.fallback'))
+                    ->live(onBlur: true)
+                    ->required(fn (Get $get): bool => $locale === config('locales.fallback') || TranslatableForm::hasContent($get, $locale))
                     ->maxLength(250),
 
                 TextInput::make("translations.{$locale}.subtitle")
@@ -71,11 +78,13 @@ final class PostResource extends Resource
 
                 Textarea::make("translations.{$locale}.excerpt")
                     ->label('Excerpt')
+                    ->live(onBlur: true)
                     ->rows(3)
                     ->helperText('Shown on listing cards and used as the SEO description fallback.'),
 
                 RichEditor::make("translations.{$locale}.content")
                     ->label('Article body')
+                    ->live(onBlur: true)
                     ->helperText('Insert [[lead_magnet]] on its own line wherever this article’s download banner should appear.')
                     ->toolbarButtons([
                         'bold', 'italic', 'link', 'bulletList', 'orderedList',
@@ -102,6 +111,7 @@ final class PostResource extends Resource
 
                 TextInput::make("translations.{$locale}.cover_alt")
                     ->label('Cover image alt text')
+                    ->live(onBlur: true)
                     ->maxLength(300)
                     ->helperText('Describes the cover for screen readers and Google Images. Left empty, the alt from the Media library is used.'),
 
@@ -110,11 +120,31 @@ final class PostResource extends Resource
                     ->schema([
                         TextInput::make("translations.{$locale}.seo_title")
                             ->label('SEO title')
+                            ->live(onBlur: true)
                             ->maxLength(200),
                         Textarea::make("translations.{$locale}.seo_description")
                             ->label('SEO description')
+                            ->live(onBlur: true)
                             ->rows(2)
                             ->maxLength(300),
+                        TextInput::make("translations.{$locale}.seo_canonical_url")
+                            ->label('Canonical URL')
+                            ->live(onBlur: true)
+                            ->helperText('Optional absolute HTTP or HTTPS URL of the preferred version. Leave empty to use this page’s own URL.')
+                            ->maxLength(2048)
+                            ->rules(['nullable', new \App\Rules\CanonicalUrlRule]),
+                        Toggle::make("translations.{$locale}.seo_noindex")
+                            ->label('Hide this language from search engines')
+                            ->live()
+                            ->helperText('Adds noindex and removes this language from the sitemap and hreflang links.')
+                            ->default(false),
+                        Toggle::make("translations.{$locale}.seo_nofollow")
+                            ->label('Ask search engines not to follow links')
+                            ->helperText('Adds nofollow for this language.')
+                            ->default(false),
+                        ...PostSeoFields::make($locale),
+                        AdvancedRobotsFields::section($locale),
+                        SocialSeoFields::section($locale),
                     ]),
             ]),
 
@@ -123,6 +153,15 @@ final class PostResource extends Resource
                     ->columnSpan(2)
                     ->columns(2)
                     ->schema([
+                        Select::make('seo_schema_type')
+                            ->label('Article structured data type')
+                            ->options(ArticleSchemaType::options())
+                            ->in(array_keys(ArticleSchemaType::options()))
+                            ->default(ArticleSchemaType::Article->value)
+                            ->required()
+                            ->native(false)
+                            ->helperText('Choose a type that describes this article. This setting applies to all languages.'),
+
                         Select::make('post_category_id')
                             ->label('Category')
                             // Full path, so subcategories are distinguishable.
@@ -163,7 +202,7 @@ final class PostResource extends Resource
                     PublicationFields::section(),
 
                     Section::make('Cover')->schema([
-                        ImageUpload::make('cover_path', 'Cover image', 'post.cover', 'posts'),
+                        ImageUpload::make('cover_path', 'Cover image', 'post.cover', 'posts')->live(),
                     ]),
 
                     Section::make('Article download')
@@ -246,6 +285,8 @@ final class PostResource extends Resource
                     ->dateTime('M j, Y')
                     ->sortable(),
 
+                SeoStatusColumn::make(),
+
                 Tables\Columns\TextColumn::make('translations_count')
                     ->label('Locales')
                     ->counts('translations')
@@ -254,6 +295,8 @@ final class PostResource extends Resource
                     ->formatStateUsing(fn (int $state): string => "{$state}/3"),
             ])
             ->filters([
+                SeoStatusColumn::noindexFilter(),
+
                 Tables\Filters\SelectFilter::make('status')
                     ->options(PublicationStatus::options()),
 

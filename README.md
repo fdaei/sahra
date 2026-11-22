@@ -162,6 +162,29 @@ Scheduler (promotes scheduled content; sitemap is generated on each request — 
 * * * * * cd /path-to-project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
+Submit `/sitemap.xml` to search engines. It lists localized sitemaps; when a
+locale has many published records, it also lists bounded post and project
+shards. In that case `/sitemap-{locale}.xml` contains the main pages and the
+shards contain the articles and projects. For small sites the localized URL
+continues to include all eligible content. `SEO_SITEMAP_CHUNK_SIZE` can lower
+the shard size (default and maximum: 1,000 records). Per-language noindex and
+non-self canonical settings exclude URLs from sitemap output without deleting
+content. Image sitemap entries include published article covers and visible
+project banner, before/after and gallery images when files exist. The
+per-language noimageindex setting omits image entries for that page. A page has
+at most 1,000 unique image entries; project shards contain at most five projects
+to keep large galleries bounded.
+
+Localized RSS 2.0 feeds are available at `/feed-en.xml`, `/feed-fa.xml`, and
+`/feed-ar.xml`. They include up to 50 recent published, indexable articles with
+slugs in the requested language and exclude non-self-canonical articles.
+
+The optional 404 monitor is enabled in Site settings → Redirects. It records
+only localized public GET paths, without query strings or IP addresses; paths
+can themselves contain sensitive information. Administrators can review and
+delete reports or create a redirect from one. Collection is rate-limited and
+bounded; entries not seen for 30 days are pruned by the scheduler above.
+
 Environment checklist for production:
 
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`

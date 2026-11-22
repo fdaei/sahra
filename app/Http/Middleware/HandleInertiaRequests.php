@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Support\LocaleAlternates;
+use App\Support\CanonicalUrl;
 use App\Support\NavigationBuilder;
 use App\Support\SiteSettings;
 use Illuminate\Http\Request;
@@ -58,6 +59,8 @@ final class HandleInertiaRequests extends Middleware
             // Same page in the other two languages — powers both the language
             // switcher and the <link rel="alternate" hreflang> tags.
             'alternates' => fn (): array => LocaleAlternates::for($request),
+
+            'rssFeedUrl' => fn (): string => CanonicalUrl::route('feed.locale', ['locale' => $locale]),
 
             'navigation' => fn (): array => [
                 'header' => NavigationBuilder::header($locale),

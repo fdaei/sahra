@@ -16,4 +16,12 @@ return [
     'copy_link'    => 'کپی لینک',
     'link_copied'  => 'لینک کپی شد',
 
+    'comments' => 'دیدگاه\u200cها',
+    'leave_comment' => 'ثبت دیدگاه',
+    'comment_name' => 'نام',
+    'comment_email' => 'ایمیل (منتشر نمی\u200cشود)',
+    'comment_body' => 'متن دیدگاه',
+    'comment_submit' => 'ارسال دیدگاه',
+    'comment_pending' => 'سپاسگزاریم. دیدگاه شما در انتظار تأیید است.',
+    'comment_empty' => 'اولین نفری باشید که دیدگاه می\u200cگذارد.',
 ];

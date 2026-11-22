@@ -19,3 +19,6 @@ Artisan::command('inspire', function (): void {
 | pre-generate.
 */
 Schedule::command('sahra:publish-scheduled')->everyFiveMinutes();
+
+Schedule::call(fn () => \App\Models\NotFoundVisit::query()->where('last_seen_at', '<', now()->subDays(30))->delete())
+    ->name('sahra:prune-404-reports')->daily();

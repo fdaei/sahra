@@ -16,4 +16,12 @@ return [
     'copy_link'        => 'Copy link',
     'link_copied'      => 'Link copied',
 
+    'comments' => 'Comments',
+    'leave_comment' => 'Leave a comment',
+    'comment_name' => 'Name',
+    'comment_email' => 'Email (will not be published)',
+    'comment_body' => 'Your comment',
+    'comment_submit' => 'Submit comment',
+    'comment_pending' => 'Thank you. Your comment is awaiting moderation.',
+    'comment_empty' => 'Be the first to comment.',
 ];

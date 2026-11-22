@@ -6,6 +6,7 @@ namespace App\Filament\Support;
 
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Tabs;
+use Filament\Forms\Get;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -92,7 +93,7 @@ final class TranslatableForm
         // intentionally non-nullable.
         $translations = array_filter(
             $translations,
-            fn (array $attributes): bool => collect($attributes)->contains(
+            fn (array $attributes): bool => collect($attributes)->except(['seo_noindex', 'seo_nofollow', 'seo_nosnippet', 'seo_noimageindex'])->contains(
                 fn (mixed $value): bool => filled($value),
             ),
         );
@@ -131,6 +132,23 @@ final class TranslatableForm
             ->all();
 
         return $data;
+    }
+
+    /** Whether an optional language tab contains any authored values. */
+    public static function hasContent(Get $get, string $locale): bool
+    {
+        $translation = $get("translations.{$locale}");
+
+        if (! is_array($translation)) {
+            return false;
+        }
+
+        return (bool) ($translation['seo_noindex'] ?? false)
+            || (bool) ($translation['seo_nofollow'] ?? false)
+            || (bool) ($translation['seo_nosnippet'] ?? false)
+            || (bool) ($translation['seo_noimageindex'] ?? false)
+            || collect($translation)->except(['seo_noindex', 'seo_nofollow', 'seo_nosnippet', 'seo_noimageindex'])
+                ->contains(fn (mixed $value): bool => filled($value));
     }
 
     /**

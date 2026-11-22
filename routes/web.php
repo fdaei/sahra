@@ -5,12 +5,14 @@ declare(strict_types=1);
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AdminLocaleController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HomeLeadMagnetController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\LeadMagnetDownloadController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PostFeedController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\MediaVariantController;
@@ -45,6 +47,10 @@ Route::get('robots.txt', function () {
     return response("User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ".rtrim(\App\Support\CanonicalUrl::origin(), '/')."/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
 })->name('robots');
 Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('feed-{locale}.xml', PostFeedController::class)->where('locale', $localePattern)->name('feed.locale');
+Route::get('sitemap-{locale}-{kind}-{shard}.xml', [SitemapController::class, 'shard'])
+    ->where('locale', $localePattern)->whereIn('kind', ['post', 'project'])->whereNumber('shard')
+    ->name('sitemap.shard');
 Route::get('sitemap-{locale}.xml', [SitemapController::class, 'locale'])
     ->where('locale', $localePattern)
     ->name('sitemap.locale');
@@ -114,6 +120,9 @@ Route::prefix('{locale}')
             ->name('insights.lead-magnet.store');
         Route::get('insights/{post}/lead-magnet/download', [LeadMagnetDownloadController::class, 'download'])
             ->name('insights.lead-magnet.download');
+
+        Route::post('insights/{post}/comments', [CommentController::class, 'store'])
+            ->middleware('throttle:6,1')->name('insights.comments.store');
 
         // 7 — Single blog                Figma 1352:7391 / 1543:11175
         Route::get('insights/{post}', [PostController::class, 'show'])->name('insights.show');

@@ -7,10 +7,10 @@ namespace App\Filament\Support;
 use App\Models\Media;
 use App\Services\MediaTransformer;
 use Filament\Forms\Components\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Filament\Forms\Components\FileUpload;
 
 /**
  * The single image-upload field used by every Filament resource.
@@ -57,7 +57,7 @@ final class ImageUpload
      */
     private const MAX_ORIGINAL_KB = 12288;
 
-    private const RASTER_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+    private const RASTER_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
 
     /**
      * A raster image locked to one context's crop ratio and resize target.
@@ -246,6 +246,6 @@ final class ImageUpload
     private static function helperText(int $width, int $height): string
     {
         return "Any size — cropped and resized in your browser to {$width}×{$height} before upload. "
-            .'Use the pencil to choose the crop yourself; JPEG, PNG or WebP, up to 12 MB.';
+            .'Use the pencil to choose the crop yourself; JPEG, PNG, WebP or AVIF, up to 12 MB.';
     }
 }

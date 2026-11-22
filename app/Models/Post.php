@@ -33,6 +33,7 @@ final class Post extends Model implements HasLocalisedSlugs
 
     protected $fillable = [
         'post_category_id',
+        'seo_schema_type',
         'user_id',
         'status',
         'published_at',
@@ -60,6 +61,24 @@ final class Post extends Model implements HasLocalisedSlugs
         'lead_magnet_image_alt',
         'seo_title',
         'seo_description',
+        'seo_focus_keyphrase',
+        'seo_canonical_url',
+        'seo_noindex',
+        'seo_nofollow',
+        'seo_nosnippet',
+        'seo_noimageindex',
+        'seo_max_image_preview',
+        'seo_max_snippet',
+        'seo_max_video_preview',
+        'seo_social_title',
+        'seo_social_description',
+        'seo_social_image',
+        'seo_social_image_alt',
+        'seo_twitter_title',
+        'seo_twitter_description',
+        'seo_twitter_image',
+        'seo_twitter_image_alt',
+        'seo_twitter_card',
         'cover_alt',
     ];
 
@@ -95,6 +114,11 @@ final class Post extends Model implements HasLocalisedSlugs
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(PostTag::class, 'post_post_tag');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 
     public function leadMagnetDeliveries(): HasMany

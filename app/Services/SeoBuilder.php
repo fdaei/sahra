@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\ArticleSchemaType;
 use App\Models\Page;
+use App\Services\Seo\SocialImageMetadata;
 use App\Models\Post;
 use App\Models\Project;
 use App\Support\Breadcrumbs;
 use App\Support\CanonicalUrl;
+use App\Support\SeoCanonical;
+use App\Support\SeoRobots;
 use App\Support\SiteSettings;
+use App\Support\SeoVisibility;
 
 /**
  * Builds the SeoMeta payload consumed by resources/js/Components/SeoHead.vue.
  *
  * Falls back through: entity SEO override -> entity title/excerpt ->
- * site defaults. Canonical is always the absolute URL of the current locale's
- * version of the page.
+ * site defaults. Editors may override the canonical URL per locale.
  */
 final class SeoBuilder
 {
@@ -28,6 +32,9 @@ final class SeoBuilder
         $query = request()->only(['page', 'category', 'q', 'service']);
         $query = array_filter($query, fn ($value, $key) => is_scalar($value) && (string) $value !== '' && ($key !== 'page' || (int) $value > 1), ARRAY_FILTER_USE_BOTH);
         $canonical = CanonicalUrl::for($canonical).($query ? '?'.http_build_query($query) : '');
+        if ($query === []) {
+            $canonical = SeoCanonical::override($page) ?? $canonical;
+        }
 
         $seo = self::assemble(
             title: $page?->getTranslation('seo_title') ?: $page?->getTranslation('title'),
@@ -35,7 +42,20 @@ final class SeoBuilder
             image: $image,
             canonical: $canonical,
             type: 'website',
-            noindex: $noindex,
+            noindex: $noindex || SeoVisibility::noindex($page),
+            nofollow: SeoVisibility::nofollow($page),
+            indexableLocales: SeoVisibility::indexableLocales($page),
+            robots: SeoRobots::render($page, $noindex || SeoVisibility::noindex($page), SeoVisibility::nofollow($page)),
+            socialTitle: $page?->getTranslation('seo_social_title'),
+            socialDescription: $page?->getTranslation('seo_social_description'),
+            socialImage: $page?->getTranslation('seo_social_image'),
+            socialImageAlt: $page?->getTranslation('seo_social_image_alt'),
+            twitterTitle: $page?->getTranslation('seo_twitter_title'),
+            twitterDescription: $page?->getTranslation('seo_twitter_description'),
+            twitterImage: $page?->getTranslation('seo_twitter_image'),
+            twitterImageAlt: $page?->getTranslation('seo_twitter_image_alt'),
+            twitterCard: $page?->getTranslation('seo_twitter_card'),
+            imagePath: $image,
         );
 
         // Home › Page. Pages needing a deeper trail re-attach their own.
@@ -60,8 +80,23 @@ final class SeoBuilder
             image: $project->cover_path === null
                 ? null
                 : MediaTransformer::url($project->cover_path),
-            canonical: CanonicalUrl::for($project->url()),
+            canonical: SeoCanonical::override($project) ?? CanonicalUrl::for($project->url()),
             type: 'website',
+            noindex: SeoVisibility::noindex($project),
+            nofollow: SeoVisibility::nofollow($project),
+            indexableLocales: SeoVisibility::indexableLocales($project),
+            robots: SeoRobots::render($project, SeoVisibility::noindex($project), SeoVisibility::nofollow($project)),
+            socialTitle: $project->getTranslation('seo_social_title'),
+            socialDescription: $project->getTranslation('seo_social_description'),
+            socialImage: $project->getTranslation('seo_social_image'),
+            socialImageAlt: $project->getTranslation('seo_social_image_alt'),
+            twitterTitle: $project->getTranslation('seo_twitter_title'),
+            twitterDescription: $project->getTranslation('seo_twitter_description'),
+            twitterImage: $project->getTranslation('seo_twitter_image'),
+            twitterImageAlt: $project->getTranslation('seo_twitter_image_alt'),
+            twitterCard: $project->getTranslation('seo_twitter_card'),
+            imagePath: $project->cover_path,
+            imageAlt: $project->getTranslation('cover_alt'),
         );
         $seo = self::withCoverSchema($seo, $project->cover_path);
         $seo['structuredData'][] = array_filter([
@@ -87,12 +122,28 @@ final class SeoBuilder
             image: $post->cover_path === null
                 ? null
                 : MediaTransformer::url($post->cover_path),
-            canonical: CanonicalUrl::for($post->url()),
+            canonical: SeoCanonical::override($post) ?? CanonicalUrl::for($post->url()),
             type: 'article',
             publishedAt: $post->published_at?->toIso8601String(),
             modifiedAt: collect([$post->updated_at, $post->translate()?->updated_at])->filter()->max()?->toIso8601String(),
             author: $post->author?->name,
             headline: (string) $post->getTranslation('title'),
+            noindex: SeoVisibility::noindex($post),
+            nofollow: SeoVisibility::nofollow($post),
+            indexableLocales: SeoVisibility::indexableLocales($post),
+            robots: SeoRobots::render($post, SeoVisibility::noindex($post), SeoVisibility::nofollow($post)),
+            socialTitle: $post->getTranslation('seo_social_title'),
+            socialDescription: $post->getTranslation('seo_social_description'),
+            socialImage: $post->getTranslation('seo_social_image'),
+            socialImageAlt: $post->getTranslation('seo_social_image_alt'),
+            twitterTitle: $post->getTranslation('seo_twitter_title'),
+            twitterDescription: $post->getTranslation('seo_twitter_description'),
+            twitterImage: $post->getTranslation('seo_twitter_image'),
+            twitterImageAlt: $post->getTranslation('seo_twitter_image_alt'),
+            twitterCard: $post->getTranslation('seo_twitter_card'),
+            imagePath: $post->cover_path,
+            imageAlt: $post->getTranslation('cover_alt'),
+            articleSchemaType: ArticleSchemaType::tryFrom((string) $post->seo_schema_type) ?? ArticleSchemaType::Article,
         ), $post->cover_path);
     }
 
@@ -144,15 +195,64 @@ final class SeoBuilder
         ?string $author = null,
         bool $noindex = false,
         ?string $headline = null,
+        bool $nofollow = false,
+        ?array $indexableLocales = null,
+        ?string $socialTitle = null,
+        ?string $socialDescription = null,
+        ?string $socialImage = null,
+        ?string $socialImageAlt = null,
+        ?string $twitterTitle = null,
+        ?string $twitterDescription = null,
+        ?string $twitterImage = null,
+        ?string $twitterImageAlt = null,
+        ?string $twitterCard = null,
+        ?string $imagePath = null,
+        ?string $imageAlt = null,
+        ArticleSchemaType $articleSchemaType = ArticleSchemaType::Article,
+        ?string $robots = null,
     ): array {
         $locale = app()->getLocale();
 
         $settings = SiteSettings::forFrontend($locale);
         $title = $title ?: $settings['seo']['defaultTitle'];
         $description = trim(strip_tags($description ?: $settings['seo']['defaultDescription']));
+        if (filled($socialImage)) {
+            $chosenPath = $socialImage;
+            $chosenAlt = $socialImageAlt;
+        } elseif (filled($image)) {
+            $chosenPath = $imagePath;
+            $chosenAlt = $socialImageAlt ?: $imageAlt;
+        } else {
+            $chosenPath = SiteSettings::get('seo_default_image', $locale);
+            $chosenAlt = $socialImageAlt ?: SiteSettings::get('seo_default_image_alt', $locale);
+        }
+        $socialMetadata = SocialImageMetadata::for(is_string($chosenPath) ? $chosenPath : null, is_string($chosenAlt) ? $chosenAlt : null, $locale);
         $image = $image ?: $settings['seo']['defaultImage'];
         if ($image && ! preg_match('~^https?://~i', $image)) {
             $image = CanonicalUrl::origin().'/'.ltrim($image, '/');
+        }
+        if (filled($socialImage)) {
+            $socialImage = MediaTransformer::url($socialImage);
+            if (! preg_match('~^https?://~i', $socialImage)) {
+                $socialImage = CanonicalUrl::origin().'/'.ltrim($socialImage, '/');
+            }
+        }
+        $resolvedSocialImage = $socialImage ?: $image;
+        if (filled($twitterImage)) {
+            $twitterMetadata = SocialImageMetadata::for($twitterImage, $twitterImageAlt, $locale);
+            $twitterImage = MediaTransformer::url($twitterImage);
+            if (! preg_match('~^https?://~i', $twitterImage)) {
+                $twitterImage = CanonicalUrl::origin().'/'.ltrim($twitterImage, '/');
+            }
+            $resolvedTwitterAlt = $twitterMetadata['alt'];
+        } else {
+            $twitterImage = $resolvedSocialImage;
+            $resolvedTwitterAlt = filled($twitterImageAlt) ? trim($twitterImageAlt) : $socialMetadata['alt'];
+        }
+        $resolvedTwitterCard = in_array($twitterCard, ['summary', 'summary_large_image'], true)
+            ? $twitterCard : ($twitterImage ? 'summary_large_image' : 'summary');
+        if (! $twitterImage && $resolvedTwitterCard === 'summary_large_image') {
+            $resolvedTwitterCard = 'summary';
         }
         $origin = CanonicalUrl::origin();
         $organization = [
@@ -169,9 +269,9 @@ final class SeoBuilder
             '@context' => 'https://schema.org', '@type' => 'WebSite',
             '@id' => $origin.'/#website', 'name' => $settings['siteName'], 'url' => $origin.'/',
         ]];
-        if ($type === 'article') {
+        if ($type === 'article' && $articleSchemaType !== ArticleSchemaType::None) {
             $article = [
-                '@context' => 'https://schema.org', '@type' => 'Article',
+                '@context' => 'https://schema.org', '@type' => $articleSchemaType->value,
                 'headline' => $headline ?: $title, 'description' => $description,
                 'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $canonical],
                 'inLanguage' => config("locales.supported.{$locale}.html_lang"),
@@ -195,6 +295,18 @@ final class SeoBuilder
             'description' => $description
                 ?: SiteSettings::get('seo_default_description', $locale, ''),
             'image' => $image,
+            'socialTitle' => $socialTitle ?: $title,
+            'socialDescription' => filled($socialDescription) ? trim(strip_tags($socialDescription)) : $description,
+            'socialImage' => $resolvedSocialImage,
+            'twitterTitle' => $twitterTitle ?: ($socialTitle ?: $title),
+            'twitterDescription' => filled($twitterDescription) ? trim(strip_tags($twitterDescription)) : (filled($socialDescription) ? trim(strip_tags($socialDescription)) : $description),
+            'twitterImage' => $twitterImage,
+            'twitterImageAlt' => $resolvedTwitterAlt,
+            'twitterCard' => $resolvedTwitterCard,
+            'socialImageAlt' => $socialMetadata['alt'],
+            'socialImageWidth' => $socialMetadata['width'],
+            'socialImageHeight' => $socialMetadata['height'],
+            'socialImageMime' => $socialMetadata['mime'],
             'structuredData' => $structuredData,
             'ogLocale' => config("locales.supported.{$locale}.locale"),
             'canonical' => $canonical,
@@ -203,6 +315,9 @@ final class SeoBuilder
             'modifiedAt' => $modifiedAt,
             'author' => $author,
             'noindex' => $noindex,
+            'robots' => $robots,
+            'nofollow' => $nofollow,
+            'indexableLocales' => $indexableLocales,
         ];
     }
 }

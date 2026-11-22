@@ -30,12 +30,14 @@ return [
             'newsletter_subscription' => 'اعضای خبرنامه',
             'menu' => 'منوهای سایت',
             'social_link' => 'لینک شبکه‌های اجتماعی',
+            'not_found_visit' => 'گزارش خطاهای ۴۰۴',
             'redirect' => 'انتقال آدرس‌های قدیمی',
             'media' => 'کتابخانه رسانه',
             'user' => 'کاربران پنل',
         ],
     ],
     'models' => [
+        'not_found_visit' => 'گزارش خطای ۴۰۴',
         'page' => 'صفحه',
         'service' => 'خدمت',
         'testimonial' => 'نظر مشتری',
@@ -56,6 +58,7 @@ return [
         'user' => 'کاربر پنل',
     ],
     'models_plural' => [
+        'not_found_visit' => 'گزارش‌های خطای ۴۰۴',
         'page' => 'صفحه‌ها',
         'service' => 'خدمات',
         'testimonial' => 'نظرهای مشتریان',
