@@ -245,7 +245,7 @@ final class ImageUpload
 
     private static function helperText(int $width, int $height): string
     {
-        return "Any size — cropped and resized in your browser to {$width}×{$height} before upload. "
-            .'Use the pencil to choose the crop yourself; JPEG, PNG, WebP or AVIF, up to 12 MB.';
+        return "JPEG, PNG and WebP are cropped and resized in your browser to {$width}×{$height}. "
+            .'AVIF is uploaded unchanged; crop it before uploading if needed. Maximum size: 12 MB.';
     }
 }

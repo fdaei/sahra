@@ -59,6 +59,33 @@ foreach (['bootstrap/cache', 'storage/app/private', 'storage/app/public', 'stora
     }
 }
 copyReleaseTree($source.'/public', $public);
+// Preserve WebP on resize and upload AVIF unchanged (browsers may lack an AVIF encoder).
+$uploadScript = $public.'/js/filament/forms/components/file-upload.js';
+$script = file_get_contents($uploadScript);
+$oldMimeFallback = 'xu=e=>/jpeg|png|svg\\+xml/.test(e)?e:"image/jpeg"';
+$webpMimeFallback = 'xu=e=>/jpeg|png|webp|svg\\+xml/.test(e)?e:"image/jpeg"';
+if (! is_string($script) || (! str_contains($script, $oldMimeFallback) && ! str_contains($script, $webpMimeFallback))) {
+    throw new RuntimeException('Could not verify the Filament WebP upload fix; review the current FilePond bundle.');
+}
+if (str_contains($script, $oldMimeFallback)) {
+    $script = str_replace($oldMimeFallback, $webpMimeFallback, $script);
+}
+$filterOld = 'imageTransformOutputStripImageHead:!1,';
+$filterNew = 'imageTransformOutputStripImageHead:!1,imageTransformImageFilter:e=>e.type!=="image/avif",';
+$editorOld = 'saveEditor:function(){if(r||!h)return;';
+$editorNew = 'saveEditor:function(){if(r||!h)return;if(this.editingFile.type==="image/avif"){alert("AVIF images are uploaded unchanged. Crop this image before uploading.");return;}';
+if (substr_count($script, $filterNew) === 0 && substr_count($script, $filterOld) === 1) {
+    $script = str_replace($filterOld, $filterNew, $script);
+}
+if (substr_count($script, $editorNew) === 0 && substr_count($script, $editorOld) === 1) {
+    $script = str_replace($editorOld, $editorNew, $script);
+}
+if (substr_count($script, $filterNew) !== 1 || substr_count($script, $editorNew) !== 1) {
+    throw new RuntimeException('Could not verify the Filament AVIF upload fix; review the current FilePond bundle.');
+}
+if (file_put_contents($uploadScript, $script) === false) {
+    throw new RuntimeException('Could not apply the Filament image upload fixes.');
+}
 // public/hot would make Laravel request a development Vite server.
 if (is_file($public.'/hot')) {
     unlink($public.'/hot');

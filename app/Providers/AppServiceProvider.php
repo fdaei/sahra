@@ -34,7 +34,11 @@ final class AppServiceProvider extends ServiceProvider
             $heading = $section->getHeading();
 
             if (is_string($heading)) {
-                $section->heading(fn (): string => __($heading));
+                $section->heading(function () use ($heading): string {
+                    $translated = __($heading);
+
+                    return is_string($translated) ? $translated : $heading;
+                });
             }
         });
         Column::configureUsing(
