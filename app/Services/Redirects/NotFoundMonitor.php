@@ -31,10 +31,16 @@ final class NotFoundMonitor
                 return;
             }
             RateLimiter::hit('seo-404-monitor', 60);
-            $hash = hash('sha256', $path);
+            $isBot = preg_match('/bot|crawler|spider|slurp|bingpreview|facebookexternalhit|telegrambot/i', (string) $request->userAgent()) === 1;
+            $referer = (string) $request->headers->get('referer', '');
+            $host = parse_url($referer, PHP_URL_HOST);
+            $referrerHost = is_string($host) && filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) && strlen($host) <= 253
+                ? strtolower($host) : null;
+            // Preserve existing human counters while keeping bot visits separate.
+            $hash = hash('sha256', $isBot ? $path."\nbot" : $path);
             $now = now();
             $query = NotFoundVisit::query()->where('path_hash', $hash);
-            if ($query->update(['hits' => DB::raw('hits + 1'), 'last_seen_at' => $now]) > 0) {
+            if ($query->update(['hits' => DB::raw('hits + 1'), 'last_seen_at' => $now, 'referrer_host' => $referrerHost]) > 0) {
                 return;
             }
             if (NotFoundVisit::query()->count() >= 10000) {
@@ -42,6 +48,7 @@ final class NotFoundMonitor
             }
             $inserted = DB::table('not_found_visits')->insertOrIgnore([
                 'path_hash' => $hash, 'path' => $path, 'hits' => 1, 'first_seen_at' => $now, 'last_seen_at' => $now,
+                'is_bot' => $isBot, 'referrer_host' => $referrerHost,
             ]);
             if ($inserted === 0) {
                 NotFoundVisit::query()->where('path_hash', $hash)->update(['hits' => DB::raw('hits + 1'), 'last_seen_at' => $now]);

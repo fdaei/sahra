@@ -14,7 +14,7 @@ final class RedirectSafety
         if ($destination === '') {
             return $allowStoredRoot;
         }
-        if (preg_match('/[\x00-\x1f\x7f]/', $destination)) {
+        if (str_contains($destination, '\\') || preg_match('/[\x00-\x1f\x7f]/', $destination)) {
             return false;
         }
         if (preg_match('~^https?://~i', $destination)) {
@@ -57,8 +57,31 @@ final class RedirectSafety
             if (! isset($redirects[$next])) {
                 return false;
             }
+            if (in_array((int) $redirects[$next][1], Redirect::GONE, true)) {
+                return false;
+            }
             $next = self::localPath($redirects[$next][0]);
         }
         return false;
+    }
+
+    /** Follow exact and regex rules to reject loops and excessively long chains. */
+    public static function createsAnyLoop(string $source, string $destination): bool
+    {
+        $seen = [Redirect::normalize($source) => true];
+        $next = self::localPath($destination);
+        for ($i = 0; $next !== null && $i < 20; $i++) {
+            if (isset($seen[$next])) {
+                return true;
+            }
+            $seen[$next] = true;
+            $match = RedirectMap::find($next);
+            if ($match === null || in_array((int) $match[1], Redirect::GONE, true)) {
+                return false;
+            }
+            $next = self::localPath($match[0]);
+        }
+
+        return $next !== null;
     }
 }

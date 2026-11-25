@@ -18,6 +18,9 @@ final class PostTranslation extends Model
         'subtitle',
         'excerpt',
         'content',
+        'schema_faq_items',
+        'schema_howto_title',
+        'schema_howto_steps',
         'lead_magnet_title',
         'lead_magnet_description',
         'lead_magnet_cta_label',
@@ -44,4 +47,9 @@ final class PostTranslation extends Model
         'seo_twitter_card',
         'cover_alt',
     ];
+
+    protected function casts(): array
+    {
+        return ['schema_faq_items' => 'array', 'schema_howto_steps' => 'array'];
+    }
 }

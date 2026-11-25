@@ -211,7 +211,12 @@ final class ContentTransformer
     {
         return array_merge(self::postSummary($post), [
             'subtitle' => (string) $post->getTranslation('subtitle'),
-            'content' => (string) $post->getTranslation('content'),
+            'content' => \App\Services\Content\ArticleAutoLinks::render(
+                (string) $post->getTranslation('content'),
+                app()->getLocale(),
+                $post->url(absolute: false),
+            ),
+            'schemaBlocks' => \App\Services\Seo\SchemaContent::forContent($post),
             'image' => MediaTransformer::make(
                 $post->cover_path,
                 $post->getTranslation('cover_alt'),

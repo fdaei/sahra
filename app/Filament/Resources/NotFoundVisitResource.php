@@ -19,8 +19,16 @@ final class NotFoundVisitResource extends Resource
 {
     protected static ?string $model = NotFoundVisit::class;
     protected static ?string $navigationIcon = 'heroicon-o-exclamation-circle';
-    protected static ?string $navigationGroup = 'Advanced';
+    protected static ?string $navigationGroup = 'SEO';
     protected static ?string $navigationLabel = '404 reports';
+    protected static ?int $navigationSort = 3;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::canViewAny() ? NotFoundVisit::query()->count() : 0;
+
+        return $count > 0 ? (string) $count : null;
+    }
 
     public static function canViewAny(): bool
     {
@@ -49,7 +57,9 @@ final class NotFoundVisitResource extends Resource
             Tables\Columns\TextColumn::make('hits')->label('Hits')->sortable(),
             Tables\Columns\TextColumn::make('first_seen_at')->label('First seen')->dateTime()->sortable(),
             Tables\Columns\TextColumn::make('last_seen_at')->label('Last seen')->dateTime()->sortable(),
-        ])->actions([
+            Tables\Columns\TextColumn::make('referrer_host')->label('Referrer host')->placeholder('—')->toggleable(),
+            Tables\Columns\IconColumn::make('is_bot')->label('Bot')->boolean(),
+        ])->filters([Tables\Filters\TernaryFilter::make('is_bot')->label('Bot')])->actions([
             Tables\Actions\Action::make('create_redirect')
                 ->label(__('Create redirect'))
                 ->icon('heroicon-o-arrow-uturn-right')
@@ -65,7 +75,7 @@ final class NotFoundVisitResource extends Resource
                         return;
                     }
                     Redirect::create(['source_path' => $record->path, 'destination_path' => $data['destination_path'],
-                        'status_code' => $data['status_code'], 'is_active' => true]);
+                        'status_code' => $data['status_code'], 'is_active' => true, 'origin' => '404']);
                     Notification::make()->success()->title(__('Redirect created'))->send();
                 }),
             Tables\Actions\DeleteAction::make(),

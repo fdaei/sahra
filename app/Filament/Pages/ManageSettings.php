@@ -69,6 +69,10 @@ final class ManageSettings extends Page implements HasForms
         'seo_default_image' => false,
         'seo_default_image_alt' => true,
         'seo_organization_name' => true,
+        'seo_default_page_schema_type' => false,
+        'seo_default_article_schema_type' => false,
+        'seo_schema_entity_type' => false,
+        'seo_schema_person_name' => true,
         'seo_404_monitor_enabled' => false,
         'slug_auto_redirect' => false,
         'slug_auto_redirect_status' => false,
@@ -126,6 +130,9 @@ final class ManageSettings extends Page implements HasForms
         }
 
         $data['seo_404_monitor_enabled'] ??= false;
+        $data['seo_default_page_schema_type'] ??= 'WebPage';
+        $data['seo_default_article_schema_type'] ??= 'Article';
+        $data['seo_schema_entity_type'] ??= 'Organization';
         $data['mail_enabled'] ??= false;
         // Same defaults as SlugChangeRedirector: on, permanent.
         $data['slug_auto_redirect'] ??= true;
@@ -146,8 +153,7 @@ final class ManageSettings extends Page implements HasForms
                 Section::make('Brand')
                     ->schema([
                         $this->translatableInput('site_name', 'Site name'),
-                        $this->translatableInput('copyright_name', 'Copyright name')
-                            ->helperText('Shown in the copyright line at the bottom of the footer.'),
+                        $this->translatableInput('copyright_name', 'Copyright name', 'Shown in the copyright line at the bottom of the footer.'),
                         $this->translatableInput('tagline', 'Tagline'),
                         $this->translatableTextarea('footer_description', 'Footer description'),
                     ]),
@@ -186,6 +192,33 @@ final class ManageSettings extends Page implements HasForms
                         ImageUpload::make('seo_default_image', 'Default share image', 'seo.share', 'seo')
                             ->helperText('Shown when a page has no image. Cropped to the 1200×630 Open Graph card.'),
                         $this->translatableInput('seo_default_image_alt', 'Default share image alternative text'),
+                    ]),
+
+                Section::make('Schema defaults')
+                    ->description('Used when a page or article has no schema type selected.')
+                    ->columns(2)
+                    ->schema([
+                        Select::make('seo_schema_entity_type')
+                            ->label('Site represents')
+                            ->options(['Organization' => __('Organization'), 'Person' => __('Person')])
+                            ->in(['Organization', 'Person'])
+                            ->required()
+                            ->native(false),
+                        $this->translatableInput('seo_schema_person_name', 'Person name', 'Used when the site represents a person. Leave empty to use the site name.'),
+                        Select::make('seo_default_page_schema_type')
+                            ->label('Default page type')
+                            ->options(\App\Enums\PageSchemaType::options())
+                            ->in(array_keys(\App\Enums\PageSchemaType::options()))
+                            ->default('WebPage')
+                            ->required()
+                            ->native(false),
+                        Select::make('seo_default_article_schema_type')
+                            ->label('Default article type')
+                            ->options(\App\Enums\ArticleSchemaType::options())
+                            ->in(array_keys(\App\Enums\ArticleSchemaType::options()))
+                            ->default('Article')
+                            ->required()
+                            ->native(false),
                     ]),
 
                 Section::make('Redirects')
@@ -352,7 +385,7 @@ final class ManageSettings extends Page implements HasForms
         ];
     }
 
-    private function translatableInput(string $key, string $label): Tabs
+    private function translatableInput(string $key, string $label, ?string $help = null): Tabs
     {
         return Tabs::make($label)
             ->columnSpanFull()
@@ -362,6 +395,7 @@ final class ManageSettings extends Page implements HasForms
                         ->schema([
                             TextInput::make("{$key}.{$locale}")
                                 ->label($label)
+                                ->helperText($help)
                                 ->maxLength(300)
                                 ->extraAttributes([
                                     'dir' => $config['direction'],

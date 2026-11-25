@@ -1,6 +1,25 @@
 <?php
 
 return [
+    'seo' => [
+        'settings' => 'SEO settings', 'sitemap' => 'Sitemap', 'guide' => 'SEO guide',
+        'guide_content' => [
+            'title' => 'Using SEO tools',
+            'intro' => 'Use these controls to help search engines understand published content.',
+            'settings_title' => 'SEO settings',
+            'settings_body' => 'Set fallback titles, descriptions, schema defaults, search verification, 404 monitoring and automatic link limits.',
+            'schema_title' => 'Page and article schema',
+            'schema_body' => 'Choose accurate page and article types in each editor. FAQ and how-to blocks appear in the page and its structured data.',
+            'redirects_title' => 'Redirects',
+            'redirects_body' => 'Redirect an old path with an exact or regular-expression rule, return 410 or 451, or import and export CSV. Automatic redirects can be enabled for changed slugs.',
+            'monitor_title' => '404 reports',
+            'monitor_body' => 'Enable monitoring in SEO settings to record missing public paths, inspect their frequency and create redirects.',
+            'sitemap_title' => 'Sitemap',
+            'sitemap_body' => 'Choose which published content and images appear in the live sitemap. Draft, noindex and externally canonicalized content is excluded.',
+            'links_title' => 'Automatic internal links',
+            'links_body' => 'Create a keyword, language and internal path. Matching text in article bodies is linked when displayed, without changing stored content.',
+        ],
+    ],
     'language' => [
         'english' => 'English',
         'persian' => 'فارسی',
@@ -13,6 +32,7 @@ return [
             'Website setup' => 'Website setup',
             'Messages' => 'Messages',
             'Advanced' => 'Advanced',
+            'SEO' => 'SEO',
         ],
         'items' => [
             'page' => 'Main pages',
@@ -32,6 +52,7 @@ return [
             'social_link' => 'Social media links',
             'not_found_visit' => '404 reports',
             'redirect' => 'Old URL redirects',
+            'internal_link' => 'Automatic internal links',
             'media' => 'Media library',
             'user' => 'Admin users',
         ],

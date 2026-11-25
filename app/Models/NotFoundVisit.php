@@ -14,6 +14,6 @@ final class NotFoundVisit extends Model
 
     protected function casts(): array
     {
-        return ['hits' => 'integer', 'first_seen_at' => 'datetime', 'last_seen_at' => 'datetime'];
+        return ['hits' => 'integer', 'is_bot' => 'boolean', 'first_seen_at' => 'datetime', 'last_seen_at' => 'datetime'];
     }
 }

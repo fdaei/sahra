@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'schema_faq_heading' => 'Questions and answers',
 
     'reading_time'     => ':minutes min read',
     'published_on'     => 'Published :date',

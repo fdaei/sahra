@@ -11,6 +11,7 @@ use App\Services\MediaTransformer;
 use App\Support\CanonicalUrl;
 use App\Support\SeoVisibility;
 use App\Support\SeoCanonical;
+use App\Support\SitemapOptions;
 use Illuminate\Http\Response;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
@@ -34,6 +35,9 @@ final class SitemapController extends Controller
                 continue;
             }
             foreach (['post', 'project'] as $kind) {
+                if (! SitemapOptions::enabled($kind === 'post' ? 'posts' : 'projects')) {
+                    continue;
+                }
                 foreach ($this->shardNumbers($locale, $kind) as $shard) {
                     $sitemaps[] = ['url' => CanonicalUrl::route('sitemap.shard', compact('locale', 'kind', 'shard'))];
                 }
@@ -70,6 +74,9 @@ final class SitemapController extends Controller
             'legal.privacy' => 0.3,
             'legal.terms' => 0.3,
         ] as $name => $priority) {
+            if (! SitemapOptions::enabled('pages')) {
+                break;
+            }
             $page = $pages->get($keys[$name]);
             if ($page === null || SeoVisibility::noindex($page, $locale) || ! SeoCanonical::isSelfCanonical($page, $locale)) {
                 continue;
@@ -98,6 +105,9 @@ final class SitemapController extends Controller
         if (! array_key_exists($locale, config('locales.supported')) || ! in_array($kind, ['post', 'project'], true)) {
             throw new NotFoundHttpException;
         }
+        if (! SitemapOptions::enabled($kind === 'post' ? 'posts' : 'projects')) {
+            throw new NotFoundHttpException;
+        }
         $number = filter_var($shard, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
         $size = $this->chunkSize($kind);
         if ($number === false || $number - 1 > intdiv(PHP_INT_MAX - $size, $size)) {
@@ -119,9 +129,10 @@ final class SitemapController extends Controller
     private function usesShards(string $locale): bool
     {
         // Counting before filtering noindex/canonical may split early, never too late.
-        $projects = $this->contentQuery($locale, 'project')->count();
+        $projects = SitemapOptions::enabled('projects') ? $this->contentQuery($locale, 'project')->count() : 0;
+        $posts = SitemapOptions::enabled('posts') ? $this->contentQuery($locale, 'post')->count() : 0;
         return $projects > $this->chunkSize('project')
-            || $this->contentQuery($locale, 'post')->count() + $projects + 8 > $this->chunkSize();
+            || $posts + $projects + (SitemapOptions::enabled('pages') ? 8 : 0) > $this->chunkSize();
     }
 
     private function contentQuery(string $locale, string $kind): Builder
@@ -145,6 +156,9 @@ final class SitemapController extends Controller
     /** @return list<array<string, mixed>> */
     private function contentUrls(string $locale, string $kind, ?int $shard = null): array
     {
+        if (! SitemapOptions::enabled($kind === 'post' ? 'posts' : 'projects')) {
+            return [];
+        }
         $query = $this->contentQuery($locale, $kind)->with('translations')->orderBy('id');
         if ($kind === 'project') {
             $query->with(['images' => fn ($images) => $images->orderBy('sort_order')->orderBy('id')->limit(1000)]);
@@ -170,7 +184,7 @@ final class SitemapController extends Controller
     /** @return list<string> */
     private function imagesFor(Post|Project $model, string $locale): array
     {
-        if (SeoVisibility::noimageindex($model, $locale)) {
+        if (! SitemapOptions::enabled('images') || SeoVisibility::noimageindex($model, $locale)) {
             return [];
         }
         $candidates = $model instanceof Post

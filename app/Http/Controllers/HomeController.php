@@ -36,6 +36,12 @@ final class HomeController extends Controller
             ->firstOrFail();
 
         $sections = ContentTransformer::sectionMap($page->sections);
+        $faqs = Faq::query()->forDisplay()->get()
+            ->map(fn (Faq $faq): array => ContentTransformer::faq($faq))->all();
+        $seo = SeoBuilder::forPage($page, $request->url());
+        if (isset($sections['faq'])) {
+            $seo = SeoBuilder::withFaqs($seo, $faqs);
+        }
         $leadMagnet = $page->sections->firstWhere('type', \App\Enums\SectionType::LeadMagnet);
         if ($leadMagnet?->lead_magnet_file_path) {
             $sections['lead_magnet']['submitUrl'] = route('home.lead-magnet.store', ['section' => $leadMagnet], absolute: false);
@@ -91,13 +97,9 @@ final class HomeController extends Controller
                 ->all(),
 
             // FAQ accordion — Figma 1419:9272
-            'faqs' => Faq::query()
-                ->forDisplay()
-                ->get()
-                ->map(fn (Faq $f): array => ContentTransformer::faq($f))
-                ->all(),
+            'faqs' => $faqs,
 
-            'seo' => SeoBuilder::forPage($page, $request->url()),
+            'seo' => $seo,
         ]);
     }
 }

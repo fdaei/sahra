@@ -36,9 +36,15 @@ final class ApplyRedirects
 
         [$destination, $status, $id] = $match;
 
+        if (in_array($status, Redirect::GONE, true)) {
+            Redirect::query()->find($id)?->recordHit();
+
+            return response('', $status);
+        }
+
         if (! array_key_exists($status, Redirect::STATUSES)
             || ! RedirectSafety::validDestination($destination, allowStoredRoot: true)
-            || RedirectSafety::createsLoop($path, $destination, RedirectMap::all())) {
+            || RedirectSafety::createsAnyLoop($path, $destination)) {
             return $next($request); // Ignore invalid destinations and redirect loops.
         }
 

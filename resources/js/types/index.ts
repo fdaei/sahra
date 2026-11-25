@@ -83,6 +83,7 @@ export interface SeoMeta {
   canonical: string | null
   ogLocale?: string
   structuredData?: Record<string, unknown>[]
+  schemaBlocks?: SchemaBlocks
   type: 'website' | 'article'
   publishedAt?: string | null
   modifiedAt?: string | null
@@ -206,9 +207,16 @@ export interface PostSummary {
   image: MediaImage | null
 }
 
+export interface SchemaBlocks {
+  faqs: { question: string; answer: string }[]
+  howtoTitle: string
+  steps: { name: string; text: string }[]
+}
+
 export interface PostDetail extends PostSummary {
   subtitle: string
   content: string
+  schemaBlocks: SchemaBlocks
   author: { name: string; email: string | null } | null
   tags: { slug: string; name: string }[]
   related: PostSummary[]

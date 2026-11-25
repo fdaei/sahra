@@ -31,6 +31,7 @@ final class Page extends Model
 
     protected $fillable = [
         'key',
+        'seo_page_schema_type',
         'status',
         'published_at',
     ];
@@ -41,6 +42,9 @@ final class Page extends Model
         'subtitle',
         'description',
         'content',
+        'schema_faq_items',
+        'schema_howto_title',
+        'schema_howto_steps',
         'seo_title',
         'seo_description',
         'seo_focus_keyphrase',

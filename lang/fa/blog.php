@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'schema_faq_heading' => 'پرسش‌ها و پاسخ‌ها',
 
     'reading_time' => ':minutes دقیقه مطالعه',
     'published_on' => 'انتشار در :date',

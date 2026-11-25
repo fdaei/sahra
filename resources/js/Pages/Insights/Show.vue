@@ -243,6 +243,24 @@ const linkedInShare = computed(
           <LeadMagnet v-else-if="leadMagnet" class="max-md:hidden" :section="leadMagnet" inline />
         </template>
 
+        <section v-if="post.schemaBlocks.steps.length" class="prose prose-neutral max-w-none">
+          <h2>{{ post.schemaBlocks.howtoTitle }}</h2>
+          <ol>
+            <li v-for="(step, index) in post.schemaBlocks.steps" :key="index">
+              <h3>{{ step.name }}</h3>
+              <p class="whitespace-pre-line">{{ step.text }}</p>
+            </li>
+          </ol>
+        </section>
+
+        <section v-if="post.schemaBlocks.faqs.length" class="prose prose-neutral max-w-none">
+          <h2>{{ t('blog.schema_faq_heading') }}</h2>
+          <div v-for="(faq, index) in post.schemaBlocks.faqs" :key="index">
+            <h3>{{ faq.question }}</h3>
+            <p class="whitespace-pre-line">{{ faq.answer }}</p>
+          </div>
+        </section>
+
         <div
           v-if="post.tags.length > 0"
           class="border-t border-neutral-100 pt-8"

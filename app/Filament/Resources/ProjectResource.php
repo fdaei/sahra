@@ -55,6 +55,10 @@ final class ProjectResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
+            Section::make('Schema')
+                ->description('Structured data helps search engines understand the project page.')
+                ->collapsed()
+                ->schema([\App\Filament\Support\SchemaFields::pageType()]),
             TranslatableForm::tabs(fn (string $locale): array => [
                 TextInput::make("translations.{$locale}.title")
                     ->label('Title')

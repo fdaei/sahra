@@ -73,7 +73,7 @@ final class SlugChangeRedirector
 
         Redirect::query()->updateOrCreate(
             ['source_path' => $from],
-            ['destination_path' => $to, 'status_code' => self::status(), 'is_active' => true],
+            ['destination_path' => $to, 'status_code' => self::status(), 'is_active' => true, 'origin' => 'auto'],
         );
 
         RedirectMap::flush();

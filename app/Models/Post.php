@@ -34,6 +34,7 @@ final class Post extends Model implements HasLocalisedSlugs
     protected $fillable = [
         'post_category_id',
         'seo_schema_type',
+        'seo_page_schema_type',
         'user_id',
         'status',
         'published_at',
@@ -55,6 +56,9 @@ final class Post extends Model implements HasLocalisedSlugs
         'subtitle',
         'excerpt',
         'content',
+        'schema_faq_items',
+        'schema_howto_title',
+        'schema_howto_steps',
         'lead_magnet_title',
         'lead_magnet_description',
         'lead_magnet_cta_label',

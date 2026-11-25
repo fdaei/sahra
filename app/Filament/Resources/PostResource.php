@@ -91,6 +91,8 @@ final class PostResource extends Resource
                         'h2', 'h3', 'blockquote', 'codeBlock', 'undo', 'redo',
                     ]),
 
+                ...\App\Filament\Support\SchemaFields::blocks($locale),
+
                 Section::make('Article download banner')
                     ->description('Localised copy for the [[lead_magnet]] block. The downloadable file is selected below.')
                     ->collapsed()
@@ -153,12 +155,12 @@ final class PostResource extends Resource
                     ->columnSpan(2)
                     ->columns(2)
                     ->schema([
+                        \App\Filament\Support\SchemaFields::pageType(),
                         Select::make('seo_schema_type')
                             ->label('Article structured data type')
                             ->options(ArticleSchemaType::options())
                             ->in(array_keys(ArticleSchemaType::options()))
-                            ->default(ArticleSchemaType::Article->value)
-                            ->required()
+                            ->placeholder('Use site default')
                             ->native(false)
                             ->helperText('Choose a type that describes this article. This setting applies to all languages.'),
 

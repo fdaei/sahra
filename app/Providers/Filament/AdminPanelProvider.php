@@ -96,6 +96,8 @@ final class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-globe-alt'),
                 NavigationGroup::make(fn (): string => __('admin.navigation.groups.Messages'))
                     ->icon('heroicon-o-inbox'),
+                NavigationGroup::make(fn (): string => __('admin.navigation.groups.SEO'))
+                    ->icon('heroicon-o-magnifying-glass-circle'),
                 NavigationGroup::make(fn (): string => __('admin.navigation.groups.Advanced'))
                     ->icon('heroicon-o-cog-6-tooth'),
             ])

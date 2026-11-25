@@ -46,6 +46,8 @@ Route::get('admin/language/{locale}', AdminLocaleController::class)
 Route::get('robots.txt', function () {
     return response("User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ".rtrim(\App\Support\CanonicalUrl::origin(), '/')."/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
 })->name('robots');
+// Preserve the existing 404 report route while supporting the SEO menu URL.
+Route::redirect('admin/not-found-logs', '/admin/not-found-visits', 302);
 Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('feed-{locale}.xml', PostFeedController::class)->where('locale', $localePattern)->name('feed.locale');
 Route::get('sitemap-{locale}-{kind}-{shard}.xml', [SitemapController::class, 'shard'])

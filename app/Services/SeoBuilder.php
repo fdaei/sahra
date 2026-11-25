@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\ArticleSchemaType;
+use App\Enums\PageSchemaType;
 use App\Models\Page;
 use App\Services\Seo\SocialImageMetadata;
 use App\Models\Post;
@@ -56,6 +57,7 @@ final class SeoBuilder
             twitterImageAlt: $page?->getTranslation('seo_twitter_image_alt'),
             twitterCard: $page?->getTranslation('seo_twitter_card'),
             imagePath: $image,
+            pageSchemaType: self::pageSchemaType($page?->seo_page_schema_type),
         );
 
         // Home › Page. Pages needing a deeper trail re-attach their own.
@@ -64,6 +66,12 @@ final class SeoBuilder
                 Breadcrumbs::home(),
                 Breadcrumbs::crumb((string) $page->getTranslation('title'), '/'.ltrim(request()->path(), '/')),
             ]);
+        }
+
+        if ($page !== null) {
+            $blocks = \App\Services\Seo\SchemaContent::forContent($page);
+            $seo['schemaBlocks'] = $blocks;
+            $seo = self::withContentBlocks($seo, $blocks);
         }
 
         return $seo;
@@ -97,6 +105,7 @@ final class SeoBuilder
             twitterCard: $project->getTranslation('seo_twitter_card'),
             imagePath: $project->cover_path,
             imageAlt: $project->getTranslation('cover_alt'),
+            pageSchemaType: self::pageSchemaType($project->seo_page_schema_type),
         );
         $seo = self::withCoverSchema($seo, $project->cover_path);
         $seo['structuredData'][] = array_filter([
@@ -105,7 +114,7 @@ final class SeoBuilder
             'description' => (string) $project->getTranslation('excerpt'),
             'url' => $seo['canonical'], 'image' => $seo['image'],
             'inLanguage' => config('locales.supported.'.app()->getLocale().'.html_lang'),
-            'creator' => ['@id' => CanonicalUrl::origin().'/#organization'],
+            'creator' => ['@id' => self::identityId()],
         ], fn ($value) => $value !== null && $value !== '');
 
         return $seo;
@@ -116,7 +125,7 @@ final class SeoBuilder
      */
     public static function forPost(Post $post): array
     {
-        return self::withCoverSchema(self::assemble(
+        $seo = self::withCoverSchema(self::assemble(
             title: $post->getTranslation('seo_title') ?: $post->getTranslation('title'),
             description: $post->getTranslation('seo_description') ?: $post->getTranslation('excerpt'),
             image: $post->cover_path === null
@@ -143,8 +152,31 @@ final class SeoBuilder
             twitterCard: $post->getTranslation('seo_twitter_card'),
             imagePath: $post->cover_path,
             imageAlt: $post->getTranslation('cover_alt'),
-            articleSchemaType: ArticleSchemaType::tryFrom((string) $post->seo_schema_type) ?? ArticleSchemaType::Article,
+            articleSchemaType: ArticleSchemaType::tryFrom((string) ($post->seo_schema_type ?? SiteSettings::get('seo_default_article_schema_type', default: 'Article'))) ?? ArticleSchemaType::Article,
+            pageSchemaType: self::pageSchemaType($post->seo_page_schema_type),
         ), $post->cover_path);
+        $blocks = \App\Services\Seo\SchemaContent::forContent($post);
+
+        return self::withContentBlocks($seo, $blocks);
+    }
+
+    /** @param array<string, mixed> $seo @param array{faqs: array, howtoTitle: string, steps: array} $blocks @return array<string, mixed> */
+    private static function withContentBlocks(array $seo, array $blocks): array
+    {
+        $seo = self::withFaqs($seo, $blocks['faqs']);
+        if ($blocks['steps'] !== [] && $blocks['howtoTitle'] !== '') {
+            $seo['structuredData'][] = [
+                '@context' => 'https://schema.org', '@type' => 'HowTo',
+                '@id' => $seo['canonical'].'#howto', 'name' => $blocks['howtoTitle'],
+                'mainEntityOfPage' => ['@id' => $seo['canonical']],
+                'step' => array_map(fn (array $step, int $index): array => [
+                    '@type' => 'HowToStep', 'position' => $index + 1,
+                    'name' => $step['name'], 'text' => $step['text'],
+                ], $blocks['steps'], array_keys($blocks['steps'])),
+            ];
+        }
+
+        return $seo;
     }
 
     /**
@@ -163,6 +195,48 @@ final class SeoBuilder
         $node = \App\Models\Media::query()->where('path', ltrim($path, '/'))->with('translations')->first()?->schema();
         if ($node !== null) {
             $seo['structuredData'][] = $node;
+        }
+
+        return $seo;
+    }
+
+    private static function pageSchemaType(?string $override): PageSchemaType
+    {
+        $value = $override ?: SiteSettings::get('seo_default_page_schema_type', default: 'WebPage');
+
+        return PageSchemaType::tryFrom((string) $value) ?? PageSchemaType::WebPage;
+    }
+
+    private static function identityId(): string
+    {
+        $type = SiteSettings::get('seo_schema_entity_type', default: 'Organization');
+
+        return CanonicalUrl::origin().($type === 'Person' ? '/#person' : '/#organization');
+    }
+
+    /** @param array<string, mixed> $seo @param array<int, array{question: string, answer: string}> $faqs @return array<string, mixed> */
+    public static function withFaqs(array $seo, array $faqs): array
+    {
+        $questions = [];
+        foreach ($faqs as $faq) {
+            $question = trim(strip_tags($faq['question'] ?? ''));
+            $answer = trim(strip_tags($faq['answer'] ?? ''));
+            if ($question !== '' && $answer !== '') {
+                $questions[] = ['@type' => 'Question', 'name' => $question,
+                    'acceptedAnswer' => ['@type' => 'Answer', 'text' => $answer]];
+            }
+        }
+        if ($questions === []) {
+            return $seo;
+        }
+        foreach ($seo['structuredData'] as &$node) {
+            if (($node['@id'] ?? null) !== ($seo['canonical'] ?? null)) {
+                continue;
+            }
+            $types = array_unique([...((array) $node['@type']), 'FAQPage']);
+            $node['@type'] = count($types) === 1 ? reset($types) : array_values($types);
+            $node['mainEntity'] = [...($node['mainEntity'] ?? []), ...$questions];
+            break;
         }
 
         return $seo;
@@ -209,6 +283,7 @@ final class SeoBuilder
         ?string $imagePath = null,
         ?string $imageAlt = null,
         ArticleSchemaType $articleSchemaType = ArticleSchemaType::Article,
+        PageSchemaType $pageSchemaType = PageSchemaType::WebPage,
         ?string $robots = null,
     ): array {
         $locale = app()->getLocale();
@@ -255,9 +330,12 @@ final class SeoBuilder
             $resolvedTwitterCard = 'summary';
         }
         $origin = CanonicalUrl::origin();
+        $entityType = SiteSettings::get('seo_schema_entity_type', default: 'Organization') === 'Person' ? 'Person' : 'Organization';
+        $identityId = self::identityId();
         $organization = [
-            '@context' => 'https://schema.org', '@type' => 'Organization',
-            '@id' => $origin.'/#organization', 'name' => $settings['seo']['organizationName'],
+            '@context' => 'https://schema.org', '@type' => $entityType,
+            '@id' => $identityId,
+            'name' => $entityType === 'Person' ? (SiteSettings::get('seo_schema_person_name', $locale) ?: $settings['siteName']) : $settings['seo']['organizationName'],
             'url' => $origin.'/', 'sameAs' => array_column($settings['socialLinks'], 'url'),
         ];
         foreach (['email' => 'email', 'phone' => 'telephone'] as $key => $property) {
@@ -268,15 +346,22 @@ final class SeoBuilder
         $structuredData = [$organization, [
             '@context' => 'https://schema.org', '@type' => 'WebSite',
             '@id' => $origin.'/#website', 'name' => $settings['siteName'], 'url' => $origin.'/',
-        ]];
+            'publisher' => ['@id' => $identityId],
+        ], array_filter([
+            '@context' => 'https://schema.org', '@type' => $pageSchemaType->value,
+            '@id' => $canonical, 'url' => $canonical, 'name' => $title ?: $settings['siteName'],
+            'description' => $description,
+            'inLanguage' => config("locales.supported.{$locale}.html_lang"),
+            'isPartOf' => ['@id' => $origin.'/#website'],
+        ], fn ($value) => $value !== null && $value !== '')];
         if ($type === 'article' && $articleSchemaType !== ArticleSchemaType::None) {
             $article = [
                 '@context' => 'https://schema.org', '@type' => $articleSchemaType->value,
                 'headline' => $headline ?: $title, 'description' => $description,
                 'mainEntityOfPage' => ['@type' => 'WebPage', '@id' => $canonical],
                 'inLanguage' => config("locales.supported.{$locale}.html_lang"),
-                'publisher' => ['@id' => $origin.'/#organization'],
-                'author' => $author ? ['@type' => 'Person', 'name' => $author] : ['@id' => $origin.'/#organization'],
+                'publisher' => ['@id' => $identityId],
+                'author' => $author ? ['@type' => 'Person', 'name' => $author] : ['@id' => $identityId],
             ];
             if ($image) {
                 $article['image'] = [$image];

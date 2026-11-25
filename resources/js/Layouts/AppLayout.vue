@@ -13,9 +13,14 @@ import AppHeader from '@/Layouts/AppHeader.vue'
 import AppFooter from '@/Layouts/AppFooter.vue'
 import Breadcrumbs from '@/Components/Breadcrumbs.vue'
 import { useAutoReveal } from '@/Composables/useMotion'
-import type { Breadcrumb, SharedProps } from '@/types'
+import { useTranslations } from '@/Composables/useTranslations'
+import type { Breadcrumb, SchemaBlocks, SharedProps } from '@/types'
 
 const page = usePage<SharedProps>()
+const { t } = useTranslations()
+const schemaBlocks = computed<SchemaBlocks | undefined>(() =>
+  (page.props as { seo?: { schemaBlocks?: SchemaBlocks } }).seo?.schemaBlocks,
+)
 
 // Falls back when `flash` wasn't shared — see the comment in Pages/Error.vue.
 const flash = computed(() => page.props.flash ?? { success: null, error: null })
@@ -68,6 +73,19 @@ function notifyPageEntered(): void {
         <slot />
       </div>
     </Transition>
+
+    <div v-if="schemaBlocks && (schemaBlocks.steps.length || schemaBlocks.faqs.length)" class="container-sahra py-12 md:py-20">
+      <section v-if="schemaBlocks.steps.length" class="prose prose-neutral max-w-none">
+        <h2>{{ schemaBlocks.howtoTitle }}</h2>
+        <ol>
+          <li v-for="(step, index) in schemaBlocks.steps" :key="index"><h3>{{ step.name }}</h3><p class="whitespace-pre-line">{{ step.text }}</p></li>
+        </ol>
+      </section>
+      <section v-if="schemaBlocks.faqs.length" class="prose prose-neutral max-w-none">
+        <h2>{{ t('blog.schema_faq_heading') }}</h2>
+        <div v-for="(faq, index) in schemaBlocks.faqs" :key="index"><h3>{{ faq.question }}</h3><p class="whitespace-pre-line">{{ faq.answer }}</p></div>
+      </section>
+    </div>
   </main>
 
   <AppFooter v-if="!isErrorPage" />

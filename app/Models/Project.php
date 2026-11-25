@@ -37,6 +37,7 @@ final class Project extends Model implements HasLocalisedSlugs
 
     protected $fillable = [
         'industry_id',
+        'seo_page_schema_type',
         'status',
         'published_at',
         'sort_order',

@@ -31,6 +31,16 @@
             @if (!empty($post['author']))<p>{{ __('blog.written_by') }} {{ $post['author']['name'] }}</p>@endif
             @include('public.image', ['image' => $post['image'], 'eager' => true])
             <div class="prose max-w-none">{!! str_replace('[[lead_magnet]]', '', $post['content']) !!}</div>
+            @if ($post['schemaBlocks']['steps'])
+                <section><h2>{{ $post['schemaBlocks']['howtoTitle'] }}</h2><ol>
+                    @foreach ($post['schemaBlocks']['steps'] as $step)<li><h3>{{ $step['name'] }}</h3><p>{{ $step['text'] }}</p></li>@endforeach
+                </ol></section>
+            @endif
+            @if ($post['schemaBlocks']['faqs'])
+                <section><h2>{{ __('blog.schema_faq_heading') }}</h2>
+                    @foreach ($post['schemaBlocks']['faqs'] as $faq)<h3>{{ $faq['question'] }}</h3><p>{{ $faq['answer'] }}</p>@endforeach
+                </section>
+            @endif
             @foreach ($post['tags'] as $tag)<span class="me-4">{{ $tag['name'] }}</span>@endforeach
         </article>
         @if (!empty($props['leadMagnet']))@include('public.section', ['section' => $props['leadMagnet']])@endif
@@ -135,12 +145,24 @@
         @foreach ($props['testimonials'] ?? [] as $review)
             <figure class="my-8"><blockquote>{{ $review['quote'] }}</blockquote><figcaption>{{ $review['name'] }} — {{ $review['role'] }}</figcaption></figure>
         @endforeach
-        @foreach ($props['faqs'] ?? [] as $faq)
-            <details class="my-6"><summary>{{ $faq['question'] }}</summary><p>{{ $faq['answer'] }}</p></details>
-        @endforeach
+        @if ($component !== 'Home' || isset($sections['faq']))
+            @foreach ($props['faqs'] ?? [] as $faq)
+                <details class="my-6"><summary>{{ $faq['question'] }}</summary><p>{{ $faq['answer'] }}</p></details>
+            @endforeach
+        @endif
         @if ($component === 'Contact')
             @include('public.contact', ['services' => $props['services']])
         @endif
+    @endif
+    @if (!empty($props['seo']['schemaBlocks']['steps']))
+        <section><h2>{{ $props['seo']['schemaBlocks']['howtoTitle'] }}</h2><ol>
+            @foreach ($props['seo']['schemaBlocks']['steps'] as $step)<li><h3>{{ $step['name'] }}</h3><p>{{ $step['text'] }}</p></li>@endforeach
+        </ol></section>
+    @endif
+    @if (!empty($props['seo']['schemaBlocks']['faqs']))
+        <section><h2>{{ __('blog.schema_faq_heading') }}</h2>
+            @foreach ($props['seo']['schemaBlocks']['faqs'] as $faq)<h3>{{ $faq['question'] }}</h3><p>{{ $faq['answer'] }}</p>@endforeach
+        </section>
     @endif
     @if (!empty($props['finalCta']))@include('public.section', ['section' => $props['finalCta']])@endif
     @if (session('success'))<p role="status">{{ session('success') }}</p>@endif

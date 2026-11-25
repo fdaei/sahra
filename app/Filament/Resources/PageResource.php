@@ -61,6 +61,11 @@ final class PageResource extends Resource
 
             PublicationFields::section(),
 
+            Section::make('Schema')
+                ->description('Structured data helps search engines understand the page.')
+                ->collapsed()
+                ->schema([\App\Filament\Support\SchemaFields::pageType()]),
+
             TranslatableForm::tabs(fn (string $locale): array => [
                 TextInput::make("translations.{$locale}.title")
                     ->label('Title')
@@ -84,6 +89,8 @@ final class PageResource extends Resource
                         'h2', 'h3', 'blockquote', 'undo', 'redo',
                     ])
                     ->helperText('Used by legal pages. Leave empty for section-driven pages.'),
+
+                ...\App\Filament\Support\SchemaFields::blocks($locale),
 
                 Section::make('SEO')
                     ->collapsed()

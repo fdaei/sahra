@@ -18,6 +18,9 @@ final class PageTranslation extends Model
         'subtitle',
         'description',
         'content',
+        'schema_faq_items',
+        'schema_howto_title',
+        'schema_howto_steps',
         'seo_title',
         'seo_description',
         'seo_focus_keyphrase',
@@ -39,5 +42,10 @@ final class PageTranslation extends Model
         'seo_twitter_image_alt',
         'seo_twitter_card',
     ];
+
+    protected function casts(): array
+    {
+        return ['schema_faq_items' => 'array', 'schema_howto_steps' => 'array'];
+    }
 
 }

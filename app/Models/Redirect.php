@@ -25,7 +25,11 @@ final class Redirect extends Model
         303 => '303 — See Other',
         307 => '307 — Temporary, keeps method',
         308 => '308 — Permanent, keeps method',
+        410 => '410 — Gone',
+        451 => '451 — Unavailable for legal reasons',
     ];
+
+    public const GONE = [410, 451];
 
     protected $fillable = [
         'source_path',
@@ -34,6 +38,9 @@ final class Redirect extends Model
         'is_active',
         'hits',
         'last_hit_at',
+        'match_type',
+        'notes',
+        'origin',
     ];
 
     protected function casts(): array
@@ -49,9 +56,9 @@ final class Redirect extends Model
     protected static function booted(): void
     {
         self::saving(function (self $r): void {
-            $r->source_path = self::normalize((string) $r->source_path);
-            $r->destination_path = trim((string) $r->destination_path);
-            if (! preg_match('#^https?://#i', (string) $r->destination_path)) {
+            $r->source_path = $r->match_type === 'regex' ? trim((string) $r->source_path) : self::normalize((string) $r->source_path);
+            $r->destination_path = $r->destination_path === null ? null : trim((string) $r->destination_path);
+            if ($r->destination_path !== null && ! preg_match('#^https?://#i', (string) $r->destination_path)) {
                 $r->destination_path = self::normalize((string) $r->destination_path);
             }
         });
