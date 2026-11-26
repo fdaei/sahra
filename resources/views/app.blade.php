@@ -44,7 +44,7 @@
     @if ($config['font'] === 'arabic')
         <link rel="preload" href="/fonts/doran/DoranFaNum-Regular.woff2" as="font" type="font/woff2" crossorigin>
     @else
-        <link rel="preload" href="/fonts/poppins/Poppins-Regular.woff2" as="font" type="font/woff2" crossorigin>
+        <link rel="preload" href="/fonts/poppins/Poppins-Regular-Latin.woff2" as="font" type="font/woff2" crossorigin>
     @endif
 
     @include('seo.head', ['meta' => $seo])

@@ -30,7 +30,7 @@ final class CachePublicPage
 
         $cache = PublicPageCache::store();
         $revision = PublicPageCache::revision();
-        $key = 'public-pages.html.v1.'.hash('sha256', $request->url());
+        $key = 'public-pages.html.v2.'.hash('sha256', $request->url());
         $entry = $cache->get($key);
         $field = (string) csrf_field();
 
@@ -55,6 +55,7 @@ final class CachePublicPage
         }
 
         $response->setPrivate();
+        $response->headers->addCacheControlDirective('no-cache');
         $headers = $response->headers->all();
         unset($headers['date'], $headers['content-length']);
         $cache->put($key, ['revision' => $revision, 'parts' => $parts, 'headers' => $headers], self::TTL);

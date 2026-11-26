@@ -24,6 +24,7 @@ it('rebuilds form tokens for each session and bypasses the cache for feedback', 
 
     $this->withSession(['_token' => 'second-session-token'])
         ->get('/en/contact')->assertOk()->assertHeader('X-Sahra-Page-Cache', 'HIT')
+        ->assertHeader('Cache-Control', 'no-cache, private')
         ->assertSee('name="_token" value="second-session-token"', false)
         ->assertDontSee('first-session-token', false);
 
