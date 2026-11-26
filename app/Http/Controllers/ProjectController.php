@@ -11,15 +11,14 @@ use App\Services\ContentTransformer;
 use App\Services\SeoBuilder;
 use App\Support\Breadcrumbs;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 /**
  * Projects listing (Figma 1362:7198) and case-study detail (1323:7541).
  */
 final class ProjectController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $page = Page::query()
             ->key('work')
@@ -43,7 +42,8 @@ final class ProjectController extends Controller
             );
         }
 
-        return Inertia::render('Work/Index', [
+        return view('app', [
+            'template' => 'public.pages.work.index',
             'heading' => [
                 'eyebrow' => (string) $page?->getTranslation('subtitle'),
                 'title' => (string) $page?->getTranslation('title'),
@@ -76,7 +76,7 @@ final class ProjectController extends Controller
         ]);
     }
 
-    public function show(string $locale, Project $project): Response
+    public function show(string $locale, Project $project): View
     {
         // Route-model binding already filtered to published + active locale.
         $project = Project::query()->published()->withFullDetail()->findOrFail($project->id);
@@ -86,7 +86,8 @@ final class ProjectController extends Controller
         // one authored on the Work page.
         $workPage = Page::query()->key('work')->published()->withContent()->first();
 
-        return Inertia::render('Work/Show', [
+        return view('app', [
+            'template' => 'public.pages.work.show',
             'project' => ContentTransformer::projectDetail($project),
 
             'finalCta' => $workPage === null

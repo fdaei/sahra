@@ -18,7 +18,7 @@ use App\Support\SiteSettings;
 use App\Support\SeoVisibility;
 
 /**
- * Builds the SeoMeta payload consumed by resources/js/Components/SeoHead.vue.
+ * Builds the SeoMeta payload consumed by resources/views/seo/head.blade.php.
  *
  * Falls back through: entity SEO override -> entity title/excerpt ->
  * site defaults. Editors may override the canonical URL per locale.
@@ -30,8 +30,15 @@ final class SeoBuilder
      */
     public static function forPage(?Page $page, string $canonical, ?string $image = null, bool $noindex = false): array
     {
-        $query = request()->only(['page', 'category', 'q', 'service']);
+        $query = match (request()->route()?->getName()) {
+            'insights.index' => request()->only(['page', 'category', 'q']),
+            'work.index' => request()->only(['service']),
+            default => [],
+        };
         $query = array_filter($query, fn ($value, $key) => is_scalar($value) && (string) $value !== '' && ($key !== 'page' || (int) $value > 1), ARRAY_FILTER_USE_BOTH);
+        if (isset($query['page'])) {
+            $query['page'] = (int) $query['page'];
+        }
         $canonical = CanonicalUrl::for($canonical).($query ? '?'.http_build_query($query) : '');
         if ($query === []) {
             $canonical = SeoCanonical::override($page) ?? $canonical;

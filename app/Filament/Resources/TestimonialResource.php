@@ -59,7 +59,7 @@ final class TestimonialResource extends Resource
             Section::make()
                 ->columns(2)
                 ->schema([
-                    ImageUpload::avatar('avatar_path', 'Avatar', 'testimonial', 'testimonials')
+                    ImageUpload::make('avatar_path', 'Avatar', 'testimonials')
                         ->columnSpanFull(),
 
                     TextInput::make('sort_order')->numeric()->default(0),

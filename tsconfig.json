@@ -3,12 +3,15 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ESNext",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "jsx": "preserve",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -16,18 +19,18 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "types": ["vite/client", "node"],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["resources/js/*"],
-      "~img/*": ["resources/images/*"]
-    }
+    "types": [
+      "vite/client",
+      "node"
+    ]
   },
   "include": [
-    "resources/js/**/*.ts",
-    "resources/js/**/*.d.ts",
-    "resources/js/**/*.vue",
-    "vite.config.ts"
+    "vite.config.ts",
+    "playwright*.config.ts",
+    "tests/Browser/**/*.ts"
   ],
-  "exclude": ["node_modules", "public"]
+  "exclude": [
+    "node_modules",
+    "public"
+  ]
 }

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'creative_decisions'  => 'لأن كل قرار إبداعي يقوم على وضوح العلامة واتساقها ونموها.',
 
     'skip_to_content'     => 'تخطَّ إلى المحتوى',
     'primary_navigation'  => 'التنقل الرئيسي',

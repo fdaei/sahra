@@ -5,15 +5,22 @@ declare(strict_types=1);
 use App\Services\MediaTransformer;
 use Illuminate\Support\Facades\Storage;
 
-it('serves PHP image responses at every generated fallback width', function (): void {
+it('uses the original image for every layout and redirects old variant URLs', function (): void {
     Storage::fake('public');
-    Storage::disk('public')->put('cover.png', base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII='));
+    $disk = Storage::disk('public');
+    $disk->put('cover.png', 'original');
+    $disk->put('cover-400w.jpg', 'old variant');
     foreach (array_keys(MediaTransformer::DIMENSIONS) as $context) {
         $image = MediaTransformer::make('cover.png', 'Cover', $context);
-        $this->get($image['src'])->assertOk();
+        expect($image['src'])->toBe('/storage/cover.png')
+            ->and($image)->not->toHaveKey('srcset');
     }
+    $this->get('/media/jpeg/400/cover.png')->assertMovedPermanently()->assertRedirect('/storage/cover.png');
+    $this->get('/media/webp/736/cover.png')->assertMovedPermanently()->assertRedirect('/storage/cover.png');
     $this->get('/media/jpeg/448/cover.png')->assertNotFound();
     $this->get('/media/jpeg/400/missing.png')->assertNotFound();
+    expect($disk->get('cover.png'))->toBe('original')
+        ->and($disk->allFiles())->toBe(['cover-400w.jpg', 'cover.png']);
 });
 
 it('preserves SVG and external image sources', function (): void {

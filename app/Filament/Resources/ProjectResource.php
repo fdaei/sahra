@@ -201,13 +201,13 @@ final class ProjectResource extends Resource
 
                     Section::make('Media')
                         ->schema([
-                            ImageUpload::make('cover_path', 'Cover (square)', 'project.cover', 'projects'),
+                            ImageUpload::make('cover_path', 'Cover (square)', 'projects'),
 
-                            ImageUpload::make('banner_path', 'Case-study banner', 'project.banner', 'projects'),
+                            ImageUpload::make('banner_path', 'Case-study banner', 'projects'),
 
-                            ImageUpload::make('before_image_path', 'Before', 'project.beforeafter', 'projects'),
+                            ImageUpload::make('before_image_path', 'Before', 'projects'),
 
-                            ImageUpload::make('after_image_path', 'After', 'project.beforeafter', 'projects'),
+                            ImageUpload::make('after_image_path', 'After', 'projects'),
                         ]),
                 ]),
             ]),

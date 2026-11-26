@@ -104,7 +104,7 @@ final class NavigationBuilder
 
     /**
      * Category tree as nav items. IDs are prefixed so they never collide with
-     * real menu item IDs (both are used as Vue keys).
+     * real menu item IDs (used for menu element IDs).
      *
      * @param  iterable<PostCategory>  $categories
      * @return list<array<string, mixed>>

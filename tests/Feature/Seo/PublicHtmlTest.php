@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\PublicationStatus;
 use App\Enums\SectionType;
 use App\Filament\Support\TranslatableForm;
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\PostCategory;
@@ -16,12 +15,9 @@ use Symfony\Component\DomCrawler\Crawler;
 function publicHtml(string $html): Crawler
 {
     $crawler = new Crawler($html);
-    // Removing script nodes and data-page ensures JSON cannot satisfy a test.
+    // Structured data cannot satisfy assertions about body content.
     foreach ($crawler->filter('script') as $node) {
         $node->parentNode->removeChild($node);
-    }
-    foreach ($crawler->filter('[data-page]') as $node) {
-        $node->removeAttribute('data-page');
     }
 
     return $crawler;
@@ -43,7 +39,7 @@ beforeEach(function (): void {
 });
 
 it('renders real initial HTML for every public page without a rendering service', function (string $path): void {
-    $response = $this->get('/en'.$path)->assertOk();
+    $response = $this->get('/en'.$path)->assertOk()->assertDontSee('data-page=', false);
     $dom = publicHtml($response->getContent());
     expect($dom->filter('body main h1')->count())->toBe(1)
         ->and($dom->filter('title')->text())->not->toBeEmpty()
@@ -93,7 +89,7 @@ it('does not expose draft, future, scheduled or deleted articles anywhere', func
     $this->get('/sitemap-en.xml')->assertOk()->assertDontSee('/en/insights/secret');
 })->with(['draft', 'future', 'scheduled', 'deleted']);
 
-it('renders project details while omitting invisible sections and items in both responses', function (): void {
+it('renders project details while omitting invisible sections and items', function (): void {
     $project = Project::factory()->published()->create();
     $project->setTranslations(['en' => ['title' => 'Live project', 'slug' => 'live-project', 'challenge' => 'Complete challenge text', 'results_summary' => 'Real results']]);
     $visible = $project->sections()->create(['type' => SectionType::Goals, 'is_visible' => true]);
@@ -103,7 +99,6 @@ it('renders project details while omitting invisible sections and items in both 
     $hidden->items()->create(['is_visible' => true])->setTranslations(['en' => ['title' => 'Hidden strategy']]);
     $response = $this->get('/en/work/live-project')->assertOk()->assertDontSee('Hidden goal')->assertDontSee('Hidden strategy');
     expect(publicHtml($response->getContent())->filter('main')->text())->toContain('Complete challenge text', 'Full goal detail', 'Real results');
-    $this->get('/en/work/live-project', ['X-Inertia' => 'true', 'X-Inertia-Version' => app(HandleInertiaRequests::class)->version(request())])->assertOk()->assertDontSee('Hidden goal')->assertDontSee('Hidden strategy');
 });
 
 it('keeps published pages and real translated slugs in sitemap and hreflang', function (): void {
@@ -125,16 +120,28 @@ it('keeps published pages and real translated slugs in sitemap and hreflang', fu
 
 it('uses unique pagination canonicals and excludes the featured post on subsequent pages', function (): void {
     for ($i = 0; $i < 12; $i++) {
+        $translations = ['en' => ['title' => "Article {$i}", 'slug' => "article-{$i}"]];
+        if ($i < 11) {
+            $translations['fa'] = ['title' => "مقاله {$i}", 'slug' => "article-fa-{$i}"];
+        }
         Post::factory()->published()->create(['is_featured' => $i === 0, 'published_at' => now()->subDays($i + 1)])
-            ->setTranslations(['en' => ['title' => "Article {$i}", 'slug' => "article-{$i}"]]);
+            ->setTranslations($translations);
     }
     $first = publicHtml($this->get('/en/insights')->assertOk()->getContent());
     $second = publicHtml($this->get('/en/insights?page=2')->assertOk()->getContent());
     expect($first->filter('main a[href="/en/insights/article-0"]')->count())->toBe(1)
         ->and($second->filter('main')->text())->toContain('Article 10', 'Article 11')->not->toContain('Article 0')
         ->and($second->filter('link[rel="canonical"]')->attr('href'))->toBe('https://seo.example/en/insights?page=2')
+        ->and($second->filter('link[hreflang="fa"]')->attr('href'))->toBe('https://seo.example/fa/insights?page=2')
+        ->and($second->filter('link[hreflang="ar"]')->count())->toBe(0)
+        ->and($second->filter('a[rel="prev"]')->attr('href'))->toBe('/en/insights')
         ->and($second->filter('meta[name="robots"]')->attr('content'))->toContain('index, follow');
     $this->get('/en/insights?page=999')->assertNotFound();
+    $this->get('/en/insights?page[]=2')->assertNotFound();
+    $normalized = publicHtml($this->get('/en/insights?page=%202%20')->assertOk()->getContent());
+    expect($normalized->filter('link[rel="canonical"]')->attr('href'))->toBe('https://seo.example/en/insights?page=2');
+    $tracked = publicHtml($this->get('/en/insights?utm_source=newsletter')->assertOk()->getContent());
+    expect($tracked->filter('a[rel="next"]')->attr('href'))->toEndWith('/en/insights?page=2');
     $filtered = publicHtml($this->get('/en/insights?q=Article')->assertOk()->getContent());
     expect($filtered->filter('meta[name="robots"]')->attr('content'))->toBe('noindex, follow');
 });
@@ -151,10 +158,17 @@ it('returns real noindex 404 pages for unknown URLs in the requested language', 
 })->with(['/en/missing', '/fa/missing', '/unknown', '/en/insights/missing']);
 
 it('serves the same public body to visitors and crawlers', function (): void {
-    $visitor = publicHtml($this->get('/en')->assertOk()->getContent())->filter('main')->text();
+    $visitor = publicHtml($this->get('/en')->assertOk()->assertDontSee('/admin', false)->getContent())->filter('main')->text();
     $crawler = publicHtml($this->get('/en', ['User-Agent' => 'Googlebot'])->assertOk()->getContent())->filter('main')->text();
     expect($visitor)->toBe($crawler);
     $this->get('/admin/login')->assertOk()->assertHeader('X-Robots-Tag', 'noindex, nofollow');
+    $this->get('/robots.txt')->assertOk()->assertDontSee('/admin', false);
+});
+
+it('excludes unrelated query parameters from an indexable page canonical', function (): void {
+    $dom = publicHtml($this->get('/en/services?page=5&q=invalid&utm_source=email')->assertOk()->getContent());
+    expect($dom->filter('link[rel="canonical"]')->attr('href'))->toBe('https://seo.example/en/services')
+        ->and($dom->filter('link[hreflang="en"]')->attr('href'))->toBe('https://seo.example/en/services');
 });
 
 it('requires a nonempty value in the requested translation without adding publication policy', function (): void {

@@ -9,7 +9,7 @@ declare(strict_types=1);
 |
 | Single source of truth for supported locales. Consumed by:
 |   - App\Http\Middleware\SetLocale         (request handling)
-|   - App\Http\Middleware\HandleInertiaRequests (shared props)
+|   - resources/views/app.blade.php (HTML lang and direction)
 |   - routes/web.php                        (route prefix constraint)
 |   - App\Traits\HasTranslations             (translatable columns)
 |   - Filament translatable field tabs

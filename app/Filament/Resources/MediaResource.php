@@ -6,9 +6,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resource;
 use App\Filament\Resources\MediaResource\Pages;
+use App\Filament\Support\OriginalUpload;
 use App\Filament\Support\TranslatableForm;
 use App\Models\Media;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -23,8 +23,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Number;
-use Illuminate\Support\Str;
-use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 /**
  * Media library — every image, video, audio file and document in one place,
@@ -56,16 +54,9 @@ final class MediaResource extends Resource
             Section::make('File')
                 ->columnSpan(fn (string $operation): int => $operation === 'create' ? 3 : 1)
                 ->schema([
-                    FileUpload::make('path')
+                    OriginalUpload::make('path', fn (): string => Media::LIBRARY_DIR.'/'.now()->format('Y/m'), Media::allMimes(), self::MAX_KB)
                         ->label('File')
-                        ->helperText('Image, video, audio, PDF or Office file — up to 256 MB. Upload the file itself; links to files elsewhere are not accepted.')
-                        ->disk(Media::DISK)
-                        ->directory(fn (): string => Media::LIBRARY_DIR.'/'.now()->format('Y/m'))
-                        ->acceptedFileTypes(Media::allMimes())
-                        ->maxSize(self::MAX_KB)
-                        // Readable, unique, URL-safe names help image SEO.
-                        ->getUploadedFileNameForStorageUsing(fn (TemporaryUploadedFile $file): string => (Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME), '-', 'en') ?: 'file')
-                            .'-'.Str::lower(Str::random(6)).'.'.strtolower($file->getClientOriginalExtension()))
+                        ->helperText('The original file is saved with its filename. Image, video, audio, PDF and Office formats are supported.')
                         ->required()
                         ->visibleOn('create'),
 
@@ -150,12 +141,8 @@ final class MediaResource extends Resource
                         ->columns(2)
                         ->visible(fn (?Media $record): bool => $record?->isVideo() ?? false)
                         ->schema([
-                            FileUpload::make('poster_path')
+                            OriginalUpload::make('poster_path', Media::LIBRARY_DIR.'/posters', Media::MIMES['image'], 5120)
                                 ->label('Poster / thumbnail')
-                                ->image()
-                                ->disk(Media::DISK)
-                                ->directory(Media::LIBRARY_DIR.'/posters')
-                                ->maxSize(5120)
                                 ->helperText('Shown before playback; required by Google for video rich results.'),
                             TextInput::make('duration')
                                 ->label('Duration (seconds)')
@@ -174,19 +161,18 @@ final class MediaResource extends Resource
             ->columns([
                 Tables\Columns\Layout\Stack::make([
                     Tables\Columns\ImageColumn::make('thumb')
-                        ->getStateUsing(fn (Media $record): ?string => match (true) {
+                        ->defaultImageUrl(fn (Media $record): string => match (true) {
                             $record->isImage() => $record->url(),
-                            $record->poster_path !== null => Storage::disk(Media::DISK)->url($record->poster_path),
-                            default => null,
+                            $record->poster_path !== null => Media::publicUrl($record->poster_path),
+                            default => self::typeIcon($record->type),
                         })
-                        ->defaultImageUrl(fn (Media $record): string => self::typeIcon($record->type))
                         ->height(160)
                         ->width('100%')
-                        ->extraImgAttributes(['class' => 'object-cover w-full rounded-lg', 'loading' => 'lazy']),
+                        ->extraImgAttributes(['class' => 'w-full rounded-lg', 'style' => 'object-fit: contain', 'loading' => 'lazy']),
                     Tables\Columns\TextColumn::make('name')
                         ->searchable()
                         ->weight('medium')
-                        ->limit(32)
+                        ->wrap()
                         ->tooltip(fn (Media $record): string => $record->path),
                     Tables\Columns\TextColumn::make('type')
                         ->badge()
@@ -255,7 +241,7 @@ final class MediaResource extends Resource
 
         return new HtmlString(match ($record->type) {
             'image' => "<img src=\"{$url}\" alt=\"\" style=\"{$style}\">",
-            'video' => "<video src=\"{$url}\" controls preload=\"metadata\" style=\"{$style}\"".($record->poster_path ? ' poster="'.e(Storage::disk(Media::DISK)->url($record->poster_path)).'"' : '').'></video>',
+            'video' => "<video src=\"{$url}\" controls preload=\"metadata\" style=\"{$style}\"".($record->poster_path ? ' poster="'.e(Media::publicUrl($record->poster_path)).'"' : '').'></video>',
             'audio' => "<audio src=\"{$url}\" controls style=\"width:100%\"></audio>",
             default => "<a href=\"{$url}\" target=\"_blank\" rel=\"noopener\" style=\"text-decoration:underline\">".e($record->name).'</a>',
         });

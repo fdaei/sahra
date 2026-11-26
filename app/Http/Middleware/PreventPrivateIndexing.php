@@ -13,8 +13,11 @@ final class PreventPrivateIndexing
     public function handle(Request $request, Closure $next): Response
     {
         $response = $next($request);
-        if ($request->is('admin', 'admin/*', 'test-mail') || $request->routeIs('insights.lead-magnet.download', 'home.lead-magnet.download')) {
+        if ($request->is('admin', 'admin/*', 'livewire', 'livewire/*')
+            || $request->routeIs('storage.local', 'insights.lead-magnet.download', 'home.lead-magnet.download')) {
             $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+            $response->headers->set('Cache-Control', 'private, no-store');
+            $response->headers->set('Referrer-Policy', 'no-referrer');
         }
 
         return $response;

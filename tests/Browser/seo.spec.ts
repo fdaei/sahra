@@ -7,7 +7,6 @@ for (const javaScriptEnabled of [false, true]) {
     test('all public page types have readable initial content', async ({ page }) => {
       const errors: string[] = []
       page.on('pageerror', error => errors.push(error.message))
-      page.on('console', message => { if (/hydration|mismatch/i.test(message.text())) errors.push(message.text()) })
       for (const path of ['/en', '/en/about', '/en/services', '/en/contact', '/en/work', '/en/insights', '/en/privacy-policy', '/en/terms']) {
         const response = await page.goto(path)
         expect(response?.status()).toBe(200)
@@ -16,7 +15,7 @@ for (const javaScriptEnabled of [false, true]) {
         await expect(page.locator('head title')).toHaveCount(1)
         await expect(page.locator('link[rel=canonical]')).toHaveCount(1)
         expect((await page.locator('main').innerText()).length).toBeGreaterThan(100)
-        if (javaScriptEnabled) await expect(page.locator('#app')).toHaveAttribute('data-v-app', '')
+        await expect(page.locator('[data-page], [data-v-app]')).toHaveCount(0)
       }
       await page.goto('/en/work')
       const project = await page.locator('main a[href*="/en/work/"]').first().getAttribute('href')
@@ -34,6 +33,20 @@ for (const javaScriptEnabled of [false, true]) {
       await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
       await expect(page.locator('main')).toContainText('متن کامل مقاله فارسی')
       expect(errors).toEqual([])
+    })
+
+    test('the checklist opens from its server-rendered link', async ({ page }) => {
+      await page.goto('/en')
+      await page.locator('[data-open-modal]:visible').click()
+      await expect(page.locator('#checklist-signup form')).toBeVisible()
+      if (javaScriptEnabled) {
+        const dialog = page.getByRole('dialog')
+        await expect(dialog.locator('form')).toBeVisible()
+        await page.keyboard.press('Escape')
+        await expect(dialog).toHaveCount(0)
+      } else {
+        await expect(page).toHaveURL(/#checklist-signup$/)
+      }
     })
 
     test('the bare domain opens English in a Persian browser and after selecting Persian', async ({ page }) => {
@@ -56,17 +69,14 @@ for (const javaScriptEnabled of [false, true]) {
   })
 }
 
-test('Inertia navigation updates the whole head without duplicate or stale tags', async ({ page }) => {
+test('document navigation sends the matching head and structured data', async ({ page }) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/en/insights')
-  await expect(page.locator('#app')).toHaveAttribute('data-v-app', '')
-  await page.evaluate(() => { (window as unknown as Record<string, unknown>).seoNavigationMarker = 'same-document' })
   await page.locator('main a[href="/en/insights/seo-visible"]').first().click()
   await expect(page).toHaveURL(/\/en\/insights\/seo-visible$/)
   await expect(page).toHaveTitle('SEO visible article')
   await expect(page.locator('main')).toContainText('Final article paragraph for SEO verification.')
-  expect(await page.evaluate(() => (window as unknown as Record<string, unknown>).seoNavigationMarker)).toBe('same-document')
   await expect(page.locator('title')).toHaveCount(1)
   await expect(page.locator('meta[name=description]')).toHaveCount(1)
   await expect(page.locator('link[rel=canonical]')).toHaveCount(1)
@@ -87,23 +97,16 @@ test('Inertia navigation updates the whole head without duplicate or stale tags'
 test.describe('Page navigation scroll', () => {
   // The regular-motion setting catches document-wide smooth scrolling;
   // reduced motion disables it and would hide this regression.
-  test.use({ reducedMotion: 'no-preference' })
+  test.use({ contextOptions: { reducedMotion: 'no-preference' } })
 
   test('a page opened from a footer link starts at the top immediately', async ({ page }) => {
     await page.goto('/en/insights')
-    await expect(page.locator('#app')).toHaveAttribute('data-v-app', '')
     const previousHeading = await page.locator('main h1').innerText()
     const link = page.locator('footer a[href="/en/services"]').first()
     await link.scrollIntoViewIfNeeded()
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(500)
-    await page.evaluate(() => {
-      document.addEventListener('inertia:navigate', () => {
-        (window as unknown as Record<string, unknown>).scrollAtNavigation = window.scrollY
-      }, { once: true })
-    })
     await link.click()
     await expect(page).toHaveURL(/\/en\/services$/)
-    expect(await page.evaluate(() => (window as unknown as Record<string, unknown>).scrollAtNavigation)).toBe(0)
     await expect(page.locator('main h1')).not.toHaveText(previousHeading)
     await page.evaluate(() => new Promise<void>(resolve => {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()))
@@ -113,7 +116,6 @@ test.describe('Page navigation scroll', () => {
 
   test('browser back returns to the exact section of the previous page', async ({ page }) => {
     await page.goto('/en/insights')
-    await expect(page.locator('#app')).toHaveAttribute('data-v-app', '')
 
     const link = page.locator('footer a[href="/en/services"]').first()
     await link.scrollIntoViewIfNeeded()

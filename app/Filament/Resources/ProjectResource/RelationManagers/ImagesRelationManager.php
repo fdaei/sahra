@@ -27,7 +27,7 @@ final class ImagesRelationManager extends RelationManager
     public function form(Form $form): Form
     {
         return $form->schema([
-            ImageUpload::make('path', 'Image', 'project.showcase', 'projects/showcase')
+            ImageUpload::make('path', 'Image', 'projects/showcase')
                 ->required()
                 ->columnSpanFull(),
 

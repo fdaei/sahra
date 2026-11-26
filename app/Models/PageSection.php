@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 /**
  * A content block belonging to a Page or a Project.
  *
- * `type` (SectionType) selects the Vue component. Sections whose type
+ * `type` (SectionType) selects the Blade partial. Sections whose type
  * `hasItems()` carry repeatable SectionItem children.
  *
  * @property SectionType $type

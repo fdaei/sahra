@@ -4,26 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Storage;
+use App\Models\Media;
 
 /**
- * Converts a stored image path into the MediaImage shape the frontend expects
- * (resources/js/types/index.ts).
- *
- * Dimensions come from the Figma frames — see docs/ASSET-MANIFEST.md. They are
- * emitted as width/height attributes so the browser reserves space before the
- * image loads, which is what keeps the scroll animations from causing layout
- * shift (Phase 6 requirement: no CLS).
+ * Provides the original image URL and layout dimensions for the public views.
  */
 final class MediaTransformer
 {
     /**
-     * Intrinsic dimensions per usage context, taken from the design.
-     *
-     * Also drives the admin uploader: `App\Filament\Support\ImageUpload`
-     * reads these to fix each field's crop ratio and resize target, so what an
-     * editor uploads matches the width/height emitted here and no image is
-     * stored larger than the design asks for.
+     * Layout dimensions per usage context, taken from the design.
      *
      * @var array<string, array{int, int}>
      */
@@ -45,7 +34,7 @@ final class MediaTransformer
     ];
 
     /**
-     * Intrinsic width/height for a context, falling back to the generic
+     * Layout width and height for a context, falling back to the generic
      * section frame for anything unrecognised.
      *
      * @return array{int, int}
@@ -56,7 +45,7 @@ final class MediaTransformer
     }
 
     /**
-     * @return array{src: string, srcset: string, sizes: string, formats: array<string, array{srcset: string}>, alt: string, width: int, height: int}|null
+     * @return array{src: string, alt: string, width: int, height: int}|null
      */
     public static function make(
         ?string $path,
@@ -69,54 +58,20 @@ final class MediaTransformer
 
         // No alt on the field → the alt written for this file in the Media library.
         if ($alt === null || trim($alt) === '') {
-            $alt = \App\Models\Media::altFor($path);
+            $alt = Media::altFor($path);
         }
 
         [$width, $height] = self::dimensions($context);
-        if (preg_match('~^https?://~i', $path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
-            return ['src' => self::url($path), 'alt' => $alt ?? '', 'width' => $width, 'height' => $height];
-        }
-
-        // The fallback itself is resized too, so browsers without srcset or
-        // modern formats never receive the uploaded full-size file.
-        $src = self::primaryUrl($path, $context);
-        $sizes = $context === 'post.hero' ? '(max-width: 768px) 100vw, 1248px' : '(max-width: 768px) 100vw, 612px';
-        $variants = collect([400, 736, 1200])->mapWithKeys(fn (int $size): array => [$size => self::variantUrl($path, $size, 'jpeg')])->all();
-        $webp = collect($variants)->map(fn (string $url, int $size): string => "{$url} {$size}w")->implode(', ');
-        $formats = [];
-        foreach (['avif', 'webp'] as $format) {
-            $formats[$format] = ['srcset' => collect([400, 736, 1200])->map(fn (int $size): string => self::variantUrl($path, $size, $format)." {$size}w")->implode(', ')];
-        }
-
         return [
-            'src' => $src,
-            'srcset' => $webp,
-            'sizes' => $sizes,
-            'formats' => $formats,
+            'src' => self::url($path),
             'alt' => $alt ?? '',
             'width' => $width,
             'height' => $height,
         ];
     }
 
-    /** The same primary image URL used by the public page, without building srcsets. */
-    public static function primaryUrl(string $path, string $context = 'section'): string
-    {
-        if (preg_match('~^https?://~i', $path) || strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
-            return self::url($path);
-        }
-        [$width] = self::dimensions($context);
-        return self::variantUrl($path, $width <= 400 ? 400 : 736, 'jpeg');
-    }
-
-    public static function variantUrl(string $path, int $width, string $format): string
-    {
-        return route('media.variant', ['format' => $format, 'width' => $width, 'path' => ltrim($path, '/')], absolute: false);
-    }
-
     /**
-     * Absolute URL for a stored path. Already-absolute values (a CDN URL typed
-     * into admin) are returned untouched.
+     * Public URL for a stored path or an existing external URL.
      */
     public static function url(string $path): string
     {
@@ -124,6 +79,6 @@ final class MediaTransformer
             return $path;
         }
 
-        return Storage::disk('public')->url($path);
+        return Media::publicUrl($path);
     }
 }

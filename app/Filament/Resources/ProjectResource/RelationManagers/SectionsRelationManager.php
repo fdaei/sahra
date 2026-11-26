@@ -181,7 +181,7 @@ final class SectionsRelationManager extends RelationManager
                         ->label('Content'),
                 ]),
 
-            ImageUpload::make('image_path', 'Section image', 'section', 'sections')
+            ImageUpload::make('image_path', 'Section image', 'sections')
                 ->columnSpanFull(),
 
             Section::make('Lead magnet file')

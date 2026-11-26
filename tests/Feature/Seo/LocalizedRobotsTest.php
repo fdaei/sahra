@@ -6,14 +6,13 @@ use App\Filament\Support\TranslatableForm;
 use App\Models\Page;
 use App\Models\Post;
 use App\Models\Project;
-use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function (): void {
     config(['app.url' => 'https://seo.example', 'seo.canonical_origin' => null]);
 });
 
-it('applies per-language robots directives in HTML and Inertia while preserving the language switcher', function (): void {
+it('applies per-language robots directives in server HTML while preserving the language switcher', function (): void {
     $post = Post::factory()->published()->create();
     $post->setTranslations([
         'en' => ['title' => 'English', 'slug' => 'english'],
@@ -22,8 +21,7 @@ it('applies per-language robots directives in HTML and Inertia while preserving 
     $dom = new Crawler($this->get('/fa/insights/farsi')->assertOk()->getContent());
     expect($dom->filter('meta[name="robots"]')->attr('content'))->toBe('noindex, nofollow')
         ->and($dom->filter('head link[hreflang]')->count())->toBe(0);
-    $this->get('/fa/insights/farsi')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('seo.noindex', true)->where('seo.nofollow', true)->has('alternates.en'));
+    expect($dom->filter('body a[href="https://seo.example/en/insights/english"]')->count())->toBeGreaterThan(0);
     $dom = new Crawler($this->get('/en/insights/english')->assertOk()->getContent());
     expect($dom->filter('head link[hreflang="fa"]')->count())->toBe(0)
         ->and($dom->filter('head link[hreflang="en"]')->count())->toBe(1);

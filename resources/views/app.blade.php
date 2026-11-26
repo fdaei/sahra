@@ -1,32 +1,34 @@
 @php
-    /**
-     * Inertia root view.
-     *
-     * Sets lang/dir from the resolved locale so the very first paint is already
-     * correct — no flash of LTR before Vue hydrates. The font class picks the
-     * Poppins (EN) or Doran/Vazirmatn (FA/AR) stack defined in tailwind.config.js.
-     */
     $locale    = app()->getLocale();
     $config    = config("locales.supported.{$locale}");
     $direction = $config['direction'];
     $htmlLang  = $config['html_lang'];
     $fontClass = $config['font'] === 'arabic' ? 'font-arabic' : 'font-sans';
 
-    /**
-     * Analytics/tracking IDs, entered in Filament → Site settings →
-     * Integrations & analytics. Each snippet is skipped entirely when its ID
-     * is blank, so an unconfigured integration renders nothing.
-     */
-    $integrations = \App\Support\SiteSettings::integrations();
+    $minimal = $template === 'public.pages.error';
+    $settings = $minimal ? [] : \App\Support\SiteSettings::forFrontend($locale);
+    $integrations = $minimal ? [] : \App\Support\SiteSettings::integrations();
+    $alternates = $minimal ? [] : \App\Support\LocaleAlternates::for(request());
+    $rssFeedUrl = $minimal ? null : \App\Support\CanonicalUrl::route('feed.locale', ['locale' => $locale]);
+    $priorityImage = match ($template) {
+        'public.pages.home' => $sections['hero']['image']['src'] ?? null,
+        'public.pages.insights.index' => $featured['image']['src'] ?? null,
+        'public.pages.insights.show' => $post['image']['src'] ?? null,
+        default => null,
+    };
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $htmlLang }}" dir="{{ $direction }}" class="{{ $fontClass }} antialiased">
-<head><meta charset="utf-8">
-    
+<head>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @if ($priorityImage)
+        <link rel="preload" as="image" href="{{ $priorityImage }}" fetchpriority="high">
+    @elseif ($template === 'public.pages.home' && !empty($sections['hero']))
+        <link rel="preload" as="image" href="/images/sahra/hero-brand-preview-mobile.webp" media="(width < 768px)" fetchpriority="high">
+    @endif
 
-    @if (filled($integrations['gtmId']))
+    @if (filled($integrations['gtmId'] ?? null))
         {{-- Google Tag Manager --}}
         <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -35,7 +37,7 @@
         })(window,document,'script','dataLayer',{{ Illuminate\Support\Js::from($integrations['gtmId']) }});</script>
     @endif
 
-    @if (filled($integrations['gscVerification']))
+    @if (filled($integrations['gscVerification'] ?? null))
         <meta name="google-site-verification" content="{{ $integrations['gscVerification'] }}">
     @endif
 
@@ -51,9 +53,9 @@
         <link rel="preload" href="/fonts/poppins/Poppins-Regular.woff2" as="font" type="font/woff2" crossorigin>
     @endif
 
-    @include('seo.head', ['meta' => $page['props']['seo'] ?? \App\Services\SeoBuilder::forError($page['props']['status'] ?? 500), 'props' => $page['props']])
+    @include('seo.head', ['meta' => $seo])
 
-    @if (filled($integrations['gaId']))
+    @if (filled($integrations['gaId'] ?? null))
         {{-- Google Analytics (GA4) --}}
         <script async src="https://www.googletagmanager.com/gtag/js?id={{ $integrations['gaId'] }}"></script>
         <script>
@@ -65,31 +67,37 @@
     @endif
 
     @php
-        // Hotjar: new Contentsquare-based tag (hex ID, e.g. e174bcefe0009) or legacy numeric site ID.
-        $hotjarId = trim((string) ($integrations['hotjarId'] ?? '')) ?: 'e174bcefe0009';
+        $hotjarId = trim((string) ($integrations['hotjarId'] ?? ''));
     @endphp
-    @if (ctype_digit($hotjarId))
-        {{-- Hotjar (legacy) --}}
+    @if (preg_match('/\A[a-zA-Z0-9]+\z/', $hotjarId))
         <script>
-            (function(h,o,t,j,a,r){
-                h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-                h._hjSettings={hjid:{{ (int) $hotjarId }},hjsv:6};
-                a=o.getElementsByTagName('head')[0];
-                r=o.createElement('script');r.async=1;
-                r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-                a.appendChild(r);
-            })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+            window.addEventListener('load', () => {
+                const loadHotjar = () => {
+                    const siteId = {{ Illuminate\Support\Js::from($hotjarId) }};
+                    const tag = document.createElement('script');
+                    tag.async = true;
+                    if (/^\d+$/.test(siteId)) {
+                        window.hj = window.hj || function () { (window.hj.q ||= []).push(arguments); };
+                        window._hjSettings = { hjid: Number(siteId), hjsv: 6 };
+                        tag.src = 'https://static.hotjar.com/c/hotjar-' + siteId + '.js?sv=6';
+                    } else {
+                        tag.src = 'https://t.contentsquare.net/uxa/' + siteId + '.js';
+                    }
+                    document.head.append(tag);
+                };
+                if ('requestIdleCallback' in window) {
+                    window.requestIdleCallback(loadHotjar, { timeout: 3000 });
+                } else {
+                    window.setTimeout(loadHotjar, 1500);
+                }
+            }, { once: true });
         </script>
-    @else
-        {{-- Hotjar (Contentsquare tag) --}}
-        <script src="https://t.contentsquare.net/uxa/{{ preg_replace('/[^a-zA-Z0-9]/', '', $hotjarId) }}.js"></script>
     @endif
 
-    @routes
-    @vite(['resources/js/app.ts'])
+    @vite(['resources/css/app.css', 'resources/js/public.js'])
 </head>
 <body class="bg-paper text-neutral-900">
-    @if (filled($integrations['gtmId']))
+    @if (filled($integrations['gtmId'] ?? null))
         {{-- Google Tag Manager (noscript) --}}
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $integrations['gtmId'] }}"
             height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -102,8 +110,26 @@
         {{ __('common.skip_to_content') }}
     </a>
 
-    <div id="app" data-page="{{ json_encode($page) }}">
-        @include('public.page', ['props' => $page['props'], 'component' => $page['component']])
-    </div>
+    @include('public.layouts.app-header')
+
+    <main id="main" class="relative min-h-screen-safe">
+        @if (count($seo['breadcrumbs'] ?? []) > 1)
+            @include('public.components.breadcrumbs', ['items' => $seo['breadcrumbs']])
+        @endif
+
+        @include($template)
+
+        @include('public.components.schema-blocks', ['schemaBlocks' => $seo['schemaBlocks'] ?? []])
+    </main>
+
+    @unless ($minimal)
+        @include('public.layouts.app-footer')
+    @endunless
+
+    @if (!$minimal && session('error'))
+        <p role="alert" class="fixed inset-inline-0 bottom-6 z-modal mx-auto w-fit max-w-[90vw] rounded-sm bg-red-600 px-6 py-4 text-white shadow-card">
+            {{ session('error') }}
+        </p>
+    @endif
 </body>
 </html>

@@ -9,7 +9,6 @@ use App\Models\Post;
 use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
-use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -17,7 +16,7 @@ beforeEach(function (): void {
     config(['app.url' => 'https://seo.example', 'seo.canonical_origin' => null]);
 });
 
-it('outputs separate X and Open Graph fields consistently in HTML and inertia', function (): void {
+it('outputs separate X and Open Graph fields in server HTML', function (): void {
     $media = Media::create(['path' => 'seo/twitter/image.jpg', 'name' => 'image.jpg', 'mime' => 'image/jpeg', 'type' => 'image']);
     $media->setTranslations(['en' => ['alt' => 'X image library alt']]);
     $post = Post::factory()->published()->create(['cover_path' => 'posts/cover.jpg']);
@@ -37,8 +36,6 @@ it('outputs separate X and Open Graph fields consistently in HTML and inertia', 
         ->and($dom->filter('meta[name="twitter:description"]')->attr('content'))->toBe('X description')
         ->and($dom->filter('meta[name="twitter:image"]')->attr('content'))->toBe('https://seo.example/storage/seo/twitter/image.jpg')
         ->and($dom->filter('meta[name="twitter:image:alt"]')->attr('content'))->toBe('X image library alt');
-    $this->get('/en/insights/article')->assertInertia(fn (Assert $page) => $page
-        ->where('seo.twitterTitle', 'X title')->where('seo.twitterImageAlt', 'X image library alt')->where('seo.twitterCard', 'summary'));
     $fa = new Crawler($this->get('/fa/insights/article-fa')->assertOk()->getContent());
     expect($fa->filter('meta[name="twitter:title"]')->attr('content'))->toBe('عنوان عمومی');
 });

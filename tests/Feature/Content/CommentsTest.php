@@ -6,7 +6,6 @@ use App\Models\Comment;
 use App\Models\Post;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
-use Inertia\Testing\AssertableInertia as Assert;
 
 function postForComments(bool $published = true): Post
 {
@@ -34,8 +33,9 @@ it('only exposes approved comment content and never email', function (): void {
     $post = postForComments();
     $post->comments()->create(['name' => 'Public', 'email' => 'private@example.com', 'body' => 'Visible', 'locale' => 'en', 'status' => 'approved']);
     $post->comments()->create(['name' => 'Hidden', 'email' => 'hidden@example.com', 'body' => 'Not visible', 'locale' => 'en']);
-    $this->get('/en/insights/an-article')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->component('Insights/Show')->has('comments', 1)->where('comments.0.name', 'Public')->missing('comments.0.email'));
+    $this->get('/en/insights/an-article')->assertOk()
+        ->assertSee('Public')->assertSee('Visible')
+        ->assertDontSee('Not visible')->assertDontSee('private@example.com')->assertDontSee('hidden@example.com');
 });
 
 it('allows editors to moderate comments but not users without content permissions', function (): void {

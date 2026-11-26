@@ -21,7 +21,7 @@ final class SocialSeoFields
                     ->label('Social title')->maxLength(200),
                 Textarea::make("translations.{$locale}.seo_social_description")
                     ->label('Social description')->rows(2)->maxLength(300),
-                ImageUpload::make("translations.{$locale}.seo_social_image", 'Social share image', 'seo.share', 'seo/social'),
+                ImageUpload::make("translations.{$locale}.seo_social_image", 'Social share image', 'seo/social'),
                 TextInput::make("translations.{$locale}.seo_social_image_alt")
                     ->label('Social image alternative text')->maxLength(300)
                     ->helperText('Describe the selected share image. If empty, its media-library description or the image fallback is used.'),
@@ -32,7 +32,7 @@ final class SocialSeoFields
                             ->label('X / Twitter title')->maxLength(200),
                         Textarea::make("translations.{$locale}.seo_twitter_description")
                             ->label('X / Twitter description')->rows(2)->maxLength(300),
-                        ImageUpload::make("translations.{$locale}.seo_twitter_image", 'X / Twitter image', 'seo.share', 'seo/twitter'),
+                        ImageUpload::make("translations.{$locale}.seo_twitter_image", 'X / Twitter image', 'seo/twitter'),
                         TextInput::make("translations.{$locale}.seo_twitter_image_alt")
                             ->label('X / Twitter image alternative text')->maxLength(300),
                         Select::make("translations.{$locale}.seo_twitter_card")

@@ -1,0 +1,136 @@
+/*
+ | No z-index: the whole diagram belongs behind the service columns, and DOM
+ | order already puts it there. Adding one would only open a stacking context
+ | to no purpose.
+ */
+.mastery-stage {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /*
+   | The circles, rings, axis and labels are geometry, not prose: they must
+   | read the same way regardless of page direction. Without this, `dir="rtl"`
+   | (fa/ar) reverses the flex row below and swaps which end Marketing/Growth
+   | land on, even though the SVG coordinates themselves never move.
+   */
+  direction: ltr;
+}
+
+.mastery-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.mastery-rings circle {
+  fill: none;
+  /* Gold orbit rings remain visible without competing with the service pills. */
+  stroke: rgb(var(--color-gold-rgb) / 62%);
+  stroke-width: 2;
+  stroke-dasharray: 2 6;
+}
+.mastery-axis {
+  stroke: rgb(var(--color-gold-rgb) / 72%);
+  stroke-width: 2;
+  stroke-dasharray: 1 5;
+  stroke-linecap: round;
+}
+.mastery-blob {
+  fill: var(--color-gold);
+}
+
+.mastery-axis-layout {
+  position: absolute;
+  inset: 0;
+}
+.mastery-axis-slot {
+  display: none;
+}
+.mastery-label {
+  color: var(--color-paper);
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.mastery-axis-layout .mastery-label {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  max-inline-size: 35%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.mastery-label--left {
+  inset-inline-start: -40px;
+  text-align: end;
+}
+.mastery-label--right {
+  inset-inline-end: -40px;
+  text-align: start;
+}
+.mastery-label--core {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  translate: -50% 0;
+  max-width: 7em;
+  text-align: center;
+}
+
+@media (max-width: 1023px) {
+  .mastery-label {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 639px) {
+  .mastery-label--core {
+    display: none;
+  }
+  /*
+   | Mobile axis is vertical and has the full stage height to work with, so
+   | the fragile shared-space problem above doesn't apply — go back to a
+   | plain top/spacer/bottom stack, and let long labels wrap normally.
+   */
+  .mastery-axis-layout {
+    /*
+     | Must span the FULL stage height, not just its own content height: the
+     | slot below needs real room to flex-grow into so it lines up with where
+     | the SVG axis line actually sits, and the stack needs to be anchored top
+     | AND bottom for `justify-content: stretch` to have anything to stretch
+     | across. Anchoring only the bottom (`top: auto`) let the whole group
+     | float lower than the line's top endpoint, so Marketing landed beside
+     | the line instead of above it.
+     */
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: center;
+    padding-block: 24px 18px;
+  }
+  .mastery-axis-slot {
+    display: block;
+    order: 2;
+    flex: 1 1 0;
+    inline-size: 2px;
+    min-block-size: 0;
+    block-size: auto;
+  }
+  .mastery-axis-layout .mastery-label {
+    position: static;
+    translate: none;
+    order: 1;
+    max-inline-size: 100%;
+    overflow: visible;
+    white-space: pre-line;
+    overflow-wrap: break-word;
+    text-align: center;
+  }
+  .mastery-axis-layout .mastery-label--right {
+    order: 3;
+  }
+}

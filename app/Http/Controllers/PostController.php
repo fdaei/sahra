@@ -14,8 +14,7 @@ use App\Support\Breadcrumbs;
 use App\Support\IconUrl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 /**
  * Blog listing (Figma 1353:7935) and article detail (1352:7391).
@@ -24,7 +23,7 @@ final class PostController extends Controller
 {
     private const PER_PAGE = 9;
 
-    public function index(Request $request): Response
+    public function index(Request $request): View
     {
         $page = Page::query()
             ->key('insights')
@@ -34,6 +33,12 @@ final class PostController extends Controller
 
         $categoryFilter = $request->string('category')->toString();
         $search = $request->string('q')->toString();
+        $pageNumber = filter_var($request->query('page', 1), FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => intdiv(PHP_INT_MAX, self::PER_PAGE)],
+        ]);
+        abort_if($pageNumber === false, 404);
+
+        $filters = array_filter(['category' => $categoryFilter, 'q' => $search], fn (string $value): bool => $value !== '');
 
         $query = Post::query()->forListing();
 
@@ -57,22 +62,22 @@ final class PostController extends Controller
         // first page — otherwise it would duplicate a grid result.
         $featured = null;
 
-        if ($categoryFilter === '' && $search === '') {
+        if ($filters === []) {
             $featured = Post::query()->forListing()->featured()->first();
 
             if ($featured !== null) {
                 $query->whereKeyNot($featured->getKey());
-                if ($request->integer('page', 1) !== 1) {
+                if ($pageNumber !== 1) {
                     $featured = null;
                 }
             }
         }
 
-        abort_if($request->has('page') && (! ctype_digit((string) $request->input('page')) || $request->integer('page') < 1), 404);
-        $posts = $query->paginate(self::PER_PAGE)->withQueryString();
-        abort_if($posts->currentPage() > $posts->lastPage(), 404);
+        $posts = $query->paginate(self::PER_PAGE, page: $pageNumber)->appends($filters);
+        abort_if($pageNumber > $posts->lastPage(), 404);
 
-        return Inertia::render('Insights/Index', [
+        return view('app', [
+            'template' => 'public.pages.insights.index',
             'heading' => [
                 'eyebrow' => (string) $page?->getTranslation('subtitle'),
                 'title' => (string) $page?->getTranslation('title'),
@@ -91,7 +96,9 @@ final class PostController extends Controller
                 'lastPage' => $posts->lastPage(),
                 'total' => $posts->total(),
                 'nextPageUrl' => $posts->nextPageUrl(),
-                'prevPageUrl' => $posts->previousPageUrl(),
+                'prevPageUrl' => $pageNumber === 2
+                    ? route('insights.index', $filters, absolute: false)
+                    : $posts->previousPageUrl(),
             ],
 
             // Flat list; `parent` (a slug) lets the page show the
@@ -116,7 +123,7 @@ final class PostController extends Controller
                 ? []
                 : ContentTransformer::sectionMap($page->sections),
 
-            'seo' => $this->listingSeo($page, $request, $categoryFilter, $search),
+            'seo' => $this->listingSeo($page, $request, $categoryFilter, $search, $pageNumber),
         ]);
     }
 
@@ -126,9 +133,27 @@ final class PostController extends Controller
      *
      * @return array<string, mixed>
      */
-    private function listingSeo(?Page $page, Request $request, string $categoryFilter, string $search): array
+    private function listingSeo(Page $page, Request $request, string $categoryFilter, string $search, int $pageNumber): array
     {
         $seo = SeoBuilder::forPage($page, $request->url(), noindex: $categoryFilter !== '' || $search !== '');
+
+        if ($pageNumber > 1 && ! $seo['noindex']) {
+            // An alternate must have enough public articles in that language
+            // after reserving its featured article for page one.
+            $localesWithPage = Post::query()->published()
+                ->join('post_translations', 'post_translations.post_id', '=', 'posts.id')
+                ->whereIn('post_translations.locale', $seo['indexableLocales'])
+                ->whereNotNull('post_translations.slug')
+                ->where('post_translations.slug', '<>', '')
+                ->groupBy('post_translations.locale')
+                ->havingRaw('COUNT(*) - MAX(CASE WHEN posts.is_featured THEN 1 ELSE 0 END) > ?', [
+                    ($pageNumber - 1) * self::PER_PAGE,
+                ])
+                ->pluck('post_translations.locale')->all();
+
+            $seo['alternatePage'] = $pageNumber;
+            $seo['indexableLocales'] = array_values(array_intersect($seo['indexableLocales'], $localesWithPage));
+        }
 
         if ($categoryFilter === '') {
             return $seo;
@@ -146,12 +171,12 @@ final class PostController extends Controller
 
         return Breadcrumbs::attach($seo, [
             Breadcrumbs::home(),
-            Breadcrumbs::route($page ? (string) $page->getTranslation('title') : __('common.breadcrumb_insights'), 'insights.index'),
+            Breadcrumbs::route((string) $page->getTranslation('title'), 'insights.index'),
             ...Breadcrumbs::category($category),
         ]);
     }
 
-    public function show(string $locale, Post $post): Response
+    public function show(string $locale, Post $post): View
     {
         $post->loadMissing([
             'category.translations',
@@ -166,7 +191,8 @@ final class PostController extends Controller
             ? []
             : ContentTransformer::sectionMap($home->sections);
 
-        return Inertia::render('Insights/Show', [
+        return view('app', [
+            'template' => 'public.pages.insights.show',
             'post' => ContentTransformer::postDetail($post),
             'comments' => $post->comments()->where('status', 'approved')->orderBy('created_at')->get(['id', 'name', 'body', 'created_at'])
                 ->map(fn ($comment): array => ['id' => $comment->id, 'name' => $comment->name, 'body' => $comment->body, 'date' => $comment->created_at->toDateString()]),

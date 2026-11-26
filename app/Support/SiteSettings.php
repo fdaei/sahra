@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Models\Media;
 use App\Models\Setting;
 use App\Models\SocialLink;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Cached accessor for the key/value settings store and social links.
@@ -107,8 +107,8 @@ final class SiteSettings
 
     /**
      * Third-party analytics/tracking IDs, entered in Filament and read
-     * server-side into the Inertia root view — never routed through JS props
-     * since they need to load before Vue hydrates.
+     * server-side into the Blade layout
+     * so the page can include the configured tags.
      *
      * @return array{gaId: ?string, gtmId: ?string, gscVerification: ?string, hotjarId: ?string}
      */
@@ -157,6 +157,6 @@ final class SiteSettings
             return null;
         }
 
-        return Storage::disk('public')->url($path);
+        return Media::publicUrl($path);
     }
 }

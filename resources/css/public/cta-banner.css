@@ -1,0 +1,8 @@
+html[lang^='ar'] .final-cta-button {
+  color: var(--primary-black, #231f20);
+  font-family: 'Doran FaNum', sans-serif;
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}

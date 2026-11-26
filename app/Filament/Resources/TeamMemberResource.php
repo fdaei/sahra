@@ -54,7 +54,7 @@ final class TeamMemberResource extends Resource
             Section::make()
                 ->columns(2)
                 ->schema([
-                    ImageUpload::make('photo_path', 'Portrait', 'team', 'team')
+                    ImageUpload::make('photo_path', 'Portrait', 'team')
                         ->columnSpanFull(),
 
                     TextInput::make('sort_order')->numeric()->default(0),

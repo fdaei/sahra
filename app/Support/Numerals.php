@@ -11,7 +11,7 @@ namespace App\Support;
  * ASCII digits, and CSS cannot help: `font-variant-numeric` selects between
  * lining and oldstyle figures within one script, it does not transliterate
  * between Unicode digit blocks. So any number that reaches an fa/ar page has
- * to be converted here, in PHP, before it is handed to Inertia.
+ * to be converted here, in PHP, before the view renders it.
  *
  * Digit sets live in config/locales.php alongside direction and date_format,
  * so adding a locale stays a one-file change. `digits` is null for locales

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'creative_decisions'  => 'Because every creative decision is built around brand clarity, consistency, and growth.',
 
     'skip_to_content'     => 'Skip to content',
     'primary_navigation'  => 'Primary navigation',

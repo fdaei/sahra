@@ -12,8 +12,7 @@ use App\Services\SeoBuilder;
 use App\Services\SubmissionHandler;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 /**
  * Contact page. Figma 1363:8934 (desktop) / 1494:9544 (mobile).
@@ -24,7 +23,7 @@ final class ContactController extends Controller
         private readonly SubmissionHandler $handler,
     ) {}
 
-    public function create(Request $request): Response
+    public function create(Request $request): View
     {
         $page = Page::query()
             ->key('contact')
@@ -32,7 +31,8 @@ final class ContactController extends Controller
             ->withContent()
             ->firstOrFail();
 
-        return Inertia::render('Contact', [
+        return view('app', [
+            'template' => 'public.pages.contact',
             'sections' => $page === null
                 ? []
                 : ContentTransformer::sectionMap($page->sections),

@@ -28,9 +28,7 @@ import logical from 'tailwindcss-logical'
 export default {
   content: [
     './resources/views/**/*.blade.php',
-    './resources/js/**/*.{js,ts,vue}',
-    './app/Filament/**/*.php',
-    './vendor/filament/**/*.blade.php',
+    './resources/js/**/*.js',
   ],
 
   darkMode: 'class',

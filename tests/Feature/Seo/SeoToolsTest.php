@@ -174,5 +174,7 @@ it('accepts delimited regex rules from imported redirect data', function (): voi
 });
 
 it('keeps the 404 monitor alias compatible with the SEO menu URL', function (): void {
-    $this->get('/admin/not-found-logs')->assertRedirect('/admin/not-found-visits');
+    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    $admin = \App\Models\User::factory()->create()->assignRole('admin');
+    $this->actingAs($admin)->get('/admin/not-found-logs')->assertRedirect('/admin/not-found-visits');
 });

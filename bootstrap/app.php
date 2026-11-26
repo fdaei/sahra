@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Http\Middleware\ApplyRedirects;
 use App\Http\Middleware\CanonicalRedirect;
-use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\PreventPrivateIndexing;
 use App\Http\Middleware\RedirectToLocalisedRoute;
 use App\Http\Middleware\SetLocale;
@@ -26,12 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->prepend(CanonicalRedirect::class);
+        $middleware->prepend(PreventPrivateIndexing::class);
         $middleware->append(SecurityHeaders::class);
         // After the canonical-host redirect, before routing (see the class).
         $middleware->append(ApplyRedirects::class);
         $middleware->web(append: [
-            PreventPrivateIndexing::class,
-            HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);
 
@@ -58,13 +56,13 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /*
-         | Render 404/403/419/500 through Inertia so error pages keep the site
+         | Render 404/403/419/500 through Blade so error pages keep the site
          | chrome, the active locale, and the RTL/LTR direction.
          |
          | Figma: 404 desktop 1027:2061, mobile 1567:13563.
          */
         $exceptions->respond(function ($response, Throwable $e, Request $request) {
-            if ($request->is('admin*') || $request->expectsJson()) {
+            if ($request->is('admin', 'admin/*', 'livewire', 'livewire/*') || $request->expectsJson()) {
                 return $response;
             }
 
@@ -84,9 +82,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 return back()->with('error', __('errors.session_expired'));
             }
 
-            return inertia('Error', ['status' => $status, 'seo' => SeoBuilder::forError($status), 'alternates' => []])
-                ->toResponse($request)
-                ->setStatusCode($status);
+            return response()->view('app', [
+                'template' => 'public.pages.error',
+                'status' => $status,
+                'seo' => SeoBuilder::forError($status),
+            ], $status, $e instanceof HttpExceptionInterface ? $e->getHeaders() : []);
         });
     })
     ->create();

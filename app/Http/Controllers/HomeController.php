@@ -14,8 +14,7 @@ use App\Models\Testimonial;
 use App\Services\ContentTransformer;
 use App\Services\SeoBuilder;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 /**
  * Home page. Figma 1419:9192 (desktop) / 1419:9191 (mobile).
@@ -27,7 +26,7 @@ use Inertia\Response;
  */
 final class HomeController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): View
     {
         $page = Page::query()
             ->key('home')
@@ -52,7 +51,9 @@ final class HomeController extends Controller
             ];
         }
 
-        return Inertia::render('Home', [
+        return view('app', [
+            'template' => 'public.pages.home',
+            'pageTitle' => (string) $page->getTranslation('title'),
             // Editorial blocks: hero, lead magnet, packages, final CTA, and the
             // eyebrow/title/subtitle of every other section.
             'sections' => $sections,

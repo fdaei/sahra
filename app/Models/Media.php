@@ -62,7 +62,7 @@ final class Media extends Model
         'MediaObject' => 'MediaObject (generic)',
     ];
 
-    /** Livewire scratch space, SVG icon sets, and cached responsive variants. */
+    /** Livewire scratch space and SVG icon sets. */
     private const SKIP_DIRS = ['livewire-tmp', 'icons'];
 
     private const ALT_CACHE = 'media.alt-map.v1';
@@ -108,7 +108,14 @@ final class Media extends Model
 
     public function url(): string
     {
-        return Storage::disk(self::DISK)->url($this->path);
+        return self::publicUrl($this->path);
+    }
+
+    public static function publicUrl(string $path): string
+    {
+        $segments = array_map(rawurlencode(...), explode('/', ltrim($path, '/')));
+
+        return Storage::disk(self::DISK)->url(implode('/', $segments));
     }
 
     public function isImage(): bool
@@ -173,7 +180,7 @@ final class Media extends Model
         ];
 
         if ($this->isVideo()) {
-            $node['thumbnailUrl'] = $this->poster_path ? self::absolute(Storage::disk(self::DISK)->url($this->poster_path)) : null;
+            $node['thumbnailUrl'] = $this->poster_path ? self::absolute(self::publicUrl($this->poster_path)) : null;
             $node['duration'] = $this->duration ? 'PT'.$this->duration.'S' : null;
         }
 
@@ -230,6 +237,11 @@ final class Media extends Model
     public static function allMimes(): array
     {
         return array_merge(...array_values(self::MIMES));
+    }
+
+    public static function supportsExtension(string $extension, ?string $type = null): bool
+    {
+        return in_array($extension, $type === null ? array_merge(...array_values(self::EXTENSIONS)) : self::EXTENSIONS[$type], true);
     }
 
     /** Create or refresh the row for a file already on the disk. */
@@ -291,14 +303,15 @@ final class Media extends Model
     {
         if (Str::startsWith($path, array_map(fn (string $d): string => "{$d}/", self::SKIP_DIRS))
             || Str::startsWith(basename($path), '.')
-            || preg_match('/-\d+w\.[a-z0-9]+$/i', $path) // MediaVariantController cache
+            // Old responsive variants were stored beside the original.
+            || (! Str::isUlid(basename(dirname($path))) && preg_match('/-\d+w\.[a-z0-9]+$/i', $path))
         ) {
             return false;
         }
 
         $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
-        return in_array($ext, array_merge(...array_values(self::EXTENSIONS)), true);
+        return self::supportsExtension($ext);
     }
 
     private static function absolute(string $url): string

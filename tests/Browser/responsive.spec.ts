@@ -37,8 +37,8 @@ test('mobile menu opens, traps focus, and closes on Escape', async ({ page, view
 test('language switcher lands on the translated equivalent page', async ({ page }) => {
   await page.goto('/en/about')
 
-  await page.getByRole('button', { name: /change language/i }).click()
-  await page.getByRole('option', { name: 'فارسی' }).click()
+  await page.locator('.language-switcher summary:visible').click()
+  await page.getByRole('link', { name: 'فارسی' }).click()
 
   await expect(page).toHaveURL(/\/fa\/about/)
   await expect(page.locator('html')).toHaveAttribute('dir', 'rtl')
@@ -48,9 +48,9 @@ test('reduced motion disables marquee animation', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await page.goto('/en')
 
-  const hasReducedClass = await page.evaluate(
-    () => document.documentElement.classList.contains('reduced-motion'),
+  const duration = await page.locator('.marquee-track').first().evaluate(
+    element => getComputedStyle(element).animationDuration,
   )
 
-  expect(hasReducedClass).toBe(true)
+  expect(duration).toBe('0s')
 })

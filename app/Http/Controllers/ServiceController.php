@@ -9,8 +9,7 @@ use App\Models\Service;
 use App\Services\ContentTransformer;
 use App\Services\SeoBuilder;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\View\View;
 
 /**
  * Services page. Figma 1323:7189 (desktop) / 1626:12562 (mobile).
@@ -20,7 +19,7 @@ use Inertia\Response;
  */
 final class ServiceController extends Controller
 {
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): View
     {
         $page = Page::query()
             ->key('services')
@@ -28,7 +27,8 @@ final class ServiceController extends Controller
             ->withContent()
             ->firstOrFail();
 
-        return Inertia::render('Services', [
+        return view('app', [
+            'template' => 'public.pages.services',
             'heading' => [
                 'eyebrow' => (string) $page?->getTranslation('subtitle'),
                 'title' => (string) $page?->getTranslation('title'),

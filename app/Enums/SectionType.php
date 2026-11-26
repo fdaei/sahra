@@ -10,7 +10,7 @@ use Filament\Support\Contracts\HasLabel;
  * Identifies which Figma section a PageSection represents.
  *
  * Every case maps to a concrete section in the audit (docs/FIGMA-AUDIT.md §5).
- * The frontend switches on this value to pick the matching Vue component, so
+ * The frontend switches on this value to pick the matching Blade partial, so
  * adding a case here without a component is a no-op rather than a crash.
  */
 enum SectionType: string implements HasLabel

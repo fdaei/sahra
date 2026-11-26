@@ -1,0 +1,39 @@
+.deliverables-card__background {
+  height: 185%;
+  inset-block-start: -9%;
+  inset-inline-start: -119%;
+  width: 265%;
+}
+
+.deliverables-card:nth-child(2) .deliverables-card__background {
+  inset-block-start: 0;
+  inset-inline-start: -83%;
+}
+
+.deliverables-card:nth-child(3) .deliverables-card__background {
+  height: 206%;
+  inset-block-start: -3%;
+  inset-inline-start: -127%;
+  width: 296%;
+}
+
+.deliverables-card:nth-child(4) .deliverables-card__background {
+  height: 207%;
+  inset-block-start: -4%;
+  inset-inline-start: -59%;
+  width: 298%;
+}
+
+.deliverables-card:nth-child(5) .deliverables-card__background {
+  height: 207%;
+  inset-block-start: 0;
+  inset-inline-start: -49%;
+  width: 298%;
+}
+
+.deliverables-card:nth-child(6) .deliverables-card__background {
+  height: 207%;
+  inset-block-start: -16%;
+  inset-inline-start: -114%;
+  width: 298%;
+}

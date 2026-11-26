@@ -9,7 +9,6 @@ use App\Models\Post;
 use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
-use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -18,7 +17,7 @@ function robotsContent(string $html): string
     return (new Crawler($html))->filter('meta[name="robots"]')->attr('content');
 }
 
-it('renders advanced directives in server HTML and inertia without changing other languages', function (): void {
+it('renders advanced directives in server HTML without changing other languages', function (): void {
     $post = Post::factory()->published()->create();
     $post->setTranslations([
         'en' => ['title' => 'Article', 'slug' => 'article', 'seo_nosnippet' => true, 'seo_noimageindex' => true, 'seo_max_image_preview' => 'none', 'seo_max_snippet' => 25, 'seo_max_video_preview' => 10],
@@ -27,7 +26,6 @@ it('renders advanced directives in server HTML and inertia without changing othe
     $expected = 'index, follow, nosnippet, noimageindex, max-image-preview:none';
     expect(robotsContent($this->get('/en/insights/article')->assertOk()->getContent()))->toBe($expected)
         ->and(robotsContent($this->get('/fa/insights/article-fa')->assertOk()->getContent()))->toBe('index, follow, max-image-preview:large');
-    $this->get('/en/insights/article')->assertInertia(fn (Assert $page) => $page->where('seo.robots', $expected));
     $this->get('/sitemap-en.xml')->assertOk()->assertSee('/en/insights/article');
 });
 

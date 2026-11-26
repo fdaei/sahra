@@ -140,7 +140,7 @@ final class ServiceResource extends Resource
                     PublicationFields::section(),
 
                     Section::make('Media')->schema([
-                        ImageUpload::make('image_path', 'Service image', 'service', 'services'),
+                        ImageUpload::make('image_path', 'Service image', 'services'),
                     ]),
                 ]),
             ]),

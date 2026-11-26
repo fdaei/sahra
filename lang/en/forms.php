@@ -40,6 +40,7 @@ return [
     ],
 
     'newsletter' => [
+        'download_file' => 'Download file',
         'title' => 'Get the Content Direction Checklist',
         'description' => 'A short checklist to help you understand whether your content is moving with clear direction.',
         'name' => 'Name',

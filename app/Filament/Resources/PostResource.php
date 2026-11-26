@@ -204,7 +204,7 @@ final class PostResource extends Resource
                     PublicationFields::section(),
 
                     Section::make('Cover')->schema([
-                        ImageUpload::make('cover_path', 'Cover image', 'post.cover', 'posts')->live(),
+                        ImageUpload::make('cover_path', 'Cover image', 'posts')->live(),
                     ]),
 
                     Section::make('Article download')
@@ -231,7 +231,6 @@ final class PostResource extends Resource
                             ImageUpload::make(
                                 'lead_magnet_image_path',
                                 'Banner background',
-                                'post.hero',
                                 'posts/lead-magnets',
                             ),
                         ]),

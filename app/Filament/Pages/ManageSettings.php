@@ -189,7 +189,7 @@ final class ManageSettings extends Page implements HasForms
                         $this->translatableTextarea('seo_default_description', 'Default description'),
                         $this->translatableInput('seo_organization_name', 'Organisation name'),
 
-                        ImageUpload::make('seo_default_image', 'Default share image', 'seo.share', 'seo')
+                        ImageUpload::make('seo_default_image', 'Default share image', 'seo')
                             ->helperText('Shown when a page has no image. Cropped to the 1200×630 Open Graph card.'),
                         $this->translatableInput('seo_default_image_alt', 'Default share image alternative text'),
                     ]),

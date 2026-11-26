@@ -137,7 +137,7 @@ final class ContentTransformer
             /*
              | Locale-independent identity. `slug` is per-locale, so the front
              | end cannot use it to recognise a specific service — the orbit
-             | (ServicesOrbit.vue) needs to know *which* service a payload is
+             | (the services orbit template) needs to know *which* service a payload is
              | regardless of the language it is being read in. The fallback
              | locale's slug is the stable name; withTranslations() always
              | eager-loads that row alongside the active one, so this stays a
@@ -346,7 +346,7 @@ final class ContentTransformer
     }
 
     /**
-     * Keyed map of every visible section on a page, so a Vue page can read
+     * Keyed map of every visible section on a page, so a Blade template can read
      * `sections.hero` instead of searching an array.
      *
      * @param  Collection<int, PageSection>  $sections

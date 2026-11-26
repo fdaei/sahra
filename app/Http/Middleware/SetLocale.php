@@ -44,7 +44,7 @@ final class SetLocale
      * Split out of handle() because a 404 on an already-prefixed path
      * (/ar/nonexistent) never reaches this middleware — the {locale} group
      * fails to match, so RedirectToLocalisedRoute throws instead. Without
-     * this, the Inertia error page rendered in the default language and LTR
+     * this, the Blade error page rendered in the default language and LTR
      * on an Arabic URL. RedirectToLocalisedRoute calls it before throwing.
      */
     public static function apply(Request $request, string $locale): void
@@ -57,7 +57,7 @@ final class SetLocale
         Carbon::setLocale($locale);
 
         // Every route() and url() call inherits the active locale, so links
-        // generated in controllers and Ziggy stay inside the current language.
+        // generated in controllers and templates stay inside the current language.
         URL::defaults(['locale' => $locale]);
 
         // Consumed by the Blade root view for <html lang dir> and font class.

@@ -9,7 +9,6 @@ use App\Models\Post;
 use App\Models\Setting;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
-use Inertia\Testing\AssertableInertia as Assert;
 use Livewire\Livewire;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -38,8 +37,6 @@ it('renders explicit localized social image alt and actual media dimensions', fu
         ->and($dom->filter('meta[property="og:image:width"]')->attr('content'))->toBe('1200')
         ->and($dom->filter('meta[property="og:image:height"]')->attr('content'))->toBe('630')
         ->and($dom->filter('meta[property="og:image:type"]')->attr('content'))->toBe('image/jpeg');
-    $this->get('/en/insights/article')->assertInertia(fn (Assert $page) => $page
-        ->where('seo.socialImageAlt', 'People working together')->where('seo.socialImageWidth', 1200));
     $fa = new Crawler($this->get('/fa/insights/article-fa')->assertOk()->getContent());
     expect($fa->filter('meta[property="og:image:alt"]')->attr('content'))->toBe('متن تصویر');
 });

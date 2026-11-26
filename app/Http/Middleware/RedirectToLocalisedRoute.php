@@ -34,7 +34,7 @@ final class RedirectToLocalisedRoute
             /*
              | Genuine 404 on an already-localised path. SetLocale never ran —
              | the {locale} group failed to match — so apply the locale here or
-             | the Inertia error page renders in the default language and LTR
+             | the Blade error page renders in the default language and LTR
              | on an /ar or /fa URL, losing direction and chrome.
              */
             SetLocale::apply($request, $first);

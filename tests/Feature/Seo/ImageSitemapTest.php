@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\Post;
 use App\Models\Project;
-use App\Services\MediaTransformer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -40,12 +39,12 @@ it('lists actual public images of published, indexable posts and projects', func
     $project->images()->create(['path' => 'projects/missing.jpg', 'sort_order' => 2]);
     $project->images()->create(['path' => 'projects/gallery.jpg', 'sort_order' => 3]);
     $entries = sitemapImageEntries($this->get('/sitemap-en.xml')->assertOk()->getContent());
-    expect($entries['https://seo.example/en/insights/article'])->toBe(['https://seo.example'.MediaTransformer::primaryUrl('posts/cover.jpg', 'post.hero')])
+    expect($entries['https://seo.example/en/insights/article'])->toBe(['https://seo.example/storage/posts/cover.jpg'])
         ->and($entries['https://seo.example/en/work/project'])->toBe([
-            'https://seo.example'.MediaTransformer::primaryUrl('projects/banner.jpg', 'project.banner'),
-            'https://seo.example'.MediaTransformer::primaryUrl('projects/before.jpg', 'project.beforeafter'),
-            'https://seo.example'.MediaTransformer::primaryUrl('projects/after.jpg', 'project.beforeafter'),
-            'https://seo.example'.MediaTransformer::primaryUrl('projects/gallery.jpg', 'project.showcase'),
+            'https://seo.example/storage/projects/banner.jpg',
+            'https://seo.example/storage/projects/before.jpg',
+            'https://seo.example/storage/projects/after.jpg',
+            'https://seo.example/storage/projects/gallery.jpg',
         ]);
 });
 
@@ -121,16 +120,9 @@ it('limits each project to 1000 unique images and keeps their ordering', functio
     $entries = sitemapImageEntries($this->get('/sitemap-en.xml')->assertOk()->getContent());
     $images = $entries['https://seo.example/en/work/project'];
     expect($images)->toHaveCount(1000)
-        ->and($images[0])->toBe('https://seo.example'.MediaTransformer::primaryUrl('projects/banner.jpg', 'project.banner'))
-        ->and($images[999])->toBe('https://seo.example'.MediaTransformer::primaryUrl('projects/gallery-998.jpg', 'project.showcase'));
+        ->and($images[0])->toBe('https://seo.example/storage/projects/banner.jpg')
+        ->and($images[999])->toBe('https://seo.example/storage/projects/gallery-998.jpg');
 });
-
-it('uses the same primary URLs as the public image transformer', function (string $path, string $context): void {
-    expect(MediaTransformer::primaryUrl($path, $context))->toBe(MediaTransformer::make($path, 'description', $context)['src']);
-})->with([
-    ['posts/photo.jpg', 'post.hero'], ['projects/photo.jpg', 'project.showcase'],
-    ['projects/logo.svg', 'project.banner'], ['https://cdn.example/photo.jpg', 'project.banner'],
-]);
 
 it('continues past missing gallery rows to include later existing images', function (): void {
     $project = Project::factory()->published()->create();
@@ -144,8 +136,8 @@ it('continues past missing gallery rows to include later existing images', funct
     foreach (array_chunk($rows, 100) as $chunk) DB::table('project_images')->insert($chunk);
     $entries = sitemapImageEntries($this->get('/sitemap-en.xml')->assertOk()->getContent());
     expect($entries['https://seo.example/en/work/project'])->toBe([
-        'https://seo.example'.MediaTransformer::primaryUrl('projects/gallery-1000.jpg', 'project.showcase'),
-        'https://seo.example'.MediaTransformer::primaryUrl('projects/gallery-1001.jpg', 'project.showcase'),
+        'https://seo.example/storage/projects/gallery-1000.jpg',
+        'https://seo.example/storage/projects/gallery-1001.jpg',
     ]);
 });
 

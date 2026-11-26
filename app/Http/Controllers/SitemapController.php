@@ -188,15 +188,15 @@ final class SitemapController extends Controller
             return [];
         }
         $candidates = $model instanceof Post
-            ? [[$model->cover_path, 'post.hero']]
+            ? [$model->cover_path]
             : [
-                [$model->banner_path ?: $model->cover_path, $model->banner_path ? 'project.banner' : 'project.cover'],
-                [$model->before_image_path, 'project.beforeafter'],
-                [$model->after_image_path, 'project.beforeafter'],
-                ...$model->images->map(fn ($image): array => [$image->path, 'project.showcase'])->all(),
+                $model->banner_path ?: $model->cover_path,
+                $model->before_image_path,
+                $model->after_image_path,
+                ...$model->images->pluck('path')->all(),
             ];
         $urls = [];
-        $add = function (mixed $path, string $context) use (&$urls): bool {
+        $add = function (mixed $path) use (&$urls): bool {
             if (! is_string($path) || trim($path) === '') {
                 return false;
             }
@@ -213,16 +213,15 @@ final class SitemapController extends Controller
                     return false;
                 }
             }
-            $url = MediaTransformer::primaryUrl($path, $context);
+            $url = MediaTransformer::url($path);
             if (! preg_match('~^https?://~i', $url)) {
-                $segments = array_map(fn (string $segment): string => rawurlencode(rawurldecode($segment)), explode('/', ltrim($url, '/')));
-                $url = CanonicalUrl::origin().'/'.implode('/', $segments);
+                $url = CanonicalUrl::origin().'/'.ltrim($url, '/');
             }
             $urls[$url] = true;
             return count($urls) >= 1000;
         };
-        foreach ($candidates as [$path, $context]) {
-            if ($add($path, $context)) {
+        foreach ($candidates as $path) {
+            if ($add($path)) {
                 return array_keys($urls);
             }
         }
@@ -237,7 +236,7 @@ final class SitemapController extends Controller
                 })
                 ->orderBy('sort_order')->orderBy('id')->lazy(500);
             foreach ($remaining as $image) {
-                if ($add($image->path, 'project.showcase')) {
+                if ($add($image->path)) {
                     break;
                 }
             }

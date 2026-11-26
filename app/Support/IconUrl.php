@@ -8,13 +8,18 @@ use Illuminate\Support\Facades\Storage;
 
 final class IconUrl
 {
+    public static function isImage(?string $icon): bool
+    {
+        return str_starts_with($icon ?? '', '/') || preg_match('~^https?://~', $icon ?? '') === 1;
+    }
+
     public static function resolve(?string $icon): ?string
     {
         if (blank($icon)) {
             return null;
         }
 
-        if (str_starts_with($icon, '/') || str_starts_with($icon, 'http://') || str_starts_with($icon, 'https://')) {
+        if (self::isImage($icon)) {
             return $icon;
         }
 

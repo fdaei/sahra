@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\AboutController;
-use App\Http\Controllers\AdminLocaleController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\HomeController;
@@ -17,8 +16,6 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\MediaVariantController;
 use App\Http\Controllers\SitemapController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -37,17 +34,10 @@ use Illuminate\Support\Facades\Route;
 
 $localePattern = implode('|', array_keys(config('locales.supported')));
 
-Route::get('admin/language/{locale}', AdminLocaleController::class)
-    ->middleware('auth')
-    ->whereIn('locale', ['en', 'fa'])
-    ->name('admin.locale');
-
 // SEO endpoints — not locale-prefixed.
 Route::get('robots.txt', function () {
-    return response("User-agent: *\nAllow: /\nDisallow: /admin\n\nSitemap: ".rtrim(\App\Support\CanonicalUrl::origin(), '/')."/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
+    return response("User-agent: *\nAllow: /\n\nSitemap: ".\App\Support\CanonicalUrl::origin()."/sitemap.xml\n", 200, ['Content-Type' => 'text/plain; charset=UTF-8']);
 })->name('robots');
-// Preserve the existing 404 report route while supporting the SEO menu URL.
-Route::redirect('admin/not-found-logs', '/admin/not-found-visits', 302);
 Route::get('sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('feed-{locale}.xml', PostFeedController::class)->where('locale', $localePattern)->name('feed.locale');
 Route::get('sitemap-{locale}-{kind}-{shard}.xml', [SitemapController::class, 'shard'])
@@ -60,22 +50,6 @@ Route::get('sitemap-{locale}.xml', [SitemapController::class, 'locale'])
 Route::get('media/{format}/{width}/{path}', MediaVariantController::class)
     ->whereIn('format', ['avif', 'webp', 'jpeg'])
     ->whereNumber('width')->where('path', '.*')->name('media.variant');
-
-// Temporary local-only SMTP smoke test. Remove after verifying delivery.
-Route::get('test-mail', function (Request $request) {
-    abort_unless(app()->environment('local'), 404);
-
-    $recipient = $request->string('to')->trim()->toString()
-        ?: (string) env('TEST_MAIL_TO', env('MAIL_FROM_ADDRESS'));
-
-    abort_unless(filter_var($recipient, FILTER_VALIDATE_EMAIL), 422, 'Invalid test recipient.');
-
-    Mail::raw('This is a test email from Sahram Marketing.', function ($message) use ($recipient): void {
-        $message->to($recipient)->subject('Sahram Marketing SMTP test');
-    });
-
-    return response()->json(['sent_to' => $recipient]);
-})->name('test-mail');
 
 Route::prefix('{locale}')
     ->where(['locale' => $localePattern])

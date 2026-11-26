@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'creative_decisions'  => 'چون هر تصمیم خلاقانه بر شفافیت، انسجام و رشد برند استوار است.',
 
     'skip_to_content'     => 'رفتن به محتوا',
     'primary_navigation'  => 'ناوبری اصلی',

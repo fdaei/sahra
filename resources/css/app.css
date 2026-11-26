@@ -1,5 +1,11 @@
 @import './fonts.css';
-@import 'flag-icons/css/flag-icons.min.css';
+@import './public/cta-banner.css';
+@import './public/insights-show.css';
+@import './public/mastery-diagram.css';
+@import './public/packages-section.css';
+@import './public/projects-showcase.css';
+@import './public/services-orbit.css';
+@import './public/show.css';
 
 @tailwind base;
 @tailwind components;
@@ -18,7 +24,6 @@
 
   html {
     -webkit-text-size-adjust: 100%;
-    /* Inertia must reset new pages immediately, before their first paint. */
     scroll-behavior: auto;
   }
 
@@ -76,7 +81,7 @@
     --radiusLG: theme('borderRadius.lg');
   }
 
-  /* Respect the OS preference for both CSS and GSAP (see lib/motion.ts). */
+  /* Respect the OS preference for reduced motion. */
   @media (prefers-reduced-motion: reduce) {
     html {
       scroll-behavior: auto;
@@ -90,12 +95,11 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
-  }
 
-  /* When JS detects reduced motion it adds this class; marquees stop dead. */
-  .reduced-motion .marquee-track {
-    animation: none !important;
-    transform: none !important;
+    .marquee-track {
+      animation: none !important;
+      transform: none !important;
+    }
   }
 
   body {
@@ -296,8 +300,7 @@
    | Duration comes in per-instance as --marquee-duration. RTL travels the
    | other way, and hovering pauses it so a reader can stop on a card.
    |
-   | Reduced motion is already handled above: `.reduced-motion .marquee-track`
-   | kills the animation and the transform, leaving a static row.
+   | With reduced motion the track stays in its initial position.
    */
   /* Declared here, not in tailwind.config.js: Tailwind only emits keyframes
      that a generated `animation-*` utility references, so a config entry used
@@ -319,9 +322,6 @@
     overscroll-behavior-x: contain;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
-    /* Horizontal dragging is handled by the pointer handlers in About.vue;
-       keep vertical page scrolling available while the rail is touched. */
-    touch-action: pan-y;
     direction: ltr;
     cursor: grab;
   }
@@ -434,19 +434,6 @@
     );
   }
 
-  /* Elements animated by GSAP start hidden — but only when motion is allowed,
-     otherwise reduced-motion users would see nothing at all.
-
-     `html.motion-ready` is added by initMotion() once GSAP has loaded and is
-     about to run. Without that gate a bundle failure would leave every
-     `.will-reveal` element hidden forever, so the hidden state is opt-in from
-     JS rather than the default. */
-  @media (prefers-reduced-motion: no-preference) {
-    :where(html.motion-ready) .will-reveal {
-      opacity: 0;
-      transform: translateY(32px);
-    }
-  }
 }
 
 @layer utilities {
@@ -476,4 +463,52 @@
     min-width: 44px;
     min-height: 44px;
   }
+}
+
+[hidden]:not([hidden="until-found"]) {
+  display: none !important;
+}
+
+.mobile-menu::backdrop {
+  background: rgb(35 31 32 / 40%);
+}
+
+.public-modal {
+  max-inline-size: min(706px, calc(100vw - 40px));
+  max-block-size: calc(100dvh - 40px);
+  overflow: auto;
+  border-radius: 16px;
+  background: white;
+}
+
+.public-modal::backdrop {
+  background: rgb(0 0 0 / 40%);
+  backdrop-filter: blur(5px);
+}
+
+.contact-services summary::-webkit-details-marker {
+  display: none;
+}
+
+:root:has(dialog[open]) {
+  overflow: hidden;
+}
+
+[data-disclosure][aria-expanded="true"] svg,
+[data-nav-dropdown] button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+:is([data-action="selectMobileProject"], [data-action="selectDesktopProject"], [data-action="goToTestimonial"]) {
+  width: 10px;
+  background-color: var(--color-neutral-300, #bdbcbd);
+}
+
+:is([data-action="selectMobileProject"], [data-action="selectDesktopProject"], [data-action="goToTestimonial"])[aria-current="true"] {
+  width: 20px;
+  background-color: var(--color-gold);
+}
+
+[data-modal-panel][id]:not(.public-modal *):not(:target):not([data-show-modal]) {
+  display: none;
 }

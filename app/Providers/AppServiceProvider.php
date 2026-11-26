@@ -9,20 +9,12 @@ use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Filters\BaseFilter;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
-use Inertia\Inertia;
 
 final class AppServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-        // Public HTML is rendered by Blade; no external rendering process.
-    }
-
     public function boot(): void
     {
         \App\Services\Redirects\SlugChangeRedirector::register();
@@ -51,9 +43,6 @@ final class AppServiceProvider extends ServiceProvider
         // Remove Livewire's default 12 MB temporary-upload ceiling.
         config()->set('livewire.temporary_file_upload.rules', ['required', 'file']);
 
-        // Vite prefetches lazily-loaded chunks once the page is idle.
-        Vite::prefetch(concurrency: 3);
-
         if ($this->app->environment('production')) {
             URL::forceScheme('https');
         }
@@ -63,8 +52,6 @@ final class AppServiceProvider extends ServiceProvider
             URL::forceScheme(parse_url($origin, PHP_URL_SCHEME));
         }
 
-        $this->shareTranslations();
-
         // Queue workers are long-lived, so apply database-backed mail settings
         // immediately before each queued notification is processed.
         Queue::before(function (): void {
@@ -72,45 +59,4 @@ final class AppServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Expose the active locale's PHP translation files to the frontend.
-     *
-     * Read by resources/js/Composables/useTranslations.ts, so Vue components
-     * and Blade resolve identical strings from one source of truth.
-     *
-     * Cached per-locale in production; re-read on every request in local so
-     * editing a lang file shows up without clearing anything.
-     */
-    private function shareTranslations(): void
-    {
-        Inertia::share('translations', function (): array {
-            $locale = app()->getLocale();
-
-            $load = function () use ($locale): array {
-                $path = lang_path($locale);
-
-                if (! File::isDirectory($path)) {
-                    return [];
-                }
-
-                $translations = [];
-
-                foreach (File::files($path) as $file) {
-                    if ($file->getExtension() !== 'php') {
-                        continue;
-                    }
-
-                    $translations[$file->getFilenameWithoutExtension()] = require $file->getPathname();
-                }
-
-                return $translations;
-            };
-
-            if ($this->app->environment('local')) {
-                return $load();
-            }
-
-            return cache()->rememberForever("translations.{$locale}", $load);
-        });
-    }
 }

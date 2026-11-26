@@ -1,0 +1,42 @@
+/*
+ | Share rail button — Figma component 622:1053, which stores three states:
+ |
+ |   default  #F8F7F8 disc, dark glyph, NO stroke
+ |   hover    solid #231F20 disc, white glyph
+ |   (third)  back to the light disc
+ |
+ | The build had this as a hairline-outlined transparent disc whose hover only
+ | darkened the border and glyph — the black fill, which is the whole point of
+ | the interaction in the file, never appeared.
+ |
+ | Only `background-color` and `color` change, so the disc never resizes and
+ | nothing around it reflows on hover. The border is gone rather than made
+ | transparent for the same reason: there was none in the file, and keeping a
+ | 1px transparent one would leave the glyph 1px off-centre against the frame.
+ |
+ | `:focus-visible` gets the same treatment so keyboard users see the state
+ | too; the global gold focus ring in app.css still draws on top of it.
+ */
+.share-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1000px;
+  background-color: theme('colors.neutral.25');
+  color: theme('colors.neutral.800');
+  transition:
+    background-color 0.3s ease-out,
+    color 0.3s ease-out;
+}
+
+.share-button:hover,
+.share-button:focus-visible {
+  background-color: theme('colors.ink');
+  color: theme('colors.paper');
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .share-button {
+    transition: none;
+  }
+}

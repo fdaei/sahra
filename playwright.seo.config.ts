@@ -5,5 +5,5 @@ export default defineConfig({
   testMatch: 'seo.spec.ts',
   workers: 1,
   reporter: 'list',
-  use: { baseURL: process.env.BASE_URL ?? 'http://127.0.0.1:8765', browserName: 'chromium', reducedMotion: 'reduce' },
+  use: { baseURL: process.env.BASE_URL ?? 'http://127.0.0.1:8765', browserName: 'chromium', contextOptions: { reducedMotion: 'reduce' } },
 })

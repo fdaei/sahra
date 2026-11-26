@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\PublicationStatus;
 use App\Models\Page;
 use App\Models\Post;
-use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\DomCrawler\Crawler;
 
 beforeEach(function (): void {
@@ -76,12 +75,11 @@ it('finds up to 50 eligible items even when newer ones are noindex', function ()
         ->and((string) $xml->channel->item[49]->title)->toBe('Visible 49');
 });
 
-it('advertises the current language feed in public HTML and inertia', function (): void {
+it('advertises the current language feed in public HTML', function (): void {
     $page = Page::factory()->create(['key' => 'about']);
     $page->setTranslations(['en' => ['title' => 'About'], 'fa' => ['title' => 'درباره']]);
     $dom = new Crawler($this->get('/fa/about')->assertOk()->getContent());
     expect($dom->filter('head link[type="application/rss+xml"]')->attr('href'))->toBe('https://seo.example/feed-fa.xml');
-    $this->get('/fa/about')->assertInertia(fn (Assert $page) => $page->where('rssFeedUrl', 'https://seo.example/feed-fa.xml'));
     $error = new Crawler($this->get('/en/missing')->assertNotFound()->getContent());
     expect($error->filter('head link[type="application/rss+xml"]')->count())->toBe(0);
     $this->get('/feed-zz.xml')->assertNotFound();

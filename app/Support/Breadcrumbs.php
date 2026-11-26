@@ -8,10 +8,10 @@ use App\Models\PostCategory;
 
 /**
  * Breadcrumb trails — one source for both the visible trail
- * (resources/js/Components/Breadcrumbs.vue, via `seo.breadcrumbs`) and the
+ * (resources/views/public/components/breadcrumbs.blade.php, via `seo.breadcrumbs`) and the
  * BreadcrumbList JSON-LD, so the two never disagree.
  *
- * A crumb is ['name', 'href' (relative, for Inertia links), 'url' (absolute
+ * A crumb is ['name', 'href' (relative, for navigation links), 'url' (absolute
  * canonical, for schema)]. The last crumb is the current page.
  */
 final class Breadcrumbs

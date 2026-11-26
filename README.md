@@ -1,7 +1,6 @@
 # Sahra Marketing
 
-Multilingual (EN/FA/AR) marketing website — Laravel 11 · Inertia 2 · Vue 3 ·
-TypeScript · Tailwind · Filament 3.
+Multilingual (EN/FA/AR) marketing website built with Laravel 12, Blade, Tailwind and Filament 3.
 
 Built against the `SahraMarketing` Figma file, page `User interface` (`1:2`).
 See `docs/FIGMA-AUDIT.md` for the full design audit and
@@ -14,7 +13,7 @@ resource mapping.
 
 - PHP 8.2+
 - Composer 2
-- Node 20+
+- Node 22+ on the build machine
 - MySQL 8 or PostgreSQL 14+
 - A queue-capable cache (database driver works fine for development)
 
@@ -125,7 +124,7 @@ avoid the default ever existing.
 ```bash
 php artisan test              # Pest: locale routing, publication states,
                                # forms, admin authorization
-npm run typecheck              # vue-tsc, strict mode
+npm run typecheck              # TypeScript checks for Vite and Playwright
 npm run test:e2e               # Playwright — requires the app running;
                                # set BASE_URL if not http://localhost:8000
 ```
@@ -135,12 +134,12 @@ npm run test:e2e               # Playwright — requires the app running;
 For PHP-only cPanel with no terminal, follow [the Persian upload guide](docs/DEPLOY-CPANEL-FA.md). The commands below are for environments with a terminal.
 
 ```bash
-composer install --no-dev --optimize-autoloader
+# Build machine
+npm ci
 npm run build
 
-# Blade renders the initial HTML and SEO head directly in PHP.
-# No Node rendering process is used on the server.
-
+# PHP host with the built public/build directory
+composer install --no-dev --optimize-autoloader
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
@@ -190,7 +189,6 @@ Environment checklist for production:
 - [ ] `APP_ENV=production`, `APP_DEBUG=false`
 - [ ] `APP_URL` set to the real domain (used for canonical URLs, sitemaps, hreflang)
 - [ ] `SEO_CANONICAL_ORIGIN=https://sahramarketing.com` (the non-www host)
-- [ ] `INERTIA_SSR_ENABLED=false`; initial content is rendered by Blade
 - [ ] `SESSION_DRIVER`, `CACHE_STORE`, `QUEUE_CONNECTION` pointed at real
       backends (Redis recommended over `database` at scale)
 - [ ] `MAIL_*` configured; `CONTACT_NOTIFICATION_EMAIL` set to a monitored inbox
@@ -216,7 +214,7 @@ app/
     Support/              TranslatableForm, PublicationFields
   Http/
     Controllers/          One per public route (see docs/TRACEABILITY.md)
-    Middleware/           SetLocale, RedirectToLocalisedRoute, HandleInertiaRequests
+    Middleware/           SetLocale, RedirectToLocalisedRoute
     Requests/              ContactSubmissionRequest, NewsletterSubscriptionRequest
   Models/                22 Eloquent models + Translations/ (15 translation models)
   Notifications/         ContactSubmissionReceived
@@ -243,14 +241,13 @@ docs/
 resources/
   css/                    app.css (Tailwind layers), fonts.css (@font-face)
   images/                 Static SVGs (branding, clients, icons, decor)
-  js/
-    Components/           BrandLogo, LanguageSwitcher, SeoHead
-    Composables/           useTranslations
-    Layouts/                AppLayout, AppHeader, AppFooter, MobileMenu
-    Pages/                  Inertia page components (see Known Limitations)
-    lib/motion.ts            GSAP setup, lifecycle, reduced-motion
-    types/index.ts           Shared TypeScript contracts
-  views/                  app.blade.php (Inertia root), sitemap/*, filament/pages/*
+  js/public.js             Navigation, forms and browser interactions
+  views/
+    app.blade.php          Public HTML layout
+    public/                Page templates, layouts and shared components
+    seo/                   Metadata and structured data
+    sitemap/, feeds/      XML sitemap and RSS templates
+    filament/              Admin panel templates
 
 routes/
   web.php                 Locale-prefixed routes + bare-path redirect
@@ -261,12 +258,10 @@ tests/
   Browser/                Playwright — responsive.spec.ts
 ```
 
-## 8. Known limitations
+## 8. Public rendering
 
-See `docs/IMPLEMENTATION-LOG.md` § Known limitations for the full list.
-In short: dependencies were never installed in the authoring environment (no
-network access there), `Doran FaNum` requires a separate licence, binary
-assets are a manifest pending manual export, and the Vue page components
-(`resources/js/Pages/*.vue`) are the next concrete unit of work — the full
-data layer they'll consume (routes, controllers, transformers, seeded
-content, TypeScript contracts) is complete and covered by tests today.
+Laravel renders the localized page, layout and SEO tags on each request. The
+browser receives complete HTML. Standard links and forms use Laravel routes,
+and a small JavaScript bundle handles dialogs and other interactive controls.
+The cPanel archive contains compiled assets and production Composer dependencies,
+so PHP can serve the site with the files in the archive.

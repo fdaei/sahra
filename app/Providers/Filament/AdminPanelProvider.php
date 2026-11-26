@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
-use App\Http\Middleware\PreventPrivateIndexing;
+use App\Http\Controllers\AdminLocaleController;
 use App\Http\Middleware\SetAdminLocale;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -22,6 +22,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
@@ -41,6 +42,12 @@ final class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->authenticatedRoutes(function (): void {
+                Route::get('language/{locale}', AdminLocaleController::class)
+                    ->whereIn('locale', ['en', 'fa'])
+                    ->name('locale');
+                Route::redirect('not-found-logs', '/admin/not-found-visits', 302);
+            })
             ->login()
             ->passwordReset()
             ->profile(isSimple: false)
@@ -75,13 +82,13 @@ final class AdminPanelProvider extends PanelProvider
                 MenuItem::make()
                     ->label(__('admin.language.english'))
                     ->icon('heroicon-o-language')
-                    ->url(fn (): string => route('admin.locale', ['locale' => 'en']))
+                    ->url(fn (): string => route('filament.admin.locale', ['locale' => 'en']))
                     ->visible(fn (): bool => app()->getLocale() !== 'en')
                     ->sort(-2),
                 MenuItem::make()
                     ->label(__('admin.language.persian'))
                     ->icon('heroicon-o-language')
-                    ->url(fn (): string => route('admin.locale', ['locale' => 'fa']))
+                    ->url(fn (): string => route('filament.admin.locale', ['locale' => 'fa']))
                     ->visible(fn (): bool => app()->getLocale() !== 'fa')
                     ->sort(-2),
             ])
@@ -102,7 +109,6 @@ final class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->middleware([
-                PreventPrivateIndexing::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
