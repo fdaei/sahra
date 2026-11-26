@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Support\MailSettings;
+use App\Support\PublicPageCache;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Columns\Column;
@@ -18,6 +19,7 @@ final class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \App\Services\Redirects\SlugChangeRedirector::register();
+        PublicPageCache::registerInvalidation();
 
         Field::configureUsing(
             fn (Field $field): Field => $field->translateLabel(),

@@ -16,6 +16,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\MediaVariantController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Middleware\CachePublicPage;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -57,7 +58,7 @@ Route::prefix('{locale}')
     ->group(function (): void {
 
         // 1 — Home                       Figma 1419:9192 / 1419:9191
-        Route::get('/', HomeController::class)->name('home');
+        Route::get('/', HomeController::class)->middleware(CachePublicPage::class)->name('home');
 
         /*
          | 2 — Projects listing           Figma 1362:7198 / 1498:10840
@@ -66,17 +67,17 @@ Route::prefix('{locale}')
          | the cited 1362:7198 (4640), so this page too was likely built against
          | the older LTR frame. Not conclusive at 2px; see report.md finding 11.
          */
-        Route::get('work', [ProjectController::class, 'index'])->name('work.index');
+        Route::get('work', [ProjectController::class, 'index'])->middleware(CachePublicPage::class)->name('work.index');
 
         // 3 — Single project             Figma 1323:7541 / 1555:10866
         Route::get('work/{project}', [ProjectController::class, 'show'])->name('work.show');
 
         // 4 — Services                   Figma 1323:7189 / 1626:12562
         // Single page, four sections. No detail routes — see FIGMA-AUDIT §4.
-        Route::get('services', ServiceController::class)->name('services');
+        Route::get('services', ServiceController::class)->middleware(CachePublicPage::class)->name('services');
 
         // 5 — About                      Figma 908:1576 / 1557:12225
-        Route::get('about', AboutController::class)->name('about');
+        Route::get('about', AboutController::class)->middleware(CachePublicPage::class)->name('about');
 
         /*
          | 6 — Blog listing               Figma 569:1175 / 1530:10875
@@ -89,7 +90,7 @@ Route::prefix('{locale}')
          | frame, Header 176:199) to the pixel and missing 1353:7935 by 63px.
          | The page was built against the LTR frame; the old comment was wrong.
          */
-        Route::get('insights', [PostController::class, 'index'])->name('insights.index');
+        Route::get('insights', [PostController::class, 'index'])->middleware(CachePublicPage::class)->name('insights.index');
 
         Route::post('insights/{post}/lead-magnet', [LeadMagnetDownloadController::class, 'store'])
             ->middleware('throttle:6,1')
@@ -111,7 +112,7 @@ Route::prefix('{locale}')
          | 1390:9179 "Property 1=rtl", so it is the Arabic frame. The English
          | one is 447:790. Same caveat as the blog listing above.
          */
-        Route::get('contact', [ContactController::class, 'create'])->name('contact');
+        Route::get('contact', [ContactController::class, 'create'])->middleware(CachePublicPage::class)->name('contact');
         Route::post('contact', [ContactController::class, 'store'])
             ->middleware('throttle:6,1')
             ->name('contact.store');
@@ -127,8 +128,8 @@ Route::prefix('{locale}')
             ->name('home.lead-magnet.download');
 
         // 9/10 — Legal                   Figma 1031:2101, 1309:4891
-        Route::get('privacy-policy', [LegalController::class, 'privacy'])->name('legal.privacy');
-        Route::get('terms', [LegalController::class, 'terms'])->name('legal.terms');
+        Route::get('privacy-policy', [LegalController::class, 'privacy'])->middleware(CachePublicPage::class)->name('legal.privacy');
+        Route::get('terms', [LegalController::class, 'terms'])->middleware(CachePublicPage::class)->name('legal.terms');
     });
 
 /*

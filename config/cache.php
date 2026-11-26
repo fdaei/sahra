@@ -6,6 +6,10 @@ return [
 
     'default' => env('CACHE_STORE', 'database'),
 
+    'public_pages' => env('PUBLIC_PAGE_CACHE', env('APP_ENV') === 'production'),
+
+    'public_page_store' => 'file',
+
     'stores' => [
 
         'array' => [

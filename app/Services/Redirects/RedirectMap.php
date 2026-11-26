@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\Redirects;
 
 use App\Models\Redirect;
+use App\Support\PublicPageCache;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -20,7 +22,7 @@ final class RedirectMap
     /** @return array<string, array{0:string, 1:int, 2:int}> */
     public static function all(): array
     {
-        return Cache::rememberForever(self::CACHE_KEY, fn (): array => Redirect::query()
+        return self::cache()->rememberForever(self::CACHE_KEY, fn (): array => Redirect::query()
             ->active()
             ->where('match_type', 'exact')
             ->get(['id', 'source_path', 'destination_path', 'status_code'])
@@ -34,10 +36,11 @@ final class RedirectMap
     public static function find(string $path): ?array
     {
         $path = Redirect::normalize($path);
-        if (isset(self::all()[$path])) {
-            return self::all()[$path];
+        $exact = self::all();
+        if (isset($exact[$path])) {
+            return $exact[$path];
         }
-        $rules = Cache::rememberForever(self::REGEX_CACHE_KEY, fn () => Redirect::query()->active()->where('match_type', 'regex')->orderBy('id')->get(['id', 'source_path', 'destination_path', 'status_code']));
+        $rules = self::cache()->rememberForever(self::REGEX_CACHE_KEY, fn () => Redirect::query()->active()->where('match_type', 'regex')->orderBy('id')->get(['id', 'source_path', 'destination_path', 'status_code']));
         foreach ($rules as $rule) {
             $pattern = RegexRedirect::pattern($rule->source_path);
             if ($pattern !== null && @preg_match($pattern, $path) === 1) {
@@ -53,7 +56,14 @@ final class RedirectMap
 
     public static function flush(): void
     {
-        Cache::forget(self::CACHE_KEY);
-        Cache::forget(self::REGEX_CACHE_KEY);
+        foreach ([Cache::store(), PublicPageCache::store()] as $cache) {
+            $cache->forget(self::CACHE_KEY);
+            $cache->forget(self::REGEX_CACHE_KEY);
+        }
+    }
+
+    private static function cache(): Repository
+    {
+        return config('cache.public_pages') ? PublicPageCache::store() : Cache::store();
     }
 }
