@@ -60,6 +60,7 @@ final class ContentTransformer
                 $project->getTranslation('cover_alt'),
                 'project.cover',
             ),
+            'imagePreview' => ImagePreview::url($project->cover_path, ImagePreview::CARD_SIZE),
         ];
     }
 
@@ -157,6 +158,7 @@ final class ContentTransformer
                 $service->getTranslation('image_alt'),
                 'service',
             ),
+            'imagePreview' => ImagePreview::url($service->image_path, ImagePreview::CARD_SIZE),
         ];
     }
 
@@ -291,7 +293,7 @@ final class ContentTransformer
     {
         return [
             'name' => (string) $client->getTranslation('name'),
-            'logo' => MediaTransformer::url($client->logo_path),
+            'logo' => ImagePreview::url($client->logo_path, ImagePreview::LOGO_SIZE) ?? MediaTransformer::url($client->logo_path),
             'url' => $client->website_url,
         ];
     }

@@ -50,9 +50,10 @@
                     </div>
                     @if ($service['image'])
                         <img loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async"
+                            fetchpriority="{{ $loop->first ? 'high' : 'low' }}"
                             width="{{ $service['image']['width'] }}" height="{{ $service['image']['height'] }}"
                             class="order-1 h-[272px] w-full rounded-sm object-contain lg:order-none lg:h-auto lg:aspect-[604/786] lg:w-[604px] lg:shrink-0"
-                            src="{{ $service['image']['src'] }}"
+                            src="{{ $service['imagePreview'] ?? $service['image']['src'] }}"
                             alt="{{ $service['image']['alt'] }}"
                         >
                     @else

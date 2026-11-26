@@ -28,10 +28,11 @@
                             <div class="overflow-hidden rounded-md border border-neutral-100 shadow-card">
                                 @if ($project['image'])
                                     <img loading="{{ $loop->first ? 'eager' : 'lazy' }}" decoding="async"
+                                        fetchpriority="{{ $loop->first ? 'high' : 'low' }}"
                                         width="612"
                                         height="612"
                                         class="aspect-square w-full object-cover transition-transform duration-500 ease-brand group-hover:scale-[1.06]"
-                                        src="{{ $project['image']['src'] }}"
+                                        src="{{ $project['imagePreview'] ?? $project['image']['src'] }}"
                                         alt="{{ $project['image']['alt'] }}"
                                     >
                                 @else

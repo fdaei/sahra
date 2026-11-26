@@ -95,7 +95,7 @@ final class SiteSettings
      */
     public static function all(): array
     {
-        return Cache::remember(
+        return Cache::memo()->remember(
             self::CACHE_KEY,
             self::TTL,
             fn (): array => Setting::query()
@@ -147,7 +147,7 @@ final class SiteSettings
 
     public static function flush(): void
     {
-        Cache::forget(self::CACHE_KEY);
+        Cache::memo()->forget(self::CACHE_KEY);
         Cache::forget(self::SOCIAL_CACHE_KEY);
     }
 

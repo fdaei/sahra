@@ -124,6 +124,7 @@
                         <span class="group flex size-32 shrink-0 items-center justify-center" aria-hidden="{{ (($copy === 2) ? 'true' : null) }}">
                             <img
                                 class="size-full object-contain p-2 grayscale transition-[filter] duration-300 ease-out group-hover:grayscale-0 group-focus-within:grayscale-0"
+                                width="128" height="128" loading="lazy" decoding="async" fetchpriority="low"
                                 src="{{ $client['logo'] }}"
                                 alt="{{ (($copy === 2) ? '' : $client['name']) }}"
                             >

@@ -60,7 +60,8 @@
                                             alt=""
                                             loading="lazy"
                                             decoding="async"
-                                            src="{{ $service['image']['src'] }}"
+                                            fetchpriority="low"
+                                            src="{{ $service['imagePreview'] ?? $service['image']['src'] }}"
                                         >
                                     </div>
                                 </div>

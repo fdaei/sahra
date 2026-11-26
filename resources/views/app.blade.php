@@ -12,6 +12,8 @@
     $rssFeedUrl = $minimal ? null : \App\Support\CanonicalUrl::route('feed.locale', ['locale' => $locale]);
     $priorityImage = match ($template) {
         'public.pages.home' => $sections['hero']['image']['src'] ?? null,
+        'public.pages.services' => $services[0]['imagePreview'] ?? $services[0]['image']['src'] ?? null,
+        'public.pages.work.index' => $projects[0]['imagePreview'] ?? $projects[0]['image']['src'] ?? null,
         'public.pages.insights.index' => $featured['image']['src'] ?? null,
         'public.pages.insights.show' => $post['image']['src'] ?? null,
         default => null,
@@ -26,15 +28,7 @@
         <link rel="preload" as="image" href="{{ $priorityImage }}" fetchpriority="high">
     @elseif ($template === 'public.pages.home' && !empty($sections['hero']))
         <link rel="preload" as="image" href="/images/sahra/hero-brand-preview-mobile.webp" media="(width < 768px)" fetchpriority="high">
-    @endif
-
-    @if (filled($integrations['gtmId'] ?? null))
-        {{-- Google Tag Manager --}}
-        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer',{{ Illuminate\Support\Js::from($integrations['gtmId']) }});</script>
+        <link rel="preload" as="image" href="/images/sahra/hero-brand-preview-1024.webp" media="(width >= 768px)" fetchpriority="high">
     @endif
 
     @if (filled($integrations['gscVerification'] ?? null))
@@ -55,48 +49,13 @@
 
     @include('seo.head', ['meta' => $seo])
 
-    @if (filled($integrations['gaId'] ?? null))
-        {{-- Google Analytics (GA4) --}}
-        <script async src="https://www.googletagmanager.com/gtag/js?id={{ $integrations['gaId'] }}"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', {{ Illuminate\Support\Js::from($integrations['gaId']) }});
-        </script>
-    @endif
-
-    @php
-        $hotjarId = trim((string) ($integrations['hotjarId'] ?? ''));
-    @endphp
-    @if (preg_match('/\A[a-zA-Z0-9]+\z/', $hotjarId))
-        <script>
-            window.addEventListener('load', () => {
-                const loadHotjar = () => {
-                    const siteId = {{ Illuminate\Support\Js::from($hotjarId) }};
-                    const tag = document.createElement('script');
-                    tag.async = true;
-                    if (/^\d+$/.test(siteId)) {
-                        window.hj = window.hj || function () { (window.hj.q ||= []).push(arguments); };
-                        window._hjSettings = { hjid: Number(siteId), hjsv: 6 };
-                        tag.src = 'https://static.hotjar.com/c/hotjar-' + siteId + '.js?sv=6';
-                    } else {
-                        tag.src = 'https://t.contentsquare.net/uxa/' + siteId + '.js';
-                    }
-                    document.head.append(tag);
-                };
-                if ('requestIdleCallback' in window) {
-                    window.requestIdleCallback(loadHotjar, { timeout: 3000 });
-                } else {
-                    window.setTimeout(loadHotjar, 1500);
-                }
-            }, { once: true });
-        </script>
-    @endif
-
     @vite(['resources/css/app.css', 'resources/js/public.js'])
 </head>
-<body class="bg-paper text-neutral-900">
+<body class="bg-paper text-neutral-900"
+    @if (filled($integrations['gtmId'] ?? null)) data-gtm-id="{{ $integrations['gtmId'] }}" @endif
+    @if (filled($integrations['gaId'] ?? null)) data-ga-id="{{ $integrations['gaId'] }}" @endif
+    @if (filled($integrations['hotjarId'] ?? null)) data-hotjar-id="{{ $integrations['hotjarId'] }}" @endif
+>
     @if (filled($integrations['gtmId'] ?? null))
         {{-- Google Tag Manager (noscript) --}}
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $integrations['gtmId'] }}"

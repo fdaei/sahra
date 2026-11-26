@@ -63,7 +63,7 @@ final class Media extends Model
     ];
 
     /** Livewire scratch space and SVG icon sets. */
-    private const SKIP_DIRS = ['livewire-tmp', 'icons'];
+    private const SKIP_DIRS = ['livewire-tmp', 'icons', 'previews'];
 
     private const ALT_CACHE = 'media.alt-map.v1';
 
@@ -197,7 +197,7 @@ final class Media extends Model
         }
 
         $locale ??= app()->getLocale();
-        $map = Cache::rememberForever(self::ALT_CACHE, fn (): array => MediaTranslation::query()
+        $map = Cache::memo()->rememberForever(self::ALT_CACHE, fn (): array => MediaTranslation::query()
             ->join('media', 'media.id', '=', 'media_translations.media_id')
             ->whereNotNull('media_translations.alt')
             ->where('media_translations.alt', '!=', '')
@@ -213,7 +213,7 @@ final class Media extends Model
 
     public static function flushAltMap(): void
     {
-        Cache::forget(self::ALT_CACHE);
+        Cache::memo()->forget(self::ALT_CACHE);
     }
 
     public static function typeFor(string $mime, string $path = ''): string

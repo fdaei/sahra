@@ -54,9 +54,9 @@
                             <a class="aspect-[362/453] w-full overflow-hidden rounded-lg bg-neutral-50" draggable="false" href="{{ $mobileProject['url'] }}">
                                 @if ($mobileProject['image'])
                                     <img
-                                        class="size-full object-cover" loading="lazy" decoding="async"
+                                        class="size-full object-cover" loading="lazy" decoding="async" fetchpriority="low"
                                         draggable="false"
-                                        src="{{ $mobileProject['image']['src'] }}"
+                                        src="{{ $mobileProject['imagePreview'] ?? $mobileProject['image']['src'] }}"
                                         alt="{{ $mobileProject['image']['alt'] }}"
                                         width="{{ $mobileProject['image']['width'] }}"
                                         height="{{ $mobileProject['image']['height'] }}"
@@ -153,8 +153,8 @@
                                 >
                                     @if ($project['image'])
                                         <img
-                                            class="size-full object-cover" loading="lazy" decoding="async"
-                                            src="{{ $project['image']['src'] }}"
+                                            class="size-full object-cover" loading="lazy" decoding="async" fetchpriority="low"
+                                            src="{{ $project['imagePreview'] ?? $project['image']['src'] }}"
                                             alt="{{ $project['image']['alt'] }}"
                                             width="{{ $project['image']['width'] }}"
                                             height="{{ $project['image']['height'] }}"

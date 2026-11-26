@@ -4,6 +4,62 @@ import.meta.glob([
   '../images/decor/dune-contours.webp',
 ])
 
+function initAnalytics() {
+  const { gtmId, gaId } = document.body.dataset
+  const hotjarId = document.body.dataset.hotjarId?.trim()
+  const hasHotjar = /^[a-zA-Z0-9]+$/.test(hotjarId ?? '')
+  if (!gtmId && !gaId && !hasHotjar) return
+
+  window.dataLayer ??= []
+  if (gtmId) window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' })
+  if (gaId) {
+    window.gtag = function () { window.dataLayer.push(arguments) }
+    window.gtag('js', new Date())
+    window.gtag('config', gaId)
+  }
+
+  const addScript = src => {
+    const script = document.createElement('script')
+    script.async = true
+    script.src = src
+    document.head.append(script)
+  }
+  const load = () => {
+    if (gtmId) addScript('https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(gtmId))
+    if (gaId) addScript('https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(gaId))
+    if (hasHotjar) {
+      if (/^\d+$/.test(hotjarId)) {
+        window.hj = window.hj || function () { (window.hj.q ||= []).push(arguments) }
+        window._hjSettings = { hjid: Number(hotjarId), hjsv: 6 }
+        addScript('https://static.hotjar.com/c/hotjar-' + hotjarId + '.js?sv=6')
+      } else {
+        addScript('https://t.contentsquare.net/uxa/' + hotjarId + '.js')
+      }
+    }
+  }
+
+  const interactions = new AbortController()
+  let scheduled = false
+  let timer
+  const schedule = () => {
+    if (scheduled) return
+    scheduled = true
+    clearTimeout(timer)
+    interactions.abort()
+    if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 1500 })
+    else window.setTimeout(load, 0)
+  }
+  const afterLoad = () => {
+    if (!scheduled) timer = window.setTimeout(schedule, 2400)
+  }
+
+  for (const event of ['pointerdown', 'keydown']) {
+    window.addEventListener(event, schedule, { passive: true, signal: interactions.signal })
+  }
+  if (document.readyState === 'complete') afterLoad()
+  else window.addEventListener('load', afterLoad, { once: true })
+}
+
 function initNavigation() {
   const menu = document.getElementById('mobile-menu')
   const opener = document.querySelector('[data-action="openMenu"]')
@@ -398,6 +454,7 @@ function initCopyButtons() {
 }
 
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)')
+initAnalytics()
 initNavigation()
 initDialogs()
 initServicePicker()
